@@ -4,13 +4,16 @@ import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
+import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.commandhandling.annotation.CommandHandler
+import org.axonframework.commandhandling.gateway.CommandGateway
 import org.axonframework.eventhandling.gateway.EventAppender
 import org.axonframework.eventsourcing.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.EventSourcedEntity
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.modelling.annotation.InjectEntity
 import org.springframework.stereotype.Component
+import org.springframework.web.bind.annotation.*
 
 ////////////////////////////////////////////
 ////////// Domain
@@ -19,10 +22,10 @@ import org.springframework.stereotype.Component
 data class BuildDwelling(
     val dwellingId: String,
     val creatureId: String,
-    val costPerTroop: Map<String, Integer>,
+    val costPerTroop: Map<String, Int>,
 )
 
-private data class State(val isBuilt: Boolean)
+data class State(val isBuilt: Boolean)
 
 private val initialState = State(isBuilt = false)
 
@@ -52,7 +55,7 @@ private fun evolve(state: State, event: DwellingEvent): State {
 ///////////////////////////////////////////
 
 @EventSourcedEntity(tagKey = EventTags.DWELLING_ID) // ConsistencyBoundary
-private class EventSourcedState(val state: State) {
+class EventSourcedState private constructor(val state: State) {
 
     @EntityCreator
     constructor() : this(initialState)
@@ -62,7 +65,7 @@ private class EventSourcedState(val state: State) {
 }
 
 @Component
-private class BuildDwellingCommandHandler {
+class BuildDwellingCommandHandler {
 
     @CommandHandler
     fun handle(
@@ -74,5 +77,29 @@ private class BuildDwellingCommandHandler {
         eventAppender.append(events)
     }
 
+}
+
+
+@RestController
+@RequestMapping("games/{gameId}")
+internal class BuildDwellingRestApi(private val commandGateway: CommandGateway) {
+    @JvmRecord
+    internal data class Body(val creatureId: String, val costPerTroop: MutableMap<String, Int>)
+
+    @PutMapping("/dwellings/{dwellingId}")
+    fun putDwellings(
+        @RequestHeader(Headers.PLAYER_ID) playerId: String,
+        @PathVariable gameId: String,
+        @PathVariable dwellingId: String,
+        @RequestBody requestBody: Body
+    ) {
+        val command =
+            BuildDwelling(
+                dwellingId,
+                requestBody.creatureId,
+                requestBody.costPerTroop
+            )
+        commandGateway.sendAndWait(command) // todo: MetaData
+    }
 }
 

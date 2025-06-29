@@ -7,5 +7,5 @@ data class DwellingBuilt(
     @EventTag(EventTags.DWELLING_ID)
     override val dwellingId: String,
     val creatureId: String,
-    val costPerTroop: Map<String, Integer>
+    val costPerTroop: Map<String, Int>
 ) : DwellingEvent
