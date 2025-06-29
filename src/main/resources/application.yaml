@@ -1,3 +1,6 @@
 spring:
   application:
     name: heroesofddd
+axon:
+  axonserver:
+    context: heroesofddd
