@@ -10,7 +10,7 @@ internal class BuildDwellingUnitTest {
 
     private val fixture: AxonTestFixture = AxonTestFixture.with(
         UnitTestAxonApplication.configurer(
-            { registerStatefulCommandHandlingModule {BuildDwellingWriteSliceConfig().module()} },
+            { registerStatefulCommandHandlingModule { BuildDwellingWriteSliceConfig().module() } },
             configOverride = { axonServerEnabled = false }
         ))
 
