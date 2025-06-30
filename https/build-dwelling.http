@@ -1,0 +1,12 @@
+### Build Dwelling
+PUT http://localhost:8080/games/your-game-id/dwellings/your-dwelling-id
+Content-Type: application/json
+x-player-id: your-player-id
+
+{
+  "creatureId": "your-creature-id",
+  "costPerTroop": {
+    "gold": 100,
+    "wood": 50
+  }
+}

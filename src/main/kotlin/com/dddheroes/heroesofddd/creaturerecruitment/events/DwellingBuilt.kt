@@ -5,7 +5,7 @@ import org.axonframework.eventsourcing.annotations.EventTag
 
 data class DwellingBuilt(
     @EventTag(EventTags.DWELLING_ID)
-    val dwellingId: String,
+    override val dwellingId: String,
     val creatureId: String,
-    val costPerTroop: Map<String, Integer>
-)
+    val costPerTroop: Map<String, Int>
+) : DwellingEvent
