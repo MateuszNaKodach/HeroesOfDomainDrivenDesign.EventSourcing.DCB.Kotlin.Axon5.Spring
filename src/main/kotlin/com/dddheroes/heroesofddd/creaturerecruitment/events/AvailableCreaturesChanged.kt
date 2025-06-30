@@ -7,5 +7,6 @@ data class AvailableCreaturesChanged(
     @EventTag(EventTags.DWELLING_ID)
     override val dwellingId: String,
     val creatureId: String,
+    val changedBy: Int,
     val changedTo: Int
 ) : DwellingEvent

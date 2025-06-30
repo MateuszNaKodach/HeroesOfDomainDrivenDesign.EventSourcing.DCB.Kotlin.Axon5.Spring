@@ -1,4 +1,4 @@
-package com.dddheroes.heroesofddd.creaturerecruitment.write
+package com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling
 
 import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
