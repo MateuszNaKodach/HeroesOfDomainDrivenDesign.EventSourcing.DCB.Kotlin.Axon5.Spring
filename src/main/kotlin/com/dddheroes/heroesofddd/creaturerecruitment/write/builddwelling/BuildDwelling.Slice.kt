@@ -1,4 +1,4 @@
-package com.dddheroes.heroesofddd.creaturerecruitment.write
+package com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling
 
 import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
@@ -85,7 +85,7 @@ private class BuildDwellingCommandHandler {
 internal class BuildDwellingWriteSliceConfig {
 
     @Bean
-    fun module(): StatefulCommandHandlingModule =
+    fun buildDwellingSlice(): StatefulCommandHandlingModule =
         StatefulCommandHandlingModule.named(BuildDwelling::class.simpleName)
             .entities()
             .entity(

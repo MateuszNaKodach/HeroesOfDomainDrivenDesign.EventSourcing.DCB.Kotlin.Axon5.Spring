@@ -1,4 +1,4 @@
-package com.dddheroes.heroesofddd.creaturerecruitment.write
+package com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling
 
 import com.dddheroes.heroesofddd.creaturerecruitment.UnitTestAxonApplication
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
@@ -10,7 +10,7 @@ internal class BuildDwellingUnitTest {
 
     private val sliceUnderTest = AxonTestFixture.with(
         UnitTestAxonApplication.configurer(
-            { registerStatefulCommandHandlingModule { BuildDwellingWriteSliceConfig().module() } },
+            { registerStatefulCommandHandlingModule { BuildDwellingWriteSliceConfig().buildDwellingSlice() } },
             { axonServerEnabled = false }
         ))
 
