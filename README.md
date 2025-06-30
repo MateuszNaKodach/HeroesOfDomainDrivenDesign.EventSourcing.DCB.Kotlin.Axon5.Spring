@@ -1,4 +1,4 @@
-# Heroes of Domain-Driven Design (Java)
+# Heroes of Domain-Driven Design (Kotlin)
 Shows how to use Domain-Driven Design, Event Storming, Event Modeling and Event Sourcing in Heroes of Might & Magic III domain.
 
 👉 See also implementations in: 
