@@ -64,7 +64,7 @@ private class EventSourcedState private constructor(val state: State) {
     constructor() : this(initialState)
 
     @EventSourcingHandler
-    fun evolve(event: DwellingEvent) = EventSourcedState(evolve(state, event))
+    fun evolve(event: DwellingBuilt) = EventSourcedState(evolve(state, event))
 }
 
 private class BuildDwellingCommandHandler {

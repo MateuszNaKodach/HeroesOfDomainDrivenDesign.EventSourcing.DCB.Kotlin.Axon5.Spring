@@ -8,7 +8,7 @@ import java.util.*
 
 internal class BuildDwellingUnitTest {
 
-    private val fixture: AxonTestFixture = AxonTestFixture.with(
+    private val sliceUnderTest = AxonTestFixture.with(
         UnitTestAxonApplication.configurer(
             { registerStatefulCommandHandlingModule { BuildDwellingWriteSliceConfig().module() } },
             { axonServerEnabled = false }
@@ -20,7 +20,8 @@ internal class BuildDwellingUnitTest {
         val creatureId = "angel"
         val costPerTroop = mapOf("gold" to 3000, "gems" to 1)
 
-        fixture.given()
+        sliceUnderTest
+            .given()
             .noPriorActivity()
             .`when`()
             .command(BuildDwelling(dwellingId, creatureId, costPerTroop))
@@ -35,12 +36,12 @@ internal class BuildDwellingUnitTest {
         val costPerTroop = mapOf("gold" to 3000, "gems" to 1)
 
         // then
-        fixture.given()
+        sliceUnderTest
+            .given()
             .events(DwellingBuilt(dwellingId, creatureId, costPerTroop))
             .`when`()
             .command(BuildDwelling(dwellingId, creatureId, costPerTroop))
             .then()
             .noEvents()
     }
-
 }
