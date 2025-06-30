@@ -5,3 +5,6 @@ axon:
   axonserver:
     context: heroesofddd
     enabled: true
+logging:
+  level:
+    org.axonframework.configuration: DEBUG

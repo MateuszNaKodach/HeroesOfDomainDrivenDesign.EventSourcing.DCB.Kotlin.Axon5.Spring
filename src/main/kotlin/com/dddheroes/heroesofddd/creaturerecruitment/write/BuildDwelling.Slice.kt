@@ -8,6 +8,7 @@ import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.commandhandling.annotation.CommandHandler
 import org.axonframework.commandhandling.gateway.CommandGateway
 import org.axonframework.configuration.ApplicationConfigurer
+import org.axonframework.configuration.ModuleBuilder
 import org.axonframework.eventhandling.gateway.EventAppender
 import org.axonframework.eventsourcing.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.EventSourcedEntity
@@ -86,18 +87,18 @@ private class BuildDwellingCommandHandler {
 internal class BuildDwellingWriteSliceConfig {
 
     @Bean
-    fun module(): StatefulCommandHandlingModule {
-        val state = EventSourcedEntityModule.annotated(
-            String::class.java,
-            EventSourcedState::class.java
-        )
-        return StatefulCommandHandlingModule.named(BuildDwelling::class.simpleName)
+    fun module(): StatefulCommandHandlingModule =
+        StatefulCommandHandlingModule.named(BuildDwelling::class.simpleName)
             .entities()
-            .entity(state)
+            .entity(
+                EventSourcedEntityModule.annotated(
+                    String::class.java,
+                    EventSourcedState::class.java
+                )
+            )
             .commandHandlers()
             .annotatedCommandHandlingComponent { BuildDwellingCommandHandler() }
             .build()
-    }
 }
 
 ////////////////////////////////////////////
