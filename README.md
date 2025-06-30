@@ -43,6 +43,9 @@ org.axonframework.commandhandling.CommandExecutionException: Exception while han
 Caused by: java.util.concurrent.ExecutionException: io.grpc.StatusRuntimeException: UNAVAILABLE
 ```
 
+Thanks to that, you will be able to browse stored events in the Axon Server UI and see the attached tags to each of them.
+![AxonServer_EventStore_Search.png](.github/images/AxonServer_EventStore_Search.png)
+
 ## 🧱 Modules
 
 Modules (mostly designed using Bounded Context heuristic) are designed and documented on EventModeling below.
