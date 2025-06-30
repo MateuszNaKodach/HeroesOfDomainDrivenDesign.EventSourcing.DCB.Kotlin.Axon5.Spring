@@ -1,10 +1,10 @@
-package com.dddheroes.heroesofddd.creaturerecruitment.write.increaseavailablecreatures
+package com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature
 
 import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
+import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
-import com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling.BuildDwelling
 import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.commandhandling.annotation.CommandHandler
 import org.axonframework.commandhandling.gateway.CommandGateway
@@ -28,37 +28,70 @@ import org.springframework.web.bind.annotation.RestController
 ////////// Domain
 ///////////////////////////////////////////
 
-data class IncreaseAvailableCreatures(
+data class RecruitCreature(
     val dwellingId: String,
     val creatureId: String,
-    val increaseBy: Int,
+    val armyId: String,
+    val quantity: Int,
+    val expectedCost: Map<String, Int>,
 )
 
-private data class State(val isBuilt: Boolean, val availableCreatures: Int)
+private data class State(
+    val creatureId: String,
+    val availableCreatures: Int,
+    val costPerTroop: Map<String, Int>
+)
 
-private val initialState = State(isBuilt = false, availableCreatures = 0)
+private val initialState = State(
+    creatureId = "",
+    availableCreatures = 0,
+    costPerTroop = emptyMap()
+)
+
+private fun multiplyCost(cost: Map<String, Int>, multiplier: Int): Map<String, Int> {
+    return cost.mapValues { (_, value) -> value * multiplier }
+}
+
+private fun isSameCost(cost1: Map<String, Int>, cost2: Map<String, Int>): Boolean {
+    return cost1 == cost2
+}
 
 private fun decide(
-    command: IncreaseAvailableCreatures,
+    command: RecruitCreature,
     state: State
-): DwellingEvent {
-    if (!state.isBuilt) {
-        throw IllegalStateException("Only built dwelling can have available creatures")
+): List<DwellingEvent> {
+    if (state.creatureId != command.creatureId || state.availableCreatures < command.quantity) {
+        throw IllegalStateException("Recruit creatures cannot exceed available creatures")
     }
 
-    // todo: check creatureId for the dwelling!
+    val recruitCost = multiplyCost(state.costPerTroop, command.quantity)
+    if (!isSameCost(command.expectedCost, recruitCost)) {
+        throw IllegalStateException("Recruit cost cannot differ than expected cost")
+    }
 
-    return AvailableCreaturesChanged(
-        dwellingId = command.dwellingId,
-        creatureId = command.creatureId,
-        changedBy = command.increaseBy,
-        changedTo = state.availableCreatures + command.increaseBy
+    return listOf(
+        CreatureRecruited(
+            dwellingId = command.dwellingId,
+            creatureId = command.creatureId,
+            toArmy = command.armyId,
+            quantity = command.quantity,
+            totalCost = recruitCost
+        ),
+        AvailableCreaturesChanged(
+            dwellingId = command.dwellingId,
+            creatureId = command.creatureId,
+            changedBy = -command.quantity,
+            changedTo = state.availableCreatures - command.quantity
+        )
     )
 }
 
 private fun evolve(state: State, event: DwellingEvent): State = when (event) {
     is DwellingBuilt ->
-        state.copy(isBuilt = true)
+        state.copy(
+            creatureId = event.creatureId,
+            costPerTroop = event.costPerTroop
+        )
 
     is AvailableCreaturesChanged ->
         state.copy(availableCreatures = event.changedTo)
@@ -78,42 +111,39 @@ private class EventSourcedState private constructor(val state: State) {
 
     @EventSourcingHandler
     fun evolve(event: DwellingBuilt) = EventSourcedState(
-        evolve(
-            state,
-            event
-        )
+        evolve(state, event)
     )
 
     @EventSourcingHandler
     fun evolve(event: AvailableCreaturesChanged) = EventSourcedState(
-        evolve(
-            state,
-            event
-        )
+        evolve(state, event)
+    )
+
+    @EventSourcingHandler
+    fun evolve(event: CreatureRecruited) = EventSourcedState(
+        evolve(state, event)
     )
 }
 
-private class IncreaseAvailableCreaturesCommandHandler {
+private class RecruitCreatureCommandHandler {
 
     @CommandHandler
     fun handle(
-        command: IncreaseAvailableCreatures,
+        command: RecruitCreature,
         @InjectEntity(idProperty = EventTags.DWELLING_ID) eventSourced: EventSourcedState,
         eventAppender: EventAppender
     ) {
         val events = decide(command, eventSourced.state)
         eventAppender.append(events)
     }
-
 }
 
-
 @Configuration
-internal class IncreaseAvailableCreaturesWriteSliceConfig {
+internal class RecruitCreatureWriteSliceConfig {
 
     @Bean
-    fun increaseAvailableCreaturesSlice(): StatefulCommandHandlingModule =
-        StatefulCommandHandlingModule.named(IncreaseAvailableCreatures::class.simpleName)
+    fun recruitCreatureSlice(): StatefulCommandHandlingModule =
+        StatefulCommandHandlingModule.named(RecruitCreature::class.simpleName)
             .entities()
             .entity(
                 EventSourcedEntityModule.annotated(
@@ -122,10 +152,9 @@ internal class IncreaseAvailableCreaturesWriteSliceConfig {
                 )
             )
             .commandHandlers()
-            .annotatedCommandHandlingComponent { IncreaseAvailableCreaturesCommandHandler() }
+            .annotatedCommandHandlingComponent { RecruitCreatureCommandHandler() }
             .build()
 }
-
 
 ////////////////////////////////////////////
 ////////// Presentation
@@ -133,28 +162,30 @@ internal class IncreaseAvailableCreaturesWriteSliceConfig {
 
 @RestController
 @RequestMapping("games/{gameId}")
-private class IncreaseAvailableCreaturesRestApi(private val commandGateway: CommandGateway) {
+private class RecruitCreatureRestApi(private val commandGateway: CommandGateway) {
     @JvmRecord
-    data class Body(val creatureId: String, val increaseBy: Int)
+    data class Body(
+        val creatureId: String,
+        val armyId: String,
+        val quantity: Int,
+        val expectedCost: Map<String, Int>
+    )
 
-    @PutMapping("/dwellings/{dwellingId}/available-creatures-increases")
-    fun putDwellings(
+    @PutMapping("/dwellings/{dwellingId}/creature-recruitments")
+    fun putCreatureRecruitments(
         @RequestHeader(Headers.PLAYER_ID) playerId: String,
         @PathVariable gameId: String,
         @PathVariable dwellingId: String,
         @RequestBody requestBody: Body
     ) {
-        val command =
-            IncreaseAvailableCreatures(
-                dwellingId,
-                requestBody.creatureId,
-                requestBody.increaseBy
-            )
+        val command = RecruitCreature(
+            dwellingId = dwellingId,
+            creatureId = requestBody.creatureId,
+            armyId = requestBody.armyId,
+            quantity = requestBody.quantity,
+            expectedCost = requestBody.expectedCost
+        )
         commandGateway.sendAndWait(command) // todo: MetaData
     }
 }
-
-
-
-
 
