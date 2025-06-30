@@ -11,7 +11,7 @@ internal class BuildDwellingUnitTest {
     private val fixture: AxonTestFixture = AxonTestFixture.with(
         UnitTestAxonApplication.configurer(
             { registerStatefulCommandHandlingModule { BuildDwellingWriteSliceConfig().module() } },
-            configOverride = { axonServerEnabled = false }
+            { axonServerEnabled = false }
         ))
 
     @Test
@@ -25,13 +25,22 @@ internal class BuildDwellingUnitTest {
             .`when`()
             .command(BuildDwelling(dwellingId, creatureId, costPerTroop))
             .then()
-            .events(
-                DwellingBuilt(
-                    dwellingId = dwellingId,
-                    creatureId = creatureId,
-                    costPerTroop = costPerTroop
-                )
-            )
+            .events(DwellingBuilt(dwellingId, creatureId, costPerTroop))
+    }
+
+    @Test
+    fun `given DwellingBuild, when BuildDwelling one more time, then exception`() {
+        val dwellingId = UUID.randomUUID().toString()
+        val creatureId = "angel"
+        val costPerTroop = mapOf("gold" to 3000, "gems" to 1)
+
+        // then
+        fixture.given()
+            .events(DwellingBuilt(dwellingId, creatureId, costPerTroop))
+            .`when`()
+            .command(BuildDwelling(dwellingId, creatureId, costPerTroop))
+            .then()
+            .noEvents()
     }
 
 }
