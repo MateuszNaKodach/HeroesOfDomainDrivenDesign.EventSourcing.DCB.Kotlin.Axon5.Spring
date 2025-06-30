@@ -99,6 +99,9 @@ private class BuildDwellingConfiguration {
     }
 }
 
+////////////////////////////////////////////
+////////// Presentation
+///////////////////////////////////////////
 
 @RestController
 @RequestMapping("games/{gameId}")
