@@ -108,11 +108,7 @@ internal class BuildDwellingWriteSliceConfig {
 @RequestMapping("games/{gameId}")
 private class BuildDwellingRestApi(private val commandGateway: CommandGateway) {
     @JvmRecord
-    data class Body(val creatureId: String, val costPerTroop: MutableMap<String, Int>) {
-        fun toDomain(): Map<ResourceType, Int> {
-            return costPerTroop.mapKeys { ResourceType.from(it.key) }
-        }
-    }
+    data class Body(val creatureId: String, val costPerTroop: MutableMap<String, Int>)
 
     @PutMapping("/dwellings/{dwellingId}")
     fun putDwellings(
@@ -125,7 +121,7 @@ private class BuildDwellingRestApi(private val commandGateway: CommandGateway) {
             BuildDwelling(
                 dwellingId,
                 requestBody.creatureId,
-                requestBody.toDomain()
+                requestBody.costPerTroop.mapKeys { ResourceType.from(it.key) }
             )
         commandGateway.sendAndWait(command) // todo: MetaData
     }

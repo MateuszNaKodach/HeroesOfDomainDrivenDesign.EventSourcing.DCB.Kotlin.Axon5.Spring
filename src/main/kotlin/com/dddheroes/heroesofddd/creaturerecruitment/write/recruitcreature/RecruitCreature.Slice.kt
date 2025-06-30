@@ -170,11 +170,7 @@ private class RecruitCreatureRestApi(private val commandGateway: CommandGateway)
         val armyId: String,
         val quantity: Int,
         val expectedCost: Map<String, Int>
-    ) {
-        fun toDomain(): Map<ResourceType, Int> {
-            return expectedCost.mapKeys { ResourceType.from(it.key) }
-        }
-    }
+    )
 
     @PutMapping("/dwellings/{dwellingId}/creature-recruitments")
     fun putCreatureRecruitments(
@@ -188,7 +184,7 @@ private class RecruitCreatureRestApi(private val commandGateway: CommandGateway)
             creatureId = requestBody.creatureId,
             armyId = requestBody.armyId,
             quantity = requestBody.quantity,
-            expectedCost = requestBody.toDomain()
+            expectedCost = requestBody.expectedCost.mapKeys { ResourceType.from(it.key) }
         )
         commandGateway.sendAndWait(command) // todo: MetaData
     }
