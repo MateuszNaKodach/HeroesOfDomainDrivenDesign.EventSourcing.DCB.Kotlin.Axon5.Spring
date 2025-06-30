@@ -5,13 +5,24 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesCh
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling.BuildDwelling
-import com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling.decide
+import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.commandhandling.annotation.CommandHandler
+import org.axonframework.commandhandling.gateway.CommandGateway
 import org.axonframework.eventhandling.gateway.EventAppender
 import org.axonframework.eventsourcing.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.EventSourcedEntity
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
+import org.axonframework.eventsourcing.configuration.EventSourcedEntityModule
 import org.axonframework.modelling.annotation.InjectEntity
+import org.axonframework.modelling.configuration.StatefulCommandHandlingModule
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 ////////////////////////////////////////////
 ////////// Domain
@@ -48,8 +59,10 @@ private fun decide(
 private fun evolve(state: State, event: DwellingEvent): State = when (event) {
     is DwellingBuilt ->
         state.copy(isBuilt = true)
+
     is AvailableCreaturesChanged ->
         state.copy(availableCreatures = event.changedTo)
+
     else -> state
 }
 
@@ -93,6 +106,55 @@ private class IncreaseAvailableCreaturesCommandHandler {
     }
 
 }
+
+
+@Configuration
+internal class IncreaseAvailableCreaturesWriteSliceConfig {
+
+    @Bean
+    fun increaseAvailableCreaturesSlice(): StatefulCommandHandlingModule =
+        StatefulCommandHandlingModule.named(BuildDwelling::class.simpleName)
+            .entities()
+            .entity(
+                EventSourcedEntityModule.annotated(
+                    String::class.java,
+                    EventSourcedState::class.java
+                )
+            )
+            .commandHandlers()
+            .annotatedCommandHandlingComponent { IncreaseAvailableCreaturesCommandHandler() }
+            .build()
+}
+
+
+////////////////////////////////////////////
+////////// Presentation
+///////////////////////////////////////////
+
+@RestController
+@RequestMapping("games/{gameId}")
+private class IncreaseAvailableCreaturesRestApi(private val commandGateway: CommandGateway) {
+    @JvmRecord
+    data class Body(val creatureId: String, val increaseBy: Int)
+
+    @PutMapping("/dwellings/{dwellingId}/available-creatures-increases")
+    fun putDwellings(
+        @RequestHeader(Headers.PLAYER_ID) playerId: String,
+        @PathVariable gameId: String,
+        @PathVariable dwellingId: String,
+        @RequestBody requestBody: Body
+    ) {
+        val command =
+            IncreaseAvailableCreatures(
+                dwellingId,
+                requestBody.creatureId,
+                requestBody.increaseBy
+            )
+        commandGateway.sendAndWait(command) // todo: MetaData
+    }
+}
+
+
 
 
 

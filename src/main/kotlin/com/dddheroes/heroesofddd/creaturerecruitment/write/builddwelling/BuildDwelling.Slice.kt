@@ -85,7 +85,7 @@ private class BuildDwellingCommandHandler {
 internal class BuildDwellingWriteSliceConfig {
 
     @Bean
-    fun module(): StatefulCommandHandlingModule =
+    fun buildDwellingSlice(): StatefulCommandHandlingModule =
         StatefulCommandHandlingModule.named(BuildDwelling::class.simpleName)
             .entities()
             .entity(
