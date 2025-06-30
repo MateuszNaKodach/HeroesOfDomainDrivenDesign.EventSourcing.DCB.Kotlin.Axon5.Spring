@@ -113,7 +113,7 @@ internal class IncreaseAvailableCreaturesWriteSliceConfig {
 
     @Bean
     fun increaseAvailableCreaturesSlice(): StatefulCommandHandlingModule =
-        StatefulCommandHandlingModule.named(BuildDwelling::class.simpleName)
+        StatefulCommandHandlingModule.named(IncreaseAvailableCreatures::class.simpleName)
             .entities()
             .entity(
                 EventSourcedEntityModule.annotated(

@@ -10,5 +10,5 @@ data class CreatureRecruited(
     @EventTag(EventTags.ARMY_ID)
     val toArmy: String,
     val quantity: Int,
-    val totalCost: Map<String, Integer>
+    val totalCost: Map<String, Int>
 ) : DwellingEvent
