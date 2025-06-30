@@ -7,6 +7,7 @@ import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
 import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.commandhandling.annotation.CommandHandler
 import org.axonframework.commandhandling.gateway.CommandGateway
+import org.axonframework.configuration.ApplicationConfigurer
 import org.axonframework.eventhandling.gateway.EventAppender
 import org.axonframework.eventsourcing.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.EventSourcedEntity
@@ -82,7 +83,7 @@ private class BuildDwellingCommandHandler {
 }
 
 @Configuration
-private class BuildDwellingWriteSliceConfig {
+internal class BuildDwellingWriteSliceConfig {
 
     @Bean
     fun module(): StatefulCommandHandlingModule {
