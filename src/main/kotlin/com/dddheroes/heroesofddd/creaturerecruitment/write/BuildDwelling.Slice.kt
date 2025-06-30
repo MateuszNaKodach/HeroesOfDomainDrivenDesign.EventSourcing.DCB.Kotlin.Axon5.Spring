@@ -11,8 +11,11 @@ import org.axonframework.eventhandling.gateway.EventAppender
 import org.axonframework.eventsourcing.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.EventSourcedEntity
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
+import org.axonframework.eventsourcing.configuration.EventSourcedEntityModule
 import org.axonframework.modelling.annotation.InjectEntity
-import org.springframework.stereotype.Component
+import org.axonframework.modelling.configuration.StatefulCommandHandlingModule
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.web.bind.annotation.*
 
 ////////////////////////////////////////////
@@ -25,7 +28,7 @@ data class BuildDwelling(
     val costPerTroop: Map<String, Int>,
 )
 
-data class State(val isBuilt: Boolean)
+private data class State(val isBuilt: Boolean)
 
 private val initialState = State(isBuilt = false)
 
@@ -55,7 +58,7 @@ private fun evolve(state: State, event: DwellingEvent): State {
 ///////////////////////////////////////////
 
 @EventSourcedEntity(tagKey = EventTags.DWELLING_ID) // ConsistencyBoundary
-class EventSourcedState private constructor(val state: State) {
+private class EventSourcedState private constructor(val state: State) {
 
     @EntityCreator
     constructor() : this(initialState)
@@ -64,8 +67,7 @@ class EventSourcedState private constructor(val state: State) {
     fun evolve(event: DwellingEvent) = EventSourcedState(evolve(state, event))
 }
 
-@Component
-class BuildDwellingCommandHandler {
+private class BuildDwellingCommandHandler {
 
     @CommandHandler
     fun handle(
@@ -79,12 +81,30 @@ class BuildDwellingCommandHandler {
 
 }
 
+@Configuration
+private class BuildDwellingConfiguration {
+
+    @Bean
+    fun verticalSlice(): StatefulCommandHandlingModule {
+        val state = EventSourcedEntityModule.annotated(
+            String::class.java,
+            EventSourcedState::class.java
+        )
+        return StatefulCommandHandlingModule.named(BuildDwelling::class.simpleName)
+            .entities()
+            .entity(state)
+            .commandHandlers()
+            .annotatedCommandHandlingComponent { BuildDwellingCommandHandler() }
+            .build()
+    }
+}
+
 
 @RestController
 @RequestMapping("games/{gameId}")
-internal class BuildDwellingRestApi(private val commandGateway: CommandGateway) {
+private class BuildDwellingRestApi(private val commandGateway: CommandGateway) {
     @JvmRecord
-    internal data class Body(val creatureId: String, val costPerTroop: MutableMap<String, Int>)
+    data class Body(val creatureId: String, val costPerTroop: MutableMap<String, Int>)
 
     @PutMapping("/dwellings/{dwellingId}")
     fun putDwellings(
