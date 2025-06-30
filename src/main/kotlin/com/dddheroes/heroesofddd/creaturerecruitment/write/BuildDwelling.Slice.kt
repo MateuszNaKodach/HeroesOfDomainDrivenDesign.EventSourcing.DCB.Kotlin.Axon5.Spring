@@ -82,10 +82,10 @@ private class BuildDwellingCommandHandler {
 }
 
 @Configuration
-private class BuildDwellingConfiguration {
+private class BuildDwellingWriteSliceConfig {
 
     @Bean
-    fun verticalSlice(): StatefulCommandHandlingModule {
+    fun module(): StatefulCommandHandlingModule {
         val state = EventSourcedEntityModule.annotated(
             String::class.java,
             EventSourcedState::class.java
