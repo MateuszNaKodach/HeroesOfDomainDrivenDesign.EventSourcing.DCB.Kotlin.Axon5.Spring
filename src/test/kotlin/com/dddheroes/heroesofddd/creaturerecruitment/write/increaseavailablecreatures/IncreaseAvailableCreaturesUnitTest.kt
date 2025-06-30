@@ -3,6 +3,7 @@ package com.dddheroes.heroesofddd.creaturerecruitment.write.increaseavailablecre
 import com.dddheroes.heroesofddd.creaturerecruitment.UnitTestAxonApplication
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import org.axonframework.test.fixture.AxonTestFixture
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -34,7 +35,7 @@ internal class IncreaseAvailableCreaturesUnitTest {
     fun `given DwellingBuilt, when IncreaseAvailableCreatures, then AvailableCreatuesChanged`() {
         val dwellingId = UUID.randomUUID().toString()
         val creatureId = "angel"
-        val costPerTroop = mapOf("gold" to 3000, "gems" to 1)
+        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
         val increaseBy = 3
 
         // then
@@ -51,7 +52,7 @@ internal class IncreaseAvailableCreaturesUnitTest {
     fun `given DwellingBuilt with AvailableCreatuesChanged, when IncreaseAvailableCreatures, then AvailableCreatuesChanged`() {
         val dwellingId = UUID.randomUUID().toString()
         val creatureId = "angel"
-        val costPerTroop = mapOf("gold" to 3000, "gems" to 1)
+        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
         // then
         sliceUnderTest

@@ -4,6 +4,7 @@ import com.dddheroes.heroesofddd.creaturerecruitment.UnitTestAxonApplication
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import org.axonframework.test.fixture.AxonTestFixture
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -21,7 +22,7 @@ internal class RecruitCreatureUnitTest {
         val dwellingId = UUID.randomUUID().toString()
         val armyId = UUID.randomUUID().toString()
         val creatureId = "angel"
-        val costPerTroop = mapOf("gold" to 3000, "gems" to 1)
+        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
         sliceUnderTest
             .given()
@@ -45,7 +46,7 @@ internal class RecruitCreatureUnitTest {
         val dwellingId = UUID.randomUUID().toString()
         val armyId = UUID.randomUUID().toString()
         val creatureId = "angel"
-        val costPerTroop = mapOf("gold" to 3000, "gems" to 1)
+        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
         sliceUnderTest
             .given()
@@ -69,7 +70,7 @@ internal class RecruitCreatureUnitTest {
         val dwellingId = UUID.randomUUID().toString()
         val armyId = UUID.randomUUID().toString()
         val creatureId = "angel"
-        val costPerTroop = mapOf("gold" to 3000, "gems" to 1)
+        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
         sliceUnderTest
             .given()
@@ -92,7 +93,7 @@ internal class RecruitCreatureUnitTest {
                     creatureId = creatureId,
                     toArmy = armyId,
                     quantity = 1,
-                    totalCost = costPerTroop.mapValues { Integer.valueOf(it.value) }
+                    totalCost = costPerTroop
                 ),
                 AvailableCreaturesChanged(
                     dwellingId = dwellingId,
@@ -108,8 +109,8 @@ internal class RecruitCreatureUnitTest {
         val dwellingId = UUID.randomUUID().toString()
         val armyId = UUID.randomUUID().toString()
         val creatureId = "angel"
-        val costPerTroop = mapOf("gold" to 3000, "gems" to 1)
-        val expectedCost = mapOf("gold" to 6000, "gems" to 2)
+        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
+        val expectedCost = mapOf(ResourceType.GOLD to 6000, ResourceType.GEMS to 2)
 
         sliceUnderTest
             .given()
@@ -132,7 +133,7 @@ internal class RecruitCreatureUnitTest {
                     creatureId = creatureId,
                     toArmy = armyId,
                     quantity = 2,
-                    totalCost = expectedCost.mapValues { Integer.valueOf(it.value) }
+                    totalCost = expectedCost
                 ),
                 AvailableCreaturesChanged(
                     dwellingId = dwellingId,
@@ -148,8 +149,8 @@ internal class RecruitCreatureUnitTest {
         val dwellingId = UUID.randomUUID().toString()
         val armyId = UUID.randomUUID().toString()
         val creatureId = "angel"
-        val costPerTroop = mapOf("gold" to 3000, "gems" to 1)
-        val expectedCost = mapOf("gold" to 9000, "gems" to 3)
+        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
+        val expectedCost = mapOf(ResourceType.GOLD to 9000, ResourceType.GEMS to 3)
 
         sliceUnderTest
             .given()
@@ -173,7 +174,7 @@ internal class RecruitCreatureUnitTest {
                     creatureId = creatureId,
                     toArmy = armyId,
                     quantity = 3,
-                    totalCost = expectedCost.mapValues { Integer.valueOf(it.value) }
+                    totalCost = expectedCost
                 ),
                 AvailableCreaturesChanged(
                     dwellingId = dwellingId,
@@ -189,8 +190,8 @@ internal class RecruitCreatureUnitTest {
         val dwellingId = UUID.randomUUID().toString()
         val armyId = UUID.randomUUID().toString()
         val creatureId = "angel"
-        val costPerTroop = mapOf("gold" to 3000, "gems" to 1)
-        val expectedCost = mapOf("gold" to 18000, "gems" to 6)
+        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
+        val expectedCost = mapOf(ResourceType.GOLD to 18000, ResourceType.GEMS to 6)
 
         sliceUnderTest
             .given()
@@ -216,7 +217,7 @@ internal class RecruitCreatureUnitTest {
         val armyId = UUID.randomUUID().toString()
         val creatureId = "angel"
         val anotherCreatureId = "black-dragon"
-        val costPerTroop = mapOf("gold" to 3000, "gems" to 1)
+        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
         sliceUnderTest
             .given()
@@ -241,19 +242,19 @@ internal class RecruitCreatureUnitTest {
         val dwellingId = UUID.randomUUID().toString()
         val armyId = UUID.randomUUID().toString()
         val creatureId = "angel"
-        val costPerTroop = mapOf("gold" to 3000, "gems" to 1)
-        val cost2 = mapOf("gold" to 6000, "gems" to 2)
-        val cost3 = mapOf("gold" to 9000, "gems" to 3)
-        val cost4 = mapOf("gold" to 12000, "gems" to 4)
+        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
+        val cost2 = mapOf(ResourceType.GOLD to 6000, ResourceType.GEMS to 2)
+        val cost3 = mapOf(ResourceType.GOLD to 9000, ResourceType.GEMS to 3)
+        val cost4 = mapOf(ResourceType.GOLD to 12000, ResourceType.GEMS to 4)
 
         sliceUnderTest
             .given()
             .event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
             .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 3, changedTo = 3))
-            .event(CreatureRecruited(dwellingId, creatureId, armyId, 2, cost2.mapValues { Integer.valueOf(it.value) }))
+            .event(CreatureRecruited(dwellingId, creatureId, armyId, 2, cost2))
             .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = -2, changedTo = 1))
             .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 3, changedTo = 4))
-            .event(CreatureRecruited(dwellingId, creatureId, armyId, 4, cost4.mapValues { Integer.valueOf(it.value) }))
+            .event(CreatureRecruited(dwellingId, creatureId, armyId, 4, cost4))
             .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = -4, changedTo = 0))
             .`when`()
             .command(
@@ -274,14 +275,14 @@ internal class RecruitCreatureUnitTest {
         val dwellingId = UUID.randomUUID().toString()
         val armyId = UUID.randomUUID().toString()
         val creatureId = "angel"
-        val costPerTroop = mapOf("gold" to 3000, "gems" to 1)
-        val cost3 = mapOf("gold" to 9000, "gems" to 3)
+        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
+        val cost3 = mapOf(ResourceType.GOLD to 9000, ResourceType.GEMS to 3)
 
         sliceUnderTest
             .given()
             .event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
             .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 4, changedTo = 4))
-            .event(CreatureRecruited(dwellingId, creatureId, armyId, 3, cost3.mapValues { Integer.valueOf(it.value) }))
+            .event(CreatureRecruited(dwellingId, creatureId, armyId, 3, cost3))
             .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = -3, changedTo = 1))
             .`when`()
             .command(
@@ -300,7 +301,7 @@ internal class RecruitCreatureUnitTest {
                     creatureId = creatureId,
                     toArmy = armyId,
                     quantity = 1,
-                    totalCost = costPerTroop.mapValues { Integer.valueOf(it.value) }
+                    totalCost = costPerTroop
                 ),
                 AvailableCreaturesChanged(
                     dwellingId = dwellingId,
@@ -316,8 +317,8 @@ internal class RecruitCreatureUnitTest {
         val dwellingId = UUID.randomUUID().toString()
         val armyId = UUID.randomUUID().toString()
         val creatureId = "angel"
-        val costPerTroop = mapOf("gold" to 3000, "gems" to 1)
-        val wrongExpectedCost = mapOf("gold" to 999999, "gems" to 0)
+        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
+        val wrongExpectedCost = mapOf(ResourceType.GOLD to 999999, ResourceType.GEMS to 0)
 
         sliceUnderTest
             .given()

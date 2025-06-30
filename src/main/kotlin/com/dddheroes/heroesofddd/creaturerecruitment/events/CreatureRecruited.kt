@@ -1,6 +1,7 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.events
 
 import com.dddheroes.heroesofddd.EventTags
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import org.axonframework.eventsourcing.annotations.EventTag
 
 data class CreatureRecruited(
@@ -10,5 +11,5 @@ data class CreatureRecruited(
     @EventTag(EventTags.ARMY_ID)
     val toArmy: String,
     val quantity: Int,
-    val totalCost: Map<String, Int>
+    val totalCost: Map<ResourceType, Int>
 ) : DwellingEvent

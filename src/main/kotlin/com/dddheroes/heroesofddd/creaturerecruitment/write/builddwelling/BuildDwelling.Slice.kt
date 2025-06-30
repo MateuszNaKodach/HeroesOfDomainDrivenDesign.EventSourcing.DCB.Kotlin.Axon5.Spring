@@ -4,6 +4,7 @@ import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.commandhandling.annotation.CommandHandler
 import org.axonframework.commandhandling.gateway.CommandGateway
@@ -25,7 +26,7 @@ import org.springframework.web.bind.annotation.*
 data class BuildDwelling(
     val dwellingId: String,
     val creatureId: String,
-    val costPerTroop: Map<String, Int>,
+    val costPerTroop: Map<ResourceType, Int>,
 )
 
 private data class State(val isBuilt: Boolean)
@@ -120,7 +121,7 @@ private class BuildDwellingRestApi(private val commandGateway: CommandGateway) {
             BuildDwelling(
                 dwellingId,
                 requestBody.creatureId,
-                requestBody.costPerTroop
+                requestBody.costPerTroop.mapKeys { ResourceType.from(it.key) }
             )
         commandGateway.sendAndWait(command) // todo: MetaData
     }
