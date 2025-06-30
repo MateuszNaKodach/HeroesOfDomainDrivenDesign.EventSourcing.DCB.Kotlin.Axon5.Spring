@@ -1,8 +1,17 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.write.increaseavailablecreatures
 
+import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
+import com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling.BuildDwelling
+import com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling.decide
+import org.axonframework.commandhandling.annotation.CommandHandler
+import org.axonframework.eventhandling.gateway.EventAppender
+import org.axonframework.eventsourcing.EventSourcingHandler
+import org.axonframework.eventsourcing.annotation.EventSourcedEntity
+import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
+import org.axonframework.modelling.annotation.InjectEntity
 
 ////////////////////////////////////////////
 ////////// Domain
@@ -43,5 +52,47 @@ private fun evolve(state: State, event: DwellingEvent): State = when (event) {
         state.copy(availableCreatures = event.changedTo)
     else -> state
 }
+
+////////////////////////////////////////////
+////////// Application
+///////////////////////////////////////////
+
+@EventSourcedEntity(tagKey = EventTags.DWELLING_ID) // ConsistencyBoundary
+private class EventSourcedState private constructor(val state: State) {
+
+    @EntityCreator
+    constructor() : this(initialState)
+
+    @EventSourcingHandler
+    fun evolve(event: DwellingBuilt) = EventSourcedState(
+        evolve(
+            state,
+            event
+        )
+    )
+
+    @EventSourcingHandler
+    fun evolve(event: AvailableCreaturesChanged) = EventSourcedState(
+        evolve(
+            state,
+            event
+        )
+    )
+}
+
+private class IncreaseAvailableCreaturesCommandHandler {
+
+    @CommandHandler
+    fun handle(
+        command: IncreaseAvailableCreatures,
+        @InjectEntity(idProperty = EventTags.DWELLING_ID) eventSourced: EventSourcedState,
+        eventAppender: EventAppender
+    ) {
+        val events = decide(command, eventSourced.state)
+        eventAppender.append(events)
+    }
+
+}
+
 
 
