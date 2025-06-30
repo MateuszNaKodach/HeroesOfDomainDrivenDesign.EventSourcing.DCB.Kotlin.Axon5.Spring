@@ -5,6 +5,7 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesCh
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.commandhandling.annotation.CommandHandler
 import org.axonframework.commandhandling.gateway.CommandGateway
@@ -33,13 +34,13 @@ data class RecruitCreature(
     val creatureId: String,
     val armyId: String,
     val quantity: Int,
-    val expectedCost: Map<String, Int>,
+    val expectedCost: Map<ResourceType, Int>,
 )
 
 private data class State(
     val creatureId: String,
     val availableCreatures: Int,
-    val costPerTroop: Map<String, Int>
+    val costPerTroop: Map<ResourceType, Int>
 )
 
 private val initialState = State(
@@ -48,11 +49,11 @@ private val initialState = State(
     costPerTroop = emptyMap()
 )
 
-private fun multiplyCost(cost: Map<String, Int>, multiplier: Int): Map<String, Int> {
+private fun multiplyCost(cost: Map<ResourceType, Int>, multiplier: Int): Map<ResourceType, Int> {
     return cost.mapValues { (_, value) -> value * multiplier }
 }
 
-private fun isSameCost(cost1: Map<String, Int>, cost2: Map<String, Int>): Boolean {
+private fun isSameCost(cost1: Map<ResourceType, Int>, cost2: Map<ResourceType, Int>): Boolean {
     return cost1 == cost2
 }
 
@@ -169,7 +170,11 @@ private class RecruitCreatureRestApi(private val commandGateway: CommandGateway)
         val armyId: String,
         val quantity: Int,
         val expectedCost: Map<String, Int>
-    )
+    ) {
+        fun toDomain(): Map<ResourceType, Int> {
+            return expectedCost.mapKeys { ResourceType.from(it.key) }
+        }
+    }
 
     @PutMapping("/dwellings/{dwellingId}/creature-recruitments")
     fun putCreatureRecruitments(
@@ -183,7 +188,7 @@ private class RecruitCreatureRestApi(private val commandGateway: CommandGateway)
             creatureId = requestBody.creatureId,
             armyId = requestBody.armyId,
             quantity = requestBody.quantity,
-            expectedCost = requestBody.expectedCost
+            expectedCost = requestBody.toDomain()
         )
         commandGateway.sendAndWait(command) // todo: MetaData
     }

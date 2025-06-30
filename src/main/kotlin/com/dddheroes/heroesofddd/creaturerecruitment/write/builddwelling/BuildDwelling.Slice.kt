@@ -4,6 +4,7 @@ import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.commandhandling.annotation.CommandHandler
 import org.axonframework.commandhandling.gateway.CommandGateway
@@ -25,7 +26,7 @@ import org.springframework.web.bind.annotation.*
 data class BuildDwelling(
     val dwellingId: String,
     val creatureId: String,
-    val costPerTroop: Map<String, Int>,
+    val costPerTroop: Map<ResourceType, Int>,
 )
 
 private data class State(val isBuilt: Boolean)
@@ -107,7 +108,11 @@ internal class BuildDwellingWriteSliceConfig {
 @RequestMapping("games/{gameId}")
 private class BuildDwellingRestApi(private val commandGateway: CommandGateway) {
     @JvmRecord
-    data class Body(val creatureId: String, val costPerTroop: MutableMap<String, Int>)
+    data class Body(val creatureId: String, val costPerTroop: MutableMap<String, Int>) {
+        fun toDomain(): Map<ResourceType, Int> {
+            return costPerTroop.mapKeys { ResourceType.from(it.key) }
+        }
+    }
 
     @PutMapping("/dwellings/{dwellingId}")
     fun putDwellings(
@@ -120,7 +125,7 @@ private class BuildDwellingRestApi(private val commandGateway: CommandGateway) {
             BuildDwelling(
                 dwellingId,
                 requestBody.creatureId,
-                requestBody.costPerTroop
+                requestBody.toDomain()
             )
         commandGateway.sendAndWait(command) // todo: MetaData
     }
