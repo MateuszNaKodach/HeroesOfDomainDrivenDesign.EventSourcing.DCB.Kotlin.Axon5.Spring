@@ -15,6 +15,7 @@ import java.util.*
 internal class BuildDwellingSpringTest @Autowired constructor(configurer: ApplicationConfigurer) {
 
     // fixme: class org.axonframework.commandhandling.SimpleCommandBus cannot be cast to class org.axonframework.test.fixture.RecordingCommandBus
+    // It's because of that the context is already created and enhancers applied.
     private val fixture: AxonTestFixture = AxonTestFixture.with(configurer)
 
     @Test
