@@ -4,18 +4,19 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import org.axonframework.configuration.ApplicationConfigurer
 import org.axonframework.test.fixture.AxonTestFixture
+import org.axonframework.test.fixture.MessagesRecordingConfigurationEnhancer
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.context.annotation.Bean
 import java.util.*
 
 @Disabled("ClassCastException")
 @SpringBootTest
 internal class BuildDwellingSpringTest @Autowired constructor(configurer: ApplicationConfigurer) {
 
-    // fixme: class org.axonframework.commandhandling.SimpleCommandBus cannot be cast to class org.axonframework.test.fixture.RecordingCommandBus
-    // It's because of that the context is already created and enhancers applied.
     private val fixture: AxonTestFixture = AxonTestFixture.with(configurer)
 
     @Test
@@ -36,6 +37,13 @@ internal class BuildDwellingSpringTest @Autowired constructor(configurer: Applic
                     costPerTroop = costPerTroop
                 )
             )
+    }
+
+    @TestConfiguration
+    class TestConfig {
+
+        @Bean
+        fun recordingEnhancer() = MessagesRecordingConfigurationEnhancer()
     }
 
 }
