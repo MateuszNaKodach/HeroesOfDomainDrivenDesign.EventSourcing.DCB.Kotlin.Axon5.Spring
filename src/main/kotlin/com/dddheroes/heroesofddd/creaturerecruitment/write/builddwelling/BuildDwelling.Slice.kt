@@ -7,6 +7,7 @@ import com.dddheroes.heroesofddd.shared.application.GameMetaData
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.restapi.Headers
+import org.axonframework.commandhandling.GenericCommandMessage
 import org.axonframework.commandhandling.annotation.CommandHandler
 import org.axonframework.commandhandling.gateway.CommandGateway
 import org.axonframework.eventhandling.gateway.EventAppender
@@ -14,6 +15,7 @@ import org.axonframework.eventsourcing.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.EventSourcedEntity
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.eventsourcing.configuration.EventSourcedEntityModule
+import org.axonframework.messaging.MessageType
 import org.axonframework.modelling.annotation.InjectEntity
 import org.axonframework.modelling.configuration.StatefulCommandHandlingModule
 import org.springframework.context.annotation.Bean
@@ -124,7 +126,12 @@ private class BuildDwellingRestApi(private val commandGateway: CommandGateway) {
                 requestBody.creatureId,
                 requestBody.costPerTroop.mapKeys { ResourceType.from(it.key) }
             )
-        commandGateway.send(command, GameMetaData.with(gameId, playerId), null)
+        val message = GenericCommandMessage(
+            MessageType(BuildDwelling::class.java),
+            command,
+            GameMetaData.with(gameId, playerId)
+        )
+        commandGateway.sendAndWait(message)
     }
 }
 
