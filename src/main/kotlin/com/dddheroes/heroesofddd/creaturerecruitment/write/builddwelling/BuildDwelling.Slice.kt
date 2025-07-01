@@ -3,6 +3,7 @@ package com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling
 import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
+import com.dddheroes.heroesofddd.shared.application.GameMetaData
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.restapi.Headers
@@ -123,7 +124,7 @@ private class BuildDwellingRestApi(private val commandGateway: CommandGateway) {
                 requestBody.creatureId,
                 requestBody.costPerTroop.mapKeys { ResourceType.from(it.key) }
             )
-        commandGateway.sendAndWait(command) // todo: MetaData
+        commandGateway.send(command, GameMetaData.with(gameId, playerId), null)
     }
 }
 
