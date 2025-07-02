@@ -38,13 +38,16 @@ import org.springframework.web.bind.annotation.*
 ///////////////////////////////////////////
 
 data class RecruitCreature(
-    @TargetEntityId
     val dwellingId: String,
     val creatureId: String,
     val armyId: String,
     val quantity: Int,
     val expectedCost: Map<ResourceType, Int>,
-)
+){
+    data class RecruitmentId(val dwellingId: String, val armyId: String)
+
+    val recruitmentId = RecruitmentId(dwellingId, armyId)
+}
 
 private data class State(
     val creatureId: String,
@@ -132,37 +135,15 @@ private class EventSourcedState private constructor(val state: State) {
     companion object {
         @JvmStatic
         @EventCriteriaBuilder
-        fun resolveCriteria(dwellingId: String) =
+        fun resolveCriteria(recruitmentId: RecruitCreature.RecruitmentId) =
             EventCriteria.either(
                 EventCriteria
-                    .havingTags(Tag.of(EventTags.DWELLING_ID, dwellingId))
+                    .havingTags(Tag.of(EventTags.DWELLING_ID, recruitmentId.dwellingId))
                     .andBeingOneOfTypes(
                         DwellingBuilt::class.java.getName(),
                         AvailableCreaturesChanged::class.java.getName(),
                     ),
             )
-    }
-}
-
-
-class CustomCriteriaResolverDefinition : CriteriaResolverDefinition {
-    override fun <E, ID> createEventCriteriaResolver(
-        @Nonnull entityType: Class<E?>,
-        @Nonnull idType: Class<ID?>,
-        @Nonnull configuration: org.axonframework.configuration.Configuration
-    ): CriteriaResolver<ID?> {
-        Assertions.assertInstanceOf(
-            org.axonframework.configuration.Configuration::class.java,
-            configuration
-        )
-        return CustomCriteriaResolver<ID?>()
-    }
-}
-
-private class CustomCriteriaResolver<ID> : CriteriaResolver<ID?> {
-    @Nonnull
-    override fun resolve(@Nonnull id: ID?, @Nonnull context: ProcessingContext): EventCriteria {
-        return EventCriteria.havingAnyTag()
     }
 }
 
@@ -172,7 +153,7 @@ private class RecruitCreatureCommandHandler {
     fun handle(
         command: RecruitCreature,
         metaData: MetaData,
-        @InjectEntity(idProperty = EventTags.DWELLING_ID) eventSourced: EventSourcedState,
+        @InjectEntity(idProperty = "recruitmentId") eventSourced: EventSourcedState,
         eventAppender: EventAppender
     ) {
         val events = decide(command, eventSourced.state)
@@ -189,7 +170,7 @@ internal class RecruitCreatureWriteSliceConfig {
             .entities()
             .entity(
                 EventSourcedEntityModule.annotated(
-                    String::class.java,
+                    RecruitCreature.RecruitmentId::class.java,
                     EventSourcedState::class.java
                 )
             )
