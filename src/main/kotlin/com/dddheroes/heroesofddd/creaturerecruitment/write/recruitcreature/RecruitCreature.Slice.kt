@@ -5,6 +5,7 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesCh
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
+import com.dddheroes.heroesofddd.shared.application.GameMetaData
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.commandhandling.annotation.CommandHandler
@@ -14,6 +15,9 @@ import org.axonframework.eventsourcing.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.EventSourcedEntity
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.eventsourcing.configuration.EventSourcedEntityModule
+import org.axonframework.extensions.kotlin.asCommandMessage
+import org.axonframework.extensions.kotlin.asEventMessages
+import org.axonframework.messaging.MetaData
 import org.axonframework.modelling.annotation.InjectEntity
 import org.axonframework.modelling.configuration.StatefulCommandHandlingModule
 import org.springframework.context.annotation.Bean
@@ -131,11 +135,12 @@ private class RecruitCreatureCommandHandler {
     @CommandHandler
     fun handle(
         command: RecruitCreature,
+        metaData: MetaData,
         @InjectEntity(idProperty = EventTags.DWELLING_ID) eventSourced: EventSourcedState,
         eventAppender: EventAppender
     ) {
         val events = decide(command, eventSourced.state)
-        eventAppender.append(events)
+        eventAppender.append(events.asEventMessages(metaData))
     }
 }
 
@@ -186,7 +191,11 @@ private class RecruitCreatureRestApi(private val commandGateway: CommandGateway)
             quantity = requestBody.quantity,
             expectedCost = requestBody.expectedCost.mapKeys { ResourceType.from(it.key) }
         )
-        commandGateway.sendAndWait(command) // todo: MetaData
+
+        val metaData = GameMetaData.with(gameId, playerId)
+        val message = command.asCommandMessage(metaData)
+
+        commandGateway.sendAndWait(message)
     }
 }
 

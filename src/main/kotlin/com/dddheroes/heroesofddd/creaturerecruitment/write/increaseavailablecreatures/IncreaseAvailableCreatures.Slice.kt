@@ -4,7 +4,7 @@ import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
-import com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling.BuildDwelling
+import com.dddheroes.heroesofddd.shared.application.GameMetaData
 import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.commandhandling.annotation.CommandHandler
 import org.axonframework.commandhandling.gateway.CommandGateway
@@ -13,16 +13,14 @@ import org.axonframework.eventsourcing.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.EventSourcedEntity
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.eventsourcing.configuration.EventSourcedEntityModule
+import org.axonframework.extensions.kotlin.asCommandMessage
+import org.axonframework.extensions.kotlin.asEventMessage
+import org.axonframework.messaging.MetaData
 import org.axonframework.modelling.annotation.InjectEntity
 import org.axonframework.modelling.configuration.StatefulCommandHandlingModule
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestHeader
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 ////////////////////////////////////////////
 ////////// Domain
@@ -98,11 +96,12 @@ private class IncreaseAvailableCreaturesCommandHandler {
     @CommandHandler
     fun handle(
         command: IncreaseAvailableCreatures,
+        metaData: MetaData,
         @InjectEntity(idProperty = EventTags.DWELLING_ID) eventSourced: EventSourcedState,
         eventAppender: EventAppender
     ) {
         val events = decide(command, eventSourced.state)
-        eventAppender.append(events)
+        eventAppender.append(events.asEventMessage(metaData))
     }
 
 }
@@ -150,7 +149,11 @@ private class IncreaseAvailableCreaturesRestApi(private val commandGateway: Comm
                 requestBody.creatureId,
                 requestBody.increaseBy
             )
-        commandGateway.sendAndWait(command) // todo: MetaData
+
+        val metaData = GameMetaData.with(gameId, playerId)
+        val message = command.asCommandMessage(metaData)
+
+        commandGateway.sendAndWait(message)
     }
 }
 
