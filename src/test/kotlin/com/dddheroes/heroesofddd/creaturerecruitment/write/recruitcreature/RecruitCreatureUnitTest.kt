@@ -7,6 +7,7 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import org.axonframework.test.fixture.AxonTestFixture
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.util.*
 
@@ -359,140 +360,144 @@ internal class RecruitCreatureUnitTest {
             .exception(IllegalStateException::class.java, "Recruit cost cannot differ than expected cost")
     }
 
-    @Test
-    fun `given army with 7 different creature types, when recruit new 8th creature type, then exception`() {
-        val dwellingId = UUID.randomUUID().toString()
-        val armyId = UUID.randomUUID().toString()
-        val newCreatureId = "black-dragon"
-        val costPerTroop = mapOf(ResourceType.GOLD to 4000, ResourceType.GEMS to 2)
+    @Nested
+    inner class ArmyCreatureTypesLimitTests {
 
-        sliceUnderTest
-            .given()
-            .event(DwellingBuilt(dwellingId, newCreatureId, costPerTroop))
-            .event(AvailableCreaturesChanged(dwellingId, newCreatureId, changedBy = 1, changedTo = 1))
-            // Simulate army already having 7 different creature types
-            .event(CreatureAddedToArmy(armyId, "angel", 5))
-            .event(CreatureAddedToArmy(armyId, "griffin", 10))
-            .event(CreatureAddedToArmy(armyId, "swordsman", 20))
-            .event(CreatureAddedToArmy(armyId, "monk", 8))
-            .event(CreatureAddedToArmy(armyId, "cavalier", 6))
-            .event(CreatureAddedToArmy(armyId, "mage", 4))
-            .event(CreatureAddedToArmy(armyId, "titan", 2))
-            .`when`()
-            .command(
-                RecruitCreature(
-                    dwellingId = dwellingId,
-                    creatureId = newCreatureId,
-                    armyId = armyId,
-                    quantity = 1,
-                    expectedCost = costPerTroop
-                )
-            )
-            .then()
-            .exception(IllegalStateException::class.java, "Army cannot contain more than 7 different creature types")
-    }
+        @Test
+        fun `given army with 7 different creature types, when recruit new 8th creature type, then exception`() {
+            val dwellingId = UUID.randomUUID().toString()
+            val armyId = UUID.randomUUID().toString()
+            val newCreatureId = "black-dragon"
+            val costPerTroop = mapOf(ResourceType.GOLD to 4000, ResourceType.GEMS to 2)
 
-    @Test
-    fun `given army with 7 different creature types, when recruit more of existing creature, then recruited`() {
-        val dwellingId = UUID.randomUUID().toString()
-        val armyId = UUID.randomUUID().toString()
-        val existingCreatureId = "angel"
-        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
+            sliceUnderTest
+                .given()
+                .event(DwellingBuilt(dwellingId, newCreatureId, costPerTroop))
+                .event(AvailableCreaturesChanged(dwellingId, newCreatureId, changedBy = 1, changedTo = 1))
+                // Simulate army already having 7 different creature types
+                .event(CreatureAddedToArmy(armyId, "angel", 5))
+                .event(CreatureAddedToArmy(armyId, "griffin", 10))
+                .event(CreatureAddedToArmy(armyId, "swordsman", 20))
+                .event(CreatureAddedToArmy(armyId, "monk", 8))
+                .event(CreatureAddedToArmy(armyId, "cavalier", 6))
+                .event(CreatureAddedToArmy(armyId, "mage", 4))
+                .event(CreatureAddedToArmy(armyId, "titan", 2))
+                .`when`()
+                .command(
+                    RecruitCreature(
+                        dwellingId = dwellingId,
+                        creatureId = newCreatureId,
+                        armyId = armyId,
+                        quantity = 1,
+                        expectedCost = costPerTroop
+                    )
+                )
+                .then()
+                .exception(IllegalStateException::class.java, "Army cannot contain more than 7 different creature types")
+        }
 
-        sliceUnderTest
-            .given()
-            .event(DwellingBuilt(dwellingId, existingCreatureId, costPerTroop))
-            .event(AvailableCreaturesChanged(dwellingId, existingCreatureId, changedBy = 2, changedTo = 2))
-            // Simulate army already having 7 different creature types including the one we want to recruit
-            .event(CreatureAddedToArmy(armyId, "angel", 5))
-            .event(CreatureAddedToArmy(armyId, "griffin", 10))
-            .event(CreatureAddedToArmy(armyId, "swordsman", 20))
-            .event(CreatureAddedToArmy(armyId, "monk", 8))
-            .event(CreatureAddedToArmy(armyId, "cavalier", 6))
-            .event(CreatureAddedToArmy(armyId, "mage", 4))
-            .event(CreatureAddedToArmy(armyId, "titan", 2))
-            .`when`()
-            .command(
-                RecruitCreature(
-                    dwellingId = dwellingId,
-                    creatureId = existingCreatureId,
-                    armyId = armyId,
-                    quantity = 2,
-                    expectedCost = mapOf(ResourceType.GOLD to 6000, ResourceType.GEMS to 2)
-                )
-            )
-            .then()
-            .events(
-                CreatureRecruited(
-                    dwellingId = dwellingId,
-                    creatureId = existingCreatureId,
-                    toArmy = armyId,
-                    quantity = 2,
-                    totalCost = mapOf(ResourceType.GOLD to 6000, ResourceType.GEMS to 2)
-                ),
-                CreatureAddedToArmy(
-                    armyId = armyId,
-                    creatureId = existingCreatureId,
-                    quantity = 2
-                ),
-                AvailableCreaturesChanged(
-                    dwellingId = dwellingId,
-                    creatureId = existingCreatureId,
-                    changedBy = -2,
-                    changedTo = 0
-                )
-            )
-    }
+        @Test
+        fun `given army with 7 different creature types, when recruit more of existing creature, then recruited`() {
+            val dwellingId = UUID.randomUUID().toString()
+            val armyId = UUID.randomUUID().toString()
+            val existingCreatureId = "angel"
+            val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
-    @Test
-    fun `given army with 6 different creature types, when recruit new 7th creature type, then recruited`() {
-        val dwellingId = UUID.randomUUID().toString()
-        val armyId = UUID.randomUUID().toString()
-        val newCreatureId = "black-dragon"
-        val costPerTroop = mapOf(ResourceType.GOLD to 4000, ResourceType.GEMS to 2)
+            sliceUnderTest
+                .given()
+                .event(DwellingBuilt(dwellingId, existingCreatureId, costPerTroop))
+                .event(AvailableCreaturesChanged(dwellingId, existingCreatureId, changedBy = 2, changedTo = 2))
+                // Simulate army already having 7 different creature types including the one we want to recruit
+                .event(CreatureAddedToArmy(armyId, "angel", 5))
+                .event(CreatureAddedToArmy(armyId, "griffin", 10))
+                .event(CreatureAddedToArmy(armyId, "swordsman", 20))
+                .event(CreatureAddedToArmy(armyId, "monk", 8))
+                .event(CreatureAddedToArmy(armyId, "cavalier", 6))
+                .event(CreatureAddedToArmy(armyId, "mage", 4))
+                .event(CreatureAddedToArmy(armyId, "titan", 2))
+                .`when`()
+                .command(
+                    RecruitCreature(
+                        dwellingId = dwellingId,
+                        creatureId = existingCreatureId,
+                        armyId = armyId,
+                        quantity = 2,
+                        expectedCost = mapOf(ResourceType.GOLD to 6000, ResourceType.GEMS to 2)
+                    )
+                )
+                .then()
+                .events(
+                    CreatureRecruited(
+                        dwellingId = dwellingId,
+                        creatureId = existingCreatureId,
+                        toArmy = armyId,
+                        quantity = 2,
+                        totalCost = mapOf(ResourceType.GOLD to 6000, ResourceType.GEMS to 2)
+                    ),
+                    CreatureAddedToArmy(
+                        armyId = armyId,
+                        creatureId = existingCreatureId,
+                        quantity = 2
+                    ),
+                    AvailableCreaturesChanged(
+                        dwellingId = dwellingId,
+                        creatureId = existingCreatureId,
+                        changedBy = -2,
+                        changedTo = 0
+                    )
+                )
+        }
 
-        sliceUnderTest
-            .given()
-            .event(DwellingBuilt(dwellingId, newCreatureId, costPerTroop))
-            .event(AvailableCreaturesChanged(dwellingId, newCreatureId, changedBy = 1, changedTo = 1))
-            // Simulate army having 6 different creature types
-            .event(CreatureAddedToArmy(armyId, "angel", 5))
-            .event(CreatureAddedToArmy(armyId, "griffin", 10))
-            .event(CreatureAddedToArmy(armyId, "swordsman", 20))
-            .event(CreatureAddedToArmy(armyId, "monk", 8))
-            .event(CreatureAddedToArmy(armyId, "cavalier", 6))
-            .event(CreatureAddedToArmy(armyId, "mage", 4))
-            .`when`()
-            .command(
-                RecruitCreature(
-                    dwellingId = dwellingId,
-                    creatureId = newCreatureId,
-                    armyId = armyId,
-                    quantity = 1,
-                    expectedCost = costPerTroop
+        @Test
+        fun `given army with 6 different creature types, when recruit new 7th creature type, then recruited`() {
+            val dwellingId = UUID.randomUUID().toString()
+            val armyId = UUID.randomUUID().toString()
+            val newCreatureId = "black-dragon"
+            val costPerTroop = mapOf(ResourceType.GOLD to 4000, ResourceType.GEMS to 2)
+
+            sliceUnderTest
+                .given()
+                .event(DwellingBuilt(dwellingId, newCreatureId, costPerTroop))
+                .event(AvailableCreaturesChanged(dwellingId, newCreatureId, changedBy = 1, changedTo = 1))
+                // Simulate army having 6 different creature types
+                .event(CreatureAddedToArmy(armyId, "angel", 5))
+                .event(CreatureAddedToArmy(armyId, "griffin", 10))
+                .event(CreatureAddedToArmy(armyId, "swordsman", 20))
+                .event(CreatureAddedToArmy(armyId, "monk", 8))
+                .event(CreatureAddedToArmy(armyId, "cavalier", 6))
+                .event(CreatureAddedToArmy(armyId, "mage", 4))
+                .`when`()
+                .command(
+                    RecruitCreature(
+                        dwellingId = dwellingId,
+                        creatureId = newCreatureId,
+                        armyId = armyId,
+                        quantity = 1,
+                        expectedCost = costPerTroop
+                    )
                 )
-            )
-            .then()
-            .events(
-                CreatureRecruited(
-                    dwellingId = dwellingId,
-                    creatureId = newCreatureId,
-                    toArmy = armyId,
-                    quantity = 1,
-                    totalCost = costPerTroop
-                ),
-                CreatureAddedToArmy(
-                    armyId = armyId,
-                    creatureId = newCreatureId,
-                    quantity = 1
-                ),
-                AvailableCreaturesChanged(
-                    dwellingId = dwellingId,
-                    creatureId = newCreatureId,
-                    changedBy = -1,
-                    changedTo = 0
+                .then()
+                .events(
+                    CreatureRecruited(
+                        dwellingId = dwellingId,
+                        creatureId = newCreatureId,
+                        toArmy = armyId,
+                        quantity = 1,
+                        totalCost = costPerTroop
+                    ),
+                    CreatureAddedToArmy(
+                        armyId = armyId,
+                        creatureId = newCreatureId,
+                        quantity = 1
+                    ),
+                    AvailableCreaturesChanged(
+                        dwellingId = dwellingId,
+                        creatureId = newCreatureId,
+                        changedBy = -1,
+                        changedTo = 0
+                    )
                 )
-            )
+        }
     }
 
     @Test
