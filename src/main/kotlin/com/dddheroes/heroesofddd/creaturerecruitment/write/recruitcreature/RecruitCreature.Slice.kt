@@ -8,32 +8,37 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.application.GameMetaData
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.restapi.Headers
+import jakarta.annotation.Nonnull
 import org.axonframework.commandhandling.annotation.CommandHandler
 import org.axonframework.commandhandling.gateway.CommandGateway
 import org.axonframework.eventhandling.gateway.EventAppender
+import org.axonframework.eventsourcing.CriteriaResolver
 import org.axonframework.eventsourcing.EventSourcingHandler
+import org.axonframework.eventsourcing.annotation.CriteriaResolverDefinition
+import org.axonframework.eventsourcing.annotation.EventCriteriaBuilder
 import org.axonframework.eventsourcing.annotation.EventSourcedEntity
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.eventsourcing.configuration.EventSourcedEntityModule
+import org.axonframework.eventstreaming.EventCriteria
+import org.axonframework.eventstreaming.Tag
 import org.axonframework.extensions.kotlin.asCommandMessage
 import org.axonframework.extensions.kotlin.asEventMessages
 import org.axonframework.messaging.MetaData
+import org.axonframework.messaging.unitofwork.ProcessingContext
 import org.axonframework.modelling.annotation.InjectEntity
+import org.axonframework.modelling.annotation.TargetEntityId
 import org.axonframework.modelling.configuration.StatefulCommandHandlingModule
+import org.junit.jupiter.api.Assertions
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestHeader
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 ////////////////////////////////////////////
 ////////// Domain
 ///////////////////////////////////////////
 
 data class RecruitCreature(
+    @TargetEntityId
     val dwellingId: String,
     val creatureId: String,
     val armyId: String,
@@ -108,7 +113,7 @@ private fun evolve(state: State, event: DwellingEvent): State = when (event) {
 ////////// Application
 ///////////////////////////////////////////
 
-@EventSourcedEntity(tagKey = EventTags.DWELLING_ID) // ConsistencyBoundary
+@EventSourcedEntity // ConsistencyBoundary
 private class EventSourcedState private constructor(val state: State) {
 
     @EntityCreator
@@ -124,10 +129,41 @@ private class EventSourcedState private constructor(val state: State) {
         evolve(state, event)
     )
 
-    @EventSourcingHandler
-    fun evolve(event: CreatureRecruited) = EventSourcedState(
-        evolve(state, event)
-    )
+    companion object {
+        @JvmStatic
+        @EventCriteriaBuilder
+        fun resolveCriteria(dwellingId: String) =
+            EventCriteria.either(
+                EventCriteria
+                    .havingTags(Tag.of(EventTags.DWELLING_ID, dwellingId))
+                    .andBeingOneOfTypes(
+                        DwellingBuilt::class.java.getName(),
+                        AvailableCreaturesChanged::class.java.getName(),
+                    ),
+            )
+    }
+}
+
+
+class CustomCriteriaResolverDefinition : CriteriaResolverDefinition {
+    override fun <E, ID> createEventCriteriaResolver(
+        @Nonnull entityType: Class<E?>,
+        @Nonnull idType: Class<ID?>,
+        @Nonnull configuration: org.axonframework.configuration.Configuration
+    ): CriteriaResolver<ID?> {
+        Assertions.assertInstanceOf(
+            org.axonframework.configuration.Configuration::class.java,
+            configuration
+        )
+        return CustomCriteriaResolver<ID?>()
+    }
+}
+
+private class CustomCriteriaResolver<ID> : CriteriaResolver<ID?> {
+    @Nonnull
+    override fun resolve(@Nonnull id: ID?, @Nonnull context: ProcessingContext): EventCriteria {
+        return EventCriteria.havingAnyTag()
+    }
 }
 
 private class RecruitCreatureCommandHandler {
