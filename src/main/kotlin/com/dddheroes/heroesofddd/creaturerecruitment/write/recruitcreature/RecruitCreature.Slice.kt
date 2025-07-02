@@ -82,6 +82,10 @@ private fun decide(
         throw IllegalStateException("Recruit cost cannot differ than expected cost")
     }
 
+    if (!state.creaturesInArmy.containsKey(command.creatureId) && state.creaturesInArmy.size >= 7) {
+        throw IllegalStateException("Army cannot contain more than 7 different creature types")
+    }
+
     return listOf(
         CreatureRecruited(
             dwellingId = command.dwellingId,
@@ -108,6 +112,23 @@ private fun evolve(state: State, event: HeroesEvent): State = when (event) {
 
     is AvailableCreaturesChanged ->
         state.copy(availableCreatures = event.changedTo)
+
+    is CreatureAddedToArmy -> {
+        val currentQuantity = state.creaturesInArmy[event.creatureId] ?: 0
+        val updatedCreatures = state.creaturesInArmy + (event.creatureId to currentQuantity + event.quantity)
+        state.copy(creaturesInArmy = updatedCreatures)
+    }
+
+    is CreatureRemovedFromArmy -> {
+        val currentQuantity = state.creaturesInArmy[event.creatureId] ?: 0
+        val newQuantity = (currentQuantity - event.quantity).coerceAtLeast(0)
+        val updatedCreatures = if (newQuantity == 0) {
+            state.creaturesInArmy - event.creatureId
+        } else {
+            state.creaturesInArmy + (event.creatureId to newQuantity)
+        }
+        state.copy(creaturesInArmy = updatedCreatures)
+    }
 
     else -> state
 }
@@ -202,7 +223,6 @@ internal class RecruitCreatureWriteSliceConfig {
 @RestController
 @RequestMapping("games/{gameId}")
 private class RecruitCreatureRestApi(private val commandGateway: CommandGateway) {
-    @JvmRecord
     data class Body(
         val creatureId: String,
         val armyId: String,
