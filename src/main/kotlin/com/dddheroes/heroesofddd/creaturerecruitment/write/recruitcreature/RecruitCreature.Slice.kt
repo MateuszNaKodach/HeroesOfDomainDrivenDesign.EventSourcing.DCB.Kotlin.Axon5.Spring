@@ -1,20 +1,20 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature
 
 import com.dddheroes.heroesofddd.EventTags
+import com.dddheroes.heroesofddd.armies.events.CreatureAddedToArmy
+import com.dddheroes.heroesofddd.armies.events.CreatureRemovedFromArmy
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.application.GameMetaData
+import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.restapi.Headers
-import jakarta.annotation.Nonnull
 import org.axonframework.commandhandling.annotation.CommandHandler
 import org.axonframework.commandhandling.gateway.CommandGateway
 import org.axonframework.eventhandling.gateway.EventAppender
-import org.axonframework.eventsourcing.CriteriaResolver
 import org.axonframework.eventsourcing.EventSourcingHandler
-import org.axonframework.eventsourcing.annotation.CriteriaResolverDefinition
 import org.axonframework.eventsourcing.annotation.EventCriteriaBuilder
 import org.axonframework.eventsourcing.annotation.EventSourcedEntity
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
@@ -24,11 +24,8 @@ import org.axonframework.eventstreaming.Tag
 import org.axonframework.extensions.kotlin.asCommandMessage
 import org.axonframework.extensions.kotlin.asEventMessages
 import org.axonframework.messaging.MetaData
-import org.axonframework.messaging.unitofwork.ProcessingContext
 import org.axonframework.modelling.annotation.InjectEntity
-import org.axonframework.modelling.annotation.TargetEntityId
 import org.axonframework.modelling.configuration.StatefulCommandHandlingModule
-import org.junit.jupiter.api.Assertions
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.bind.annotation.*
@@ -46,19 +43,22 @@ data class RecruitCreature(
 ){
     data class RecruitmentId(val dwellingId: String, val armyId: String)
 
+    // used as a process identifier
     val recruitmentId = RecruitmentId(dwellingId, armyId)
 }
 
 private data class State(
     val creatureId: String,
     val availableCreatures: Int,
-    val costPerTroop: Map<ResourceType, Int>
+    val costPerTroop: Map<ResourceType, Int>,
+    val creaturesInArmy: Map<String, Int>
 )
 
 private val initialState = State(
     creatureId = "",
     availableCreatures = 0,
-    costPerTroop = emptyMap()
+    costPerTroop = emptyMap(),
+    creaturesInArmy = emptyMap()
 )
 
 private fun multiplyCost(cost: Map<ResourceType, Int>, multiplier: Int): Map<ResourceType, Int> {
@@ -99,7 +99,7 @@ private fun decide(
     )
 }
 
-private fun evolve(state: State, event: DwellingEvent): State = when (event) {
+private fun evolve(state: State, event: HeroesEvent): State = when (event) {
     is DwellingBuilt ->
         state.copy(
             creatureId = event.creatureId,
@@ -132,6 +132,16 @@ private class EventSourcedState private constructor(val state: State) {
         evolve(state, event)
     )
 
+    @EventSourcingHandler
+    fun evolve(event: CreatureAddedToArmy) = EventSourcedState(
+        evolve(state, event)
+    )
+
+    @EventSourcingHandler
+    fun evolve(event: CreatureRemovedFromArmy) = EventSourcedState(
+        evolve(state, event)
+    )
+
     companion object {
         @JvmStatic
         @EventCriteriaBuilder
@@ -143,6 +153,12 @@ private class EventSourcedState private constructor(val state: State) {
                         DwellingBuilt::class.java.getName(),
                         AvailableCreaturesChanged::class.java.getName(),
                     ),
+                EventCriteria
+                    .havingTags(Tag.of(EventTags.ARMY_ID, recruitmentId.armyId))
+                    .andBeingOneOfTypes(
+                        CreatureAddedToArmy::class.java.getName(),
+                        CreatureRemovedFromArmy::class.java.getName(),
+                    )
             )
     }
 }
