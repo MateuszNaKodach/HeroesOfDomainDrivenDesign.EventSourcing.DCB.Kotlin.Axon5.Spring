@@ -6,7 +6,6 @@ import com.dddheroes.heroesofddd.armies.events.CreatureRemovedFromArmy
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
-import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.application.GameMetaData
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
@@ -72,7 +71,7 @@ private fun isSameCost(cost1: Map<ResourceType, Int>, cost2: Map<ResourceType, I
 private fun decide(
     command: RecruitCreature,
     state: State
-): List<DwellingEvent> {
+): List<HeroesEvent> {
     if (state.creatureId != command.creatureId || state.availableCreatures < command.quantity) {
         throw IllegalStateException("Recruit creatures cannot exceed available creatures")
     }
@@ -93,6 +92,11 @@ private fun decide(
             toArmy = command.armyId,
             quantity = command.quantity,
             totalCost = recruitCost
+        ),
+        CreatureAddedToArmy(
+            armyId = command.armyId,
+            creatureId = command.creatureId,
+            quantity = command.quantity
         ),
         AvailableCreaturesChanged(
             dwellingId = command.dwellingId,
