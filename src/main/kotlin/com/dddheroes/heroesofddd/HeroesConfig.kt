@@ -29,6 +29,8 @@ internal class HeroesConfig {
         }
     }
 
+    // FIXME: CorrelationDataProvider is not supported in Axon 5.0.0-M2, so now the MetaData is not passed from command to the events automatically.
+    // I've done it manually in the CommandHandlers.
     @Bean
     fun gameDataProvider(): CorrelationDataProvider {
         return SimpleCorrelationDataProvider(GameMetaData.GAME_ID_KEY, GameMetaData.PLAYER_ID_KEY)

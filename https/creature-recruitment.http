@@ -1,7 +1,7 @@
 ### BuildDwelling
-@gameId = scenario-1
-@playerId = player-1
-@dwellingId = dwelling-1
+@gameId = scenario-2
+@playerId = player-2
+@dwellingId = dwelling-8
 
 ### BuildDwelling
 PUT http://localhost:8080/games/{{gameId}}/dwellings/{{dwellingId}}
