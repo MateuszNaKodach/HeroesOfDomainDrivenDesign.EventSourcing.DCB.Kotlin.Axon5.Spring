@@ -4,4 +4,4 @@ spring:
 axon:
   axonserver:
     context: heroesofddd
-    enabled: true
+    enabled: false
