@@ -5,7 +5,7 @@ name: 🚀 Java CI with Maven
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "tests/ci-axonserver" ]
   pull_request:
     branches: [ "main" ]
 
@@ -35,7 +35,7 @@ jobs:
         run: mvn -B compile --file pom.xml
 
       - name: 🧪 Run tests
-        run: mvn -B test --file pom.xml
+        run: mvn -B test -Ptest_axonserver --file pom.xml
 
 #      - name: 📦 Package application
 #        run: mvn -B package --file pom.xml

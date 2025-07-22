@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: heroesofddd
+axon:
+  axonserver:
+    context: default # for CI only the ` default ` context is available
+    enabled: true
