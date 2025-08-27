@@ -1,10 +1,10 @@
 package com.dddheroes.heroesofddd.scenario.write.recruitcreature
 
-import com.dddheroes.heroesofddd.scenario.events.ArmyExpansionEvent
 import com.dddheroes.heroesofddd.scenario.UnitTestAxonApplication
 import com.dddheroes.heroesofddd.scenario.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.scenario.events.CreatureRecruited
 import com.dddheroes.heroesofddd.scenario.events.DwellingBuilt
+import com.dddheroes.heroesofddd.scenario.events.WanderingCreaturesJoined
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import org.axonframework.test.fixture.AxonTestFixture
 import org.junit.jupiter.api.Nested
@@ -97,11 +97,6 @@ internal class RecruitCreatureUnitTest {
                     quantity = 1,
                     totalCost = costPerTroop
                 ),
-                ArmyExpansionEvent(
-                    armyId = armyId,
-                    creatureId = creatureId,
-                    quantity = 1
-                ),
                 AvailableCreaturesChanged(
                     dwellingId = dwellingId,
                     creatureId = creatureId,
@@ -141,11 +136,6 @@ internal class RecruitCreatureUnitTest {
                     toArmy = armyId,
                     quantity = 2,
                     totalCost = expectedCost
-                ),
-                ArmyExpansionEvent(
-                    armyId = armyId,
-                    creatureId = creatureId,
-                    quantity = 2
                 ),
                 AvailableCreaturesChanged(
                     dwellingId = dwellingId,
@@ -187,11 +177,6 @@ internal class RecruitCreatureUnitTest {
                     toArmy = armyId,
                     quantity = 3,
                     totalCost = expectedCost
-                ),
-                ArmyExpansionEvent(
-                    armyId = armyId,
-                    creatureId = creatureId,
-                    quantity = 3
                 ),
                 AvailableCreaturesChanged(
                     dwellingId = dwellingId,
@@ -320,11 +305,6 @@ internal class RecruitCreatureUnitTest {
                     quantity = 1,
                     totalCost = costPerTroop
                 ),
-                ArmyExpansionEvent(
-                    armyId = armyId,
-                    creatureId = creatureId,
-                    quantity = 1
-                ),
                 AvailableCreaturesChanged(
                     dwellingId = dwellingId,
                     creatureId = creatureId,
@@ -375,13 +355,13 @@ internal class RecruitCreatureUnitTest {
                 .event(DwellingBuilt(dwellingId, newCreatureId, costPerTroop))
                 .event(AvailableCreaturesChanged(dwellingId, newCreatureId, changedBy = 1, changedTo = 1))
                 // Simulate army already having 7 different creature types
-                .event(ArmyExpansionEvent(armyId, "angel", 5))
-                .event(ArmyExpansionEvent(armyId, "griffin", 10))
-                .event(ArmyExpansionEvent(armyId, "swordsman", 20))
-                .event(ArmyExpansionEvent(armyId, "monk", 8))
-                .event(ArmyExpansionEvent(armyId, "cavalier", 6))
-                .event(ArmyExpansionEvent(armyId, "mage", 4))
-                .event(ArmyExpansionEvent(armyId, "titan", 2))
+                .event(anyArmyExpansionEvent(armyId, "angel", 5))
+                .event(anyArmyExpansionEvent(armyId, "griffin", 10))
+                .event(anyArmyExpansionEvent(armyId, "swordsman", 20))
+                .event(anyArmyExpansionEvent(armyId, "monk", 8))
+                .event(anyArmyExpansionEvent(armyId, "cavalier", 6))
+                .event(anyArmyExpansionEvent(armyId, "mage", 4))
+                .event(anyArmyExpansionEvent(armyId, "titan", 2))
                 .`when`()
                 .command(
                     RecruitCreature(
@@ -393,7 +373,10 @@ internal class RecruitCreatureUnitTest {
                     )
                 )
                 .then()
-                .exception(IllegalStateException::class.java, "Army cannot contain more than 7 different creature types")
+                .exception(
+                    IllegalStateException::class.java,
+                    "Army cannot contain more than 7 different creature types"
+                )
         }
 
         @Test
@@ -408,13 +391,13 @@ internal class RecruitCreatureUnitTest {
                 .event(DwellingBuilt(dwellingId, existingCreatureId, costPerTroop))
                 .event(AvailableCreaturesChanged(dwellingId, existingCreatureId, changedBy = 2, changedTo = 2))
                 // Simulate army already having 7 different creature types including the one we want to recruit
-                .event(ArmyExpansionEvent(armyId, "angel", 5))
-                .event(ArmyExpansionEvent(armyId, "griffin", 10))
-                .event(ArmyExpansionEvent(armyId, "swordsman", 20))
-                .event(ArmyExpansionEvent(armyId, "monk", 8))
-                .event(ArmyExpansionEvent(armyId, "cavalier", 6))
-                .event(ArmyExpansionEvent(armyId, "mage", 4))
-                .event(ArmyExpansionEvent(armyId, "titan", 2))
+                .event(anyArmyExpansionEvent(armyId, "angel", 5))
+                .event(anyArmyExpansionEvent(armyId, "griffin", 10))
+                .event(anyArmyExpansionEvent(armyId, "swordsman", 20))
+                .event(anyArmyExpansionEvent(armyId, "monk", 8))
+                .event(anyArmyExpansionEvent(armyId, "cavalier", 6))
+                .event(anyArmyExpansionEvent(armyId, "mage", 4))
+                .event(anyArmyExpansionEvent(armyId, "titan", 2))
                 .`when`()
                 .command(
                     RecruitCreature(
@@ -433,11 +416,6 @@ internal class RecruitCreatureUnitTest {
                         toArmy = armyId,
                         quantity = 2,
                         totalCost = mapOf(ResourceType.GOLD to 6000, ResourceType.GEMS to 2)
-                    ),
-                    ArmyExpansionEvent(
-                        armyId = armyId,
-                        creatureId = existingCreatureId,
-                        quantity = 2
                     ),
                     AvailableCreaturesChanged(
                         dwellingId = dwellingId,
@@ -460,12 +438,12 @@ internal class RecruitCreatureUnitTest {
                 .event(DwellingBuilt(dwellingId, newCreatureId, costPerTroop))
                 .event(AvailableCreaturesChanged(dwellingId, newCreatureId, changedBy = 1, changedTo = 1))
                 // Simulate army having 6 different creature types
-                .event(ArmyExpansionEvent(armyId, "angel", 5))
-                .event(ArmyExpansionEvent(armyId, "griffin", 10))
-                .event(ArmyExpansionEvent(armyId, "swordsman", 20))
-                .event(ArmyExpansionEvent(armyId, "monk", 8))
-                .event(ArmyExpansionEvent(armyId, "cavalier", 6))
-                .event(ArmyExpansionEvent(armyId, "mage", 4))
+                .event(anyArmyExpansionEvent(armyId, "angel", 5))
+                .event(anyArmyExpansionEvent(armyId, "griffin", 10))
+                .event(anyArmyExpansionEvent(armyId, "swordsman", 20))
+                .event(anyArmyExpansionEvent(armyId, "monk", 8))
+                .event(anyArmyExpansionEvent(armyId, "cavalier", 6))
+                .event(anyArmyExpansionEvent(armyId, "mage", 4))
                 .`when`()
                 .command(
                     RecruitCreature(
@@ -484,11 +462,6 @@ internal class RecruitCreatureUnitTest {
                         toArmy = armyId,
                         quantity = 1,
                         totalCost = costPerTroop
-                    ),
-                    ArmyExpansionEvent(
-                        armyId = armyId,
-                        creatureId = newCreatureId,
-                        quantity = 1
                     ),
                     AvailableCreaturesChanged(
                         dwellingId = dwellingId,
@@ -530,11 +503,6 @@ internal class RecruitCreatureUnitTest {
                     quantity = 1,
                     totalCost = costPerTroop
                 ),
-                ArmyExpansionEvent(
-                    armyId = armyId,
-                    creatureId = creatureId,
-                    quantity = 1
-                ),
                 AvailableCreaturesChanged(
                     dwellingId = dwellingId,
                     creatureId = creatureId,
@@ -543,4 +511,7 @@ internal class RecruitCreatureUnitTest {
                 )
             )
     }
+
+    fun anyArmyExpansionEvent(armyId: String, creatureId: String, quantity: Int) =
+        WanderingCreaturesJoined(armyId, creatureId, quantity)
 } 

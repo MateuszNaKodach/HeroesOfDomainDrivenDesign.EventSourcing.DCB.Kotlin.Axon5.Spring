@@ -6,6 +6,7 @@ import com.dddheroes.heroesofddd.scenario.events.ArmyReductionEvent
 import com.dddheroes.heroesofddd.scenario.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.scenario.events.CreatureRecruited
 import com.dddheroes.heroesofddd.scenario.events.DwellingBuilt
+import com.dddheroes.heroesofddd.scenario.events.WanderingCreaturesJoined
 import com.dddheroes.heroesofddd.shared.application.GameMetaData
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
@@ -93,11 +94,6 @@ private fun decide(
             quantity = command.quantity,
             totalCost = recruitCost
         ),
-        ArmyExpansionEvent(
-            armyId = command.armyId,
-            creatureId = command.creatureId,
-            quantity = command.quantity
-        ),
         AvailableCreaturesChanged(
             dwellingId = command.dwellingId,
             creatureId = command.creatureId,
@@ -158,12 +154,7 @@ private class EventSourcedState private constructor(val state: State) {
     )
 
     @EventSourcingHandler
-    fun evolve(event: ArmyExpansionEvent) = EventSourcedState(
-        evolve(state, event)
-    )
-
-    @EventSourcingHandler
-    fun evolve(event: ArmyReductionEvent) = EventSourcedState(
+    fun evolve(event: WanderingCreaturesJoined) = EventSourcedState(
         evolve(state, event)
     )
 
@@ -177,12 +168,12 @@ private class EventSourcedState private constructor(val state: State) {
                     .andBeingOneOfTypes(
                         DwellingBuilt::class.java.getName(),
                         AvailableCreaturesChanged::class.java.getName(),
+                        CreatureRecruited::class.java.getName(),
                     ),
                 EventCriteria
                     .havingTags(Tag.of(EventTags.ARMY_ID, recruitmentId.armyId))
                     .andBeingOneOfTypes(
-                        ArmyExpansionEvent::class.java.getName(),
-                        ArmyReductionEvent::class.java.getName(),
+                        WanderingCreaturesJoined::class.java.getName(),
                     )
             )
     }
