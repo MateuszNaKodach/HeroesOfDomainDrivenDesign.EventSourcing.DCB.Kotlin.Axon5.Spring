@@ -1,8 +1,8 @@
 package com.dddheroes.heroesofddd.scenario.write.recruitcreature
 
 import com.dddheroes.heroesofddd.EventTags
-import com.dddheroes.heroesofddd.scenario.events.CreatureAddedToArmy
-import com.dddheroes.heroesofddd.scenario.events.CreatureRemovedFromArmy
+import com.dddheroes.heroesofddd.scenario.events.ArmyExpansionEvent
+import com.dddheroes.heroesofddd.scenario.events.ArmyReductionEvent
 import com.dddheroes.heroesofddd.scenario.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.scenario.events.CreatureRecruited
 import com.dddheroes.heroesofddd.scenario.events.DwellingBuilt
@@ -93,7 +93,7 @@ private fun decide(
             quantity = command.quantity,
             totalCost = recruitCost
         ),
-        CreatureAddedToArmy(
+        ArmyExpansionEvent(
             armyId = command.armyId,
             creatureId = command.creatureId,
             quantity = command.quantity
@@ -117,13 +117,13 @@ private fun evolve(state: State, event: HeroesEvent): State = when (event) {
     is AvailableCreaturesChanged ->
         state.copy(availableCreatures = event.changedTo)
 
-    is CreatureAddedToArmy -> {
+    is ArmyExpansionEvent -> {
         val currentQuantity = state.creaturesInArmy[event.creatureId] ?: 0
         val updatedCreatures = state.creaturesInArmy + (event.creatureId to currentQuantity + event.quantity)
         state.copy(creaturesInArmy = updatedCreatures)
     }
 
-    is CreatureRemovedFromArmy -> {
+    is ArmyReductionEvent -> {
         val currentQuantity = state.creaturesInArmy[event.creatureId] ?: 0
         val newQuantity = (currentQuantity - event.quantity).coerceAtLeast(0)
         val updatedCreatures = if (newQuantity == 0) {
@@ -158,12 +158,12 @@ private class EventSourcedState private constructor(val state: State) {
     )
 
     @EventSourcingHandler
-    fun evolve(event: CreatureAddedToArmy) = EventSourcedState(
+    fun evolve(event: ArmyExpansionEvent) = EventSourcedState(
         evolve(state, event)
     )
 
     @EventSourcingHandler
-    fun evolve(event: CreatureRemovedFromArmy) = EventSourcedState(
+    fun evolve(event: ArmyReductionEvent) = EventSourcedState(
         evolve(state, event)
     )
 
@@ -181,8 +181,8 @@ private class EventSourcedState private constructor(val state: State) {
                 EventCriteria
                     .havingTags(Tag.of(EventTags.ARMY_ID, recruitmentId.armyId))
                     .andBeingOneOfTypes(
-                        CreatureAddedToArmy::class.java.getName(),
-                        CreatureRemovedFromArmy::class.java.getName(),
+                        ArmyExpansionEvent::class.java.getName(),
+                        ArmyReductionEvent::class.java.getName(),
                     )
             )
     }

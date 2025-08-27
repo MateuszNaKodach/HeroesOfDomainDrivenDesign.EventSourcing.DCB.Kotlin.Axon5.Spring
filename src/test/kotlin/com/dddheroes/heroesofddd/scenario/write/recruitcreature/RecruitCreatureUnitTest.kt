@@ -1,6 +1,6 @@
 package com.dddheroes.heroesofddd.scenario.write.recruitcreature
 
-import com.dddheroes.heroesofddd.scenario.events.CreatureAddedToArmy
+import com.dddheroes.heroesofddd.scenario.events.ArmyExpansionEvent
 import com.dddheroes.heroesofddd.scenario.UnitTestAxonApplication
 import com.dddheroes.heroesofddd.scenario.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.scenario.events.CreatureRecruited
@@ -97,7 +97,7 @@ internal class RecruitCreatureUnitTest {
                     quantity = 1,
                     totalCost = costPerTroop
                 ),
-                CreatureAddedToArmy(
+                ArmyExpansionEvent(
                     armyId = armyId,
                     creatureId = creatureId,
                     quantity = 1
@@ -142,7 +142,7 @@ internal class RecruitCreatureUnitTest {
                     quantity = 2,
                     totalCost = expectedCost
                 ),
-                CreatureAddedToArmy(
+                ArmyExpansionEvent(
                     armyId = armyId,
                     creatureId = creatureId,
                     quantity = 2
@@ -188,7 +188,7 @@ internal class RecruitCreatureUnitTest {
                     quantity = 3,
                     totalCost = expectedCost
                 ),
-                CreatureAddedToArmy(
+                ArmyExpansionEvent(
                     armyId = armyId,
                     creatureId = creatureId,
                     quantity = 3
@@ -320,7 +320,7 @@ internal class RecruitCreatureUnitTest {
                     quantity = 1,
                     totalCost = costPerTroop
                 ),
-                CreatureAddedToArmy(
+                ArmyExpansionEvent(
                     armyId = armyId,
                     creatureId = creatureId,
                     quantity = 1
@@ -375,13 +375,13 @@ internal class RecruitCreatureUnitTest {
                 .event(DwellingBuilt(dwellingId, newCreatureId, costPerTroop))
                 .event(AvailableCreaturesChanged(dwellingId, newCreatureId, changedBy = 1, changedTo = 1))
                 // Simulate army already having 7 different creature types
-                .event(CreatureAddedToArmy(armyId, "angel", 5))
-                .event(CreatureAddedToArmy(armyId, "griffin", 10))
-                .event(CreatureAddedToArmy(armyId, "swordsman", 20))
-                .event(CreatureAddedToArmy(armyId, "monk", 8))
-                .event(CreatureAddedToArmy(armyId, "cavalier", 6))
-                .event(CreatureAddedToArmy(armyId, "mage", 4))
-                .event(CreatureAddedToArmy(armyId, "titan", 2))
+                .event(ArmyExpansionEvent(armyId, "angel", 5))
+                .event(ArmyExpansionEvent(armyId, "griffin", 10))
+                .event(ArmyExpansionEvent(armyId, "swordsman", 20))
+                .event(ArmyExpansionEvent(armyId, "monk", 8))
+                .event(ArmyExpansionEvent(armyId, "cavalier", 6))
+                .event(ArmyExpansionEvent(armyId, "mage", 4))
+                .event(ArmyExpansionEvent(armyId, "titan", 2))
                 .`when`()
                 .command(
                     RecruitCreature(
@@ -408,13 +408,13 @@ internal class RecruitCreatureUnitTest {
                 .event(DwellingBuilt(dwellingId, existingCreatureId, costPerTroop))
                 .event(AvailableCreaturesChanged(dwellingId, existingCreatureId, changedBy = 2, changedTo = 2))
                 // Simulate army already having 7 different creature types including the one we want to recruit
-                .event(CreatureAddedToArmy(armyId, "angel", 5))
-                .event(CreatureAddedToArmy(armyId, "griffin", 10))
-                .event(CreatureAddedToArmy(armyId, "swordsman", 20))
-                .event(CreatureAddedToArmy(armyId, "monk", 8))
-                .event(CreatureAddedToArmy(armyId, "cavalier", 6))
-                .event(CreatureAddedToArmy(armyId, "mage", 4))
-                .event(CreatureAddedToArmy(armyId, "titan", 2))
+                .event(ArmyExpansionEvent(armyId, "angel", 5))
+                .event(ArmyExpansionEvent(armyId, "griffin", 10))
+                .event(ArmyExpansionEvent(armyId, "swordsman", 20))
+                .event(ArmyExpansionEvent(armyId, "monk", 8))
+                .event(ArmyExpansionEvent(armyId, "cavalier", 6))
+                .event(ArmyExpansionEvent(armyId, "mage", 4))
+                .event(ArmyExpansionEvent(armyId, "titan", 2))
                 .`when`()
                 .command(
                     RecruitCreature(
@@ -434,7 +434,7 @@ internal class RecruitCreatureUnitTest {
                         quantity = 2,
                         totalCost = mapOf(ResourceType.GOLD to 6000, ResourceType.GEMS to 2)
                     ),
-                    CreatureAddedToArmy(
+                    ArmyExpansionEvent(
                         armyId = armyId,
                         creatureId = existingCreatureId,
                         quantity = 2
@@ -460,12 +460,12 @@ internal class RecruitCreatureUnitTest {
                 .event(DwellingBuilt(dwellingId, newCreatureId, costPerTroop))
                 .event(AvailableCreaturesChanged(dwellingId, newCreatureId, changedBy = 1, changedTo = 1))
                 // Simulate army having 6 different creature types
-                .event(CreatureAddedToArmy(armyId, "angel", 5))
-                .event(CreatureAddedToArmy(armyId, "griffin", 10))
-                .event(CreatureAddedToArmy(armyId, "swordsman", 20))
-                .event(CreatureAddedToArmy(armyId, "monk", 8))
-                .event(CreatureAddedToArmy(armyId, "cavalier", 6))
-                .event(CreatureAddedToArmy(armyId, "mage", 4))
+                .event(ArmyExpansionEvent(armyId, "angel", 5))
+                .event(ArmyExpansionEvent(armyId, "griffin", 10))
+                .event(ArmyExpansionEvent(armyId, "swordsman", 20))
+                .event(ArmyExpansionEvent(armyId, "monk", 8))
+                .event(ArmyExpansionEvent(armyId, "cavalier", 6))
+                .event(ArmyExpansionEvent(armyId, "mage", 4))
                 .`when`()
                 .command(
                     RecruitCreature(
@@ -485,7 +485,7 @@ internal class RecruitCreatureUnitTest {
                         quantity = 1,
                         totalCost = costPerTroop
                     ),
-                    CreatureAddedToArmy(
+                    ArmyExpansionEvent(
                         armyId = armyId,
                         creatureId = newCreatureId,
                         quantity = 1
@@ -530,7 +530,7 @@ internal class RecruitCreatureUnitTest {
                     quantity = 1,
                     totalCost = costPerTroop
                 ),
-                CreatureAddedToArmy(
+                ArmyExpansionEvent(
                     armyId = armyId,
                     creatureId = creatureId,
                     quantity = 1

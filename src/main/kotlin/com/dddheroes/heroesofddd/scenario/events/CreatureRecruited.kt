@@ -6,9 +6,12 @@ import org.axonframework.eventsourcing.annotations.EventTag
 
 data class CreatureRecruited(
     override val dwellingId: String,
-    val creatureId: String,
+    override val creatureId: String,
     @EventTag(EventTags.ARMY_ID)
     val toArmy: String,
-    val quantity: Int,
+    override val quantity: Int,
     val totalCost: Map<ResourceType, Int>
-) : DwellingEvent
+) : DwellingEvent, ArmyExpansionEvent {
+    override val armyId: String
+        get() = toArmy
+}
