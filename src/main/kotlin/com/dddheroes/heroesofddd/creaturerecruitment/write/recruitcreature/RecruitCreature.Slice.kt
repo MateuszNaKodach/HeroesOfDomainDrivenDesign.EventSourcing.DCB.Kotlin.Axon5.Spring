@@ -1,20 +1,25 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature
 
 import com.dddheroes.heroesofddd.EventTags
+import com.dddheroes.heroesofddd.armies.events.CreatureAddedToArmy
+import com.dddheroes.heroesofddd.armies.events.CreatureRemovedFromArmy
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
-import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.application.GameMetaData
+import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.commandhandling.annotation.CommandHandler
 import org.axonframework.commandhandling.gateway.CommandGateway
 import org.axonframework.eventhandling.gateway.EventAppender
 import org.axonframework.eventsourcing.EventSourcingHandler
+import org.axonframework.eventsourcing.annotation.EventCriteriaBuilder
 import org.axonframework.eventsourcing.annotation.EventSourcedEntity
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.eventsourcing.configuration.EventSourcedEntityModule
+import org.axonframework.eventstreaming.EventCriteria
+import org.axonframework.eventstreaming.Tag
 import org.axonframework.extensions.kotlin.asCommandMessage
 import org.axonframework.extensions.kotlin.asEventMessages
 import org.axonframework.messaging.MetaData
@@ -22,12 +27,7 @@ import org.axonframework.modelling.annotation.InjectEntity
 import org.axonframework.modelling.configuration.StatefulCommandHandlingModule
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestHeader
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 ////////////////////////////////////////////
 ////////// Domain
@@ -39,18 +39,25 @@ data class RecruitCreature(
     val armyId: String,
     val quantity: Int,
     val expectedCost: Map<ResourceType, Int>,
-)
+){
+    data class RecruitmentId(val dwellingId: String, val armyId: String)
+
+    // used as a process identifier
+    val recruitmentId = RecruitmentId(dwellingId, armyId)
+}
 
 private data class State(
     val creatureId: String,
     val availableCreatures: Int,
-    val costPerTroop: Map<ResourceType, Int>
+    val costPerTroop: Map<ResourceType, Int>,
+    val creaturesInArmy: Map<String, Int>
 )
 
 private val initialState = State(
     creatureId = "",
     availableCreatures = 0,
-    costPerTroop = emptyMap()
+    costPerTroop = emptyMap(),
+    creaturesInArmy = emptyMap()
 )
 
 private fun multiplyCost(cost: Map<ResourceType, Int>, multiplier: Int): Map<ResourceType, Int> {
@@ -64,7 +71,7 @@ private fun isSameCost(cost1: Map<ResourceType, Int>, cost2: Map<ResourceType, I
 private fun decide(
     command: RecruitCreature,
     state: State
-): List<DwellingEvent> {
+): List<HeroesEvent> {
     if (state.creatureId != command.creatureId || state.availableCreatures < command.quantity) {
         throw IllegalStateException("Recruit creatures cannot exceed available creatures")
     }
@@ -72,6 +79,10 @@ private fun decide(
     val recruitCost = multiplyCost(state.costPerTroop, command.quantity)
     if (!isSameCost(command.expectedCost, recruitCost)) {
         throw IllegalStateException("Recruit cost cannot differ than expected cost")
+    }
+
+    if (!state.creaturesInArmy.containsKey(command.creatureId) && state.creaturesInArmy.size >= 7) {
+        throw IllegalStateException("Army cannot contain more than 7 different creature types")
     }
 
     return listOf(
@@ -82,6 +93,11 @@ private fun decide(
             quantity = command.quantity,
             totalCost = recruitCost
         ),
+        CreatureAddedToArmy(
+            armyId = command.armyId,
+            creatureId = command.creatureId,
+            quantity = command.quantity
+        ),
         AvailableCreaturesChanged(
             dwellingId = command.dwellingId,
             creatureId = command.creatureId,
@@ -91,7 +107,7 @@ private fun decide(
     )
 }
 
-private fun evolve(state: State, event: DwellingEvent): State = when (event) {
+private fun evolve(state: State, event: HeroesEvent): State = when (event) {
     is DwellingBuilt ->
         state.copy(
             creatureId = event.creatureId,
@@ -101,6 +117,23 @@ private fun evolve(state: State, event: DwellingEvent): State = when (event) {
     is AvailableCreaturesChanged ->
         state.copy(availableCreatures = event.changedTo)
 
+    is CreatureAddedToArmy -> {
+        val currentQuantity = state.creaturesInArmy[event.creatureId] ?: 0
+        val updatedCreatures = state.creaturesInArmy + (event.creatureId to currentQuantity + event.quantity)
+        state.copy(creaturesInArmy = updatedCreatures)
+    }
+
+    is CreatureRemovedFromArmy -> {
+        val currentQuantity = state.creaturesInArmy[event.creatureId] ?: 0
+        val newQuantity = (currentQuantity - event.quantity).coerceAtLeast(0)
+        val updatedCreatures = if (newQuantity == 0) {
+            state.creaturesInArmy - event.creatureId
+        } else {
+            state.creaturesInArmy + (event.creatureId to newQuantity)
+        }
+        state.copy(creaturesInArmy = updatedCreatures)
+    }
+
     else -> state
 }
 
@@ -108,7 +141,7 @@ private fun evolve(state: State, event: DwellingEvent): State = when (event) {
 ////////// Application
 ///////////////////////////////////////////
 
-@EventSourcedEntity(tagKey = EventTags.DWELLING_ID) // ConsistencyBoundary
+@EventSourcedEntity // ConsistencyBoundary
 private class EventSourcedState private constructor(val state: State) {
 
     @EntityCreator
@@ -125,9 +158,34 @@ private class EventSourcedState private constructor(val state: State) {
     )
 
     @EventSourcingHandler
-    fun evolve(event: CreatureRecruited) = EventSourcedState(
+    fun evolve(event: CreatureAddedToArmy) = EventSourcedState(
         evolve(state, event)
     )
+
+    @EventSourcingHandler
+    fun evolve(event: CreatureRemovedFromArmy) = EventSourcedState(
+        evolve(state, event)
+    )
+
+    companion object {
+        @JvmStatic
+        @EventCriteriaBuilder
+        fun resolveCriteria(recruitmentId: RecruitCreature.RecruitmentId) =
+            EventCriteria.either(
+                EventCriteria
+                    .havingTags(Tag.of(EventTags.DWELLING_ID, recruitmentId.dwellingId))
+                    .andBeingOneOfTypes(
+                        DwellingBuilt::class.java.getName(),
+                        AvailableCreaturesChanged::class.java.getName(),
+                    ),
+                EventCriteria
+                    .havingTags(Tag.of(EventTags.ARMY_ID, recruitmentId.armyId))
+                    .andBeingOneOfTypes(
+                        CreatureAddedToArmy::class.java.getName(),
+                        CreatureRemovedFromArmy::class.java.getName(),
+                    )
+            )
+    }
 }
 
 private class RecruitCreatureCommandHandler {
@@ -136,7 +194,7 @@ private class RecruitCreatureCommandHandler {
     fun handle(
         command: RecruitCreature,
         metaData: MetaData,
-        @InjectEntity(idProperty = EventTags.DWELLING_ID) eventSourced: EventSourcedState,
+        @InjectEntity(idProperty = "recruitmentId") eventSourced: EventSourcedState,
         eventAppender: EventAppender
     ) {
         val events = decide(command, eventSourced.state)
@@ -153,7 +211,7 @@ internal class RecruitCreatureWriteSliceConfig {
             .entities()
             .entity(
                 EventSourcedEntityModule.annotated(
-                    String::class.java,
+                    RecruitCreature.RecruitmentId::class.java,
                     EventSourcedState::class.java
                 )
             )
@@ -169,7 +227,6 @@ internal class RecruitCreatureWriteSliceConfig {
 @RestController
 @RequestMapping("games/{gameId}")
 private class RecruitCreatureRestApi(private val commandGateway: CommandGateway) {
-    @JvmRecord
     data class Body(
         val creatureId: String,
         val armyId: String,
