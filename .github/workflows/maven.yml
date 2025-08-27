@@ -35,6 +35,8 @@ jobs:
         run: mvn -B compile --file pom.xml
 
       - name: 🧪 Run tests
+        env:
+          SPRING_PROFILES_ACTIVE: test_axonserver
         run: mvn -B test --file pom.xml
 
 #      - name: 📦 Package application
