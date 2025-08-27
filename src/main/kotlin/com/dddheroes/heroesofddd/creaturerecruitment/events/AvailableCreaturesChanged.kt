@@ -4,7 +4,7 @@ import com.dddheroes.heroesofddd.EventTags
 import org.axonframework.eventsourcing.annotations.EventTag
 
 data class AvailableCreaturesChanged(
-    @EventTag(EventTags.DWELLING_ID)
+    @get:EventTag(EventTags.DWELLING_ID)
     override val dwellingId: String,
     val creatureId: String,
     val changedBy: Int,
