@@ -5,7 +5,7 @@ name: 🚀 Java CI with Maven
 
 on:
   push:
-    branches: [ "main", "tests/ci-axonserver" ]
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
