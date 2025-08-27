@@ -72,8 +72,8 @@ Each domain-focused module follows Vertical-Slice Architecture of three possible
 ![EventModeling_Module_CreatureRecruitment.png](.github/images/EventModeling_Module_CreatureRecruitment.png)
 
 Slices:
-- Write: [BuildDwelling -> DwellingBuilt](src/main/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/builddwelling/BuildDwelling.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/builddwelling/BuildDwellingUnitTest.kt)
-- Write: [IncreaseAvailableCreatures -> AvailableCreaturesChanged](src/main/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/increaseavailablecreatures/IncreaseAvailableCreatures.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/increaseavailablecreatures/IncreaseAvailableCreaturesUnitTest.kt)
-- Write: [RecruitCreature -> CreatureRecruited](src/main/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/recruitcreature/RecruitCreature.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/recruitcreature/RecruitCreatureUnitTest.kt)
+- Write: [BuildDwelling -> DwellingBuilt](src/main/kotlin/com/dddheroes/heroesofddd/scenario/write/builddwelling/BuildDwelling.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/scenario/write/builddwelling/BuildDwellingUnitTest.kt)
+- Write: [IncreaseAvailableCreatures -> AvailableCreaturesChanged](src/main/kotlin/com/dddheroes/heroesofddd/scenario/write/increaseavailablecreatures/IncreaseAvailableCreatures.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/scenario/write/increaseavailablecreatures/IncreaseAvailableCreaturesUnitTest.kt)
+- Write: [RecruitCreature -> CreatureRecruited](src/main/kotlin/com/dddheroes/heroesofddd/scenario/write/recruitcreature/RecruitCreature.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/scenario/write/recruitcreature/RecruitCreatureUnitTest.kt)
 - Read - TO BE IMPLEMENTED
 - Automation - TO BE IMPLEMENTED

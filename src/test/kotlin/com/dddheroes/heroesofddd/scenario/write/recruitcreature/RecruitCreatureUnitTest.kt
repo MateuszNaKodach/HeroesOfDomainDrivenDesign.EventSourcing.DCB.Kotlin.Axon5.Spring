@@ -1,10 +1,10 @@
-package com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature
+package com.dddheroes.heroesofddd.scenario.write.recruitcreature
 
-import com.dddheroes.heroesofddd.armies.events.CreatureAddedToArmy
-import com.dddheroes.heroesofddd.creaturerecruitment.UnitTestAxonApplication
-import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
-import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
-import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.scenario.events.CreatureAddedToArmy
+import com.dddheroes.heroesofddd.scenario.UnitTestAxonApplication
+import com.dddheroes.heroesofddd.scenario.events.AvailableCreaturesChanged
+import com.dddheroes.heroesofddd.scenario.events.CreatureRecruited
+import com.dddheroes.heroesofddd.scenario.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import org.axonframework.test.fixture.AxonTestFixture
 import org.junit.jupiter.api.Nested

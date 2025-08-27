@@ -1,6 +1,6 @@
-package com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling
+package com.dddheroes.heroesofddd.scenario.write.builddwelling
 
-import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.scenario.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import org.axonframework.configuration.ApplicationConfigurer
 import org.axonframework.messaging.MetaData

@@ -1,4 +1,4 @@
-package com.dddheroes.heroesofddd.creaturerecruitment
+package com.dddheroes.heroesofddd.scenario
 
 import org.axonframework.axonserver.connector.AxonServerConfiguration
 import org.axonframework.axonserver.connector.ServerConnectorConfigurationEnhancer

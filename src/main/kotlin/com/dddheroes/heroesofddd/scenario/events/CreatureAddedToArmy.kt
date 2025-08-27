@@ -1,4 +1,4 @@
-package com.dddheroes.heroesofddd.armies.events
+package com.dddheroes.heroesofddd.scenario.events
 
 data class CreatureAddedToArmy(
     override val armyId: String,

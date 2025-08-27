@@ -1,4 +1,4 @@
-package com.dddheroes.heroesofddd.resourcespool.events
+package com.dddheroes.heroesofddd.scenario.events
 
 import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent

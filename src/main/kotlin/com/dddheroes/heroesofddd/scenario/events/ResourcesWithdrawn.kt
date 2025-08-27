@@ -1,4 +1,4 @@
-package com.dddheroes.heroesofddd.resourcespool.events
+package com.dddheroes.heroesofddd.scenario.events
 
 data class ResourcesWithdrawn(
     override val resourcesPoolId: String,

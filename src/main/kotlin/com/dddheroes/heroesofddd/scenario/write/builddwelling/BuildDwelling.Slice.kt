@@ -1,10 +1,11 @@
-package com.dddheroes.heroesofddd.creaturerecruitment.write.increaseavailablecreatures
+package com.dddheroes.heroesofddd.scenario.write.builddwelling
 
 import com.dddheroes.heroesofddd.EventTags
-import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
-import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
-import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
+import com.dddheroes.heroesofddd.scenario.events.DwellingBuilt
+import com.dddheroes.heroesofddd.scenario.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.application.GameMetaData
+import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.commandhandling.annotation.CommandHandler
 import org.axonframework.commandhandling.gateway.CommandGateway
@@ -14,7 +15,7 @@ import org.axonframework.eventsourcing.annotation.EventSourcedEntity
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.eventsourcing.configuration.EventSourcedEntityModule
 import org.axonframework.extensions.kotlin.asCommandMessage
-import org.axonframework.extensions.kotlin.asEventMessage
+import org.axonframework.extensions.kotlin.asEventMessages
 import org.axonframework.messaging.MetaData
 import org.axonframework.modelling.annotation.InjectEntity
 import org.axonframework.modelling.configuration.StatefulCommandHandlingModule
@@ -26,42 +27,35 @@ import org.springframework.web.bind.annotation.*
 ////////// Domain
 ///////////////////////////////////////////
 
-data class IncreaseAvailableCreatures(
+data class BuildDwelling(
     val dwellingId: String,
     val creatureId: String,
-    val increaseBy: Int,
+    val costPerTroop: Map<ResourceType, Int>,
 )
 
-private data class State(val isBuilt: Boolean, val availableCreatures: Int)
+private data class State(val isBuilt: Boolean)
 
-private val initialState = State(isBuilt = false, availableCreatures = 0)
+private val initialState = State(isBuilt = false)
 
-private fun decide(
-    command: IncreaseAvailableCreatures,
-    state: State
-): DwellingEvent {
-    if (!state.isBuilt) {
-        throw IllegalStateException("Only built dwelling can have available creatures")
+private fun decide(command: BuildDwelling, state: State): List<HeroesEvent> {
+    if (state.isBuilt) {
+        return emptyList()
     }
 
-    // todo: check creatureId for the dwelling!
-
-    return AvailableCreaturesChanged(
-        dwellingId = command.dwellingId,
-        creatureId = command.creatureId,
-        changedBy = command.increaseBy,
-        changedTo = state.availableCreatures + command.increaseBy
+    return listOf(
+        DwellingBuilt(
+            dwellingId = command.dwellingId,
+            creatureId = command.creatureId,
+            costPerTroop = command.costPerTroop
+        )
     )
 }
 
-private fun evolve(state: State, event: DwellingEvent): State = when (event) {
-    is DwellingBuilt ->
-        state.copy(isBuilt = true)
-
-    is AvailableCreaturesChanged ->
-        state.copy(availableCreatures = event.changedTo)
-
-    else -> state
+private fun evolve(state: State, event: DwellingEvent): State {
+    return when (event) {
+        is DwellingBuilt -> state.copy(isBuilt = true)
+        else -> state
+    }
 }
 
 ////////////////////////////////////////////
@@ -75,44 +69,30 @@ private class EventSourcedState private constructor(val state: State) {
     constructor() : this(initialState)
 
     @EventSourcingHandler
-    fun evolve(event: DwellingBuilt) = EventSourcedState(
-        evolve(
-            state,
-            event
-        )
-    )
-
-    @EventSourcingHandler
-    fun evolve(event: AvailableCreaturesChanged) = EventSourcedState(
-        evolve(
-            state,
-            event
-        )
-    )
+    fun evolve(event: DwellingBuilt) = EventSourcedState(evolve(state, event))
 }
 
-private class IncreaseAvailableCreaturesCommandHandler {
+private class BuildDwellingCommandHandler {
 
     @CommandHandler
     fun handle(
-        command: IncreaseAvailableCreatures,
+        command: BuildDwelling,
         metaData: MetaData,
         @InjectEntity(idProperty = EventTags.DWELLING_ID) eventSourced: EventSourcedState,
         eventAppender: EventAppender
     ) {
         val events = decide(command, eventSourced.state)
-        eventAppender.append(events.asEventMessage(metaData))
+        eventAppender.append(events.asEventMessages(metaData))
     }
 
 }
 
-
 @Configuration
-internal class IncreaseAvailableCreaturesWriteSliceConfig {
+internal class BuildDwellingWriteSliceConfig {
 
     @Bean
-    fun increaseAvailableCreaturesSlice(): StatefulCommandHandlingModule =
-        StatefulCommandHandlingModule.named(IncreaseAvailableCreatures::class.simpleName)
+    fun buildDwellingSlice(): StatefulCommandHandlingModule =
+        StatefulCommandHandlingModule.named(BuildDwelling::class.simpleName)
             .entities()
             .entity(
                 EventSourcedEntityModule.annotated(
@@ -121,10 +101,9 @@ internal class IncreaseAvailableCreaturesWriteSliceConfig {
                 )
             )
             .commandHandlers()
-            .annotatedCommandHandlingComponent { IncreaseAvailableCreaturesCommandHandler() }
+            .annotatedCommandHandlingComponent { BuildDwellingCommandHandler() }
             .build()
 }
-
 
 ////////////////////////////////////////////
 ////////// Presentation
@@ -132,11 +111,11 @@ internal class IncreaseAvailableCreaturesWriteSliceConfig {
 
 @RestController
 @RequestMapping("games/{gameId}")
-private class IncreaseAvailableCreaturesRestApi(private val commandGateway: CommandGateway) {
+private class BuildDwellingRestApi(private val commandGateway: CommandGateway) {
     @JvmRecord
-    data class Body(val creatureId: String, val increaseBy: Int)
+    data class Body(val creatureId: String, val costPerTroop: MutableMap<String, Int>)
 
-    @PutMapping("/dwellings/{dwellingId}/available-creatures-increases")
+    @PutMapping("/dwellings/{dwellingId}")
     fun putDwellings(
         @RequestHeader(Headers.PLAYER_ID) playerId: String,
         @PathVariable gameId: String,
@@ -144,10 +123,10 @@ private class IncreaseAvailableCreaturesRestApi(private val commandGateway: Comm
         @RequestBody requestBody: Body
     ) {
         val command =
-            IncreaseAvailableCreatures(
+            BuildDwelling(
                 dwellingId,
                 requestBody.creatureId,
-                requestBody.increaseBy
+                requestBody.costPerTroop.mapKeys { ResourceType.from(it.key) }
             )
 
         val metaData = GameMetaData.with(gameId, playerId)
@@ -156,8 +135,4 @@ private class IncreaseAvailableCreaturesRestApi(private val commandGateway: Comm
         commandGateway.sendAndWait(message)
     }
 }
-
-
-
-
 
