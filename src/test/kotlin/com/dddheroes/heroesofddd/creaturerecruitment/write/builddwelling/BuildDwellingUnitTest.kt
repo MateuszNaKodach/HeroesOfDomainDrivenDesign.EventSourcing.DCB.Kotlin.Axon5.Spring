@@ -11,7 +11,7 @@ internal class BuildDwellingUnitTest {
 
     private val sliceUnderTest = AxonTestFixture.with(
         UnitTestAxonApplication.configurer(
-            { registerStatefulCommandHandlingModule { BuildDwellingWriteSliceConfig().buildDwellingSlice() } },
+            { registerCommandHandlingModule { BuildDwellingWriteSliceConfig().buildDwellingSlice() } },
             { axonServerEnabled = false }
         ))
 

@@ -1,7 +1,7 @@
 package com.dddheroes.heroesofddd.creaturerecruitment
 
 import org.axonframework.axonserver.connector.AxonServerConfiguration
-import org.axonframework.axonserver.connector.ServerConnectorConfigurationEnhancer
+import org.axonframework.axonserver.connector.AxonServerConfigurationEnhancer
 import org.axonframework.configuration.ApplicationConfigurer
 import org.axonframework.configuration.ComponentRegistry
 import org.axonframework.configuration.Configuration
@@ -31,7 +31,7 @@ class UnitTestAxonApplication {
             } else {
                 configurer.componentRegistry { r: ComponentRegistry ->
                     r.disableEnhancer(
-                        ServerConnectorConfigurationEnhancer::class.java
+                        AxonServerConfigurationEnhancer::class.java
                     )
                 }
             }

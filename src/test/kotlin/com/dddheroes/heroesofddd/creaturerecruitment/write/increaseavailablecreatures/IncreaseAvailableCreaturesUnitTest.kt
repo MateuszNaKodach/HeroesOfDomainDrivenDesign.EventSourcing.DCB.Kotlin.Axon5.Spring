@@ -12,7 +12,7 @@ internal class IncreaseAvailableCreaturesUnitTest {
 
     private val sliceUnderTest = AxonTestFixture.with(
         UnitTestAxonApplication.configurer(
-            { registerStatefulCommandHandlingModule { IncreaseAvailableCreaturesWriteSliceConfig().increaseAvailableCreaturesSlice() } },
+            { registerCommandHandlingModule { IncreaseAvailableCreaturesWriteSliceConfig().increaseAvailableCreaturesSlice() } },
             { axonServerEnabled = false }
         ))
 

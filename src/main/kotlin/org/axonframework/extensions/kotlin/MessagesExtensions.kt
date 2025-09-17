@@ -11,7 +11,7 @@ import org.axonframework.messaging.MetaData
  * @param metaData The metadata to attach to each event message
  * @return List of GenericEventMessage instances, one for each element in the collection
  */
-fun <T> Collection<T>.asEventMessages(metaData: MetaData = MetaData.emptyInstance()): List<GenericEventMessage<T>> {
+fun <T> Collection<T>.asEventMessages(metaData: MetaData = MetaData.emptyInstance()): List<GenericEventMessage> {
     return this.map { payload ->
         GenericEventMessage(
             MessageType(payload!!::class.java),
@@ -21,7 +21,7 @@ fun <T> Collection<T>.asEventMessages(metaData: MetaData = MetaData.emptyInstanc
     }
 }
 
-fun <T> T.asEventMessage(metaData: MetaData = MetaData.emptyInstance()): GenericEventMessage<T> {
+fun <T> T.asEventMessage(metaData: MetaData = MetaData.emptyInstance()): GenericEventMessage {
     return GenericEventMessage(
         MessageType(this!!::class.java),
         this,
@@ -29,7 +29,7 @@ fun <T> T.asEventMessage(metaData: MetaData = MetaData.emptyInstance()): Generic
     )
 }
 
-fun <T> T.asCommandMessage(metaData: MetaData = MetaData.emptyInstance()): GenericEventMessage<T> {
+fun <T> T.asCommandMessage(metaData: MetaData = MetaData.emptyInstance()): GenericEventMessage {
     return GenericEventMessage(
         MessageType(this!!::class.java),
         this,

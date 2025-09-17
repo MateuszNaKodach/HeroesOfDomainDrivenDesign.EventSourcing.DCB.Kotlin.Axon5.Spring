@@ -11,7 +11,9 @@ import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.commandhandling.annotation.CommandHandler
+import org.axonframework.commandhandling.configuration.CommandHandlingModule
 import org.axonframework.commandhandling.gateway.CommandGateway
+import org.axonframework.configuration.ComponentRegistry
 import org.axonframework.eventhandling.gateway.EventAppender
 import org.axonframework.eventsourcing.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.EventCriteriaBuilder
@@ -24,7 +26,7 @@ import org.axonframework.extensions.kotlin.asCommandMessage
 import org.axonframework.extensions.kotlin.asEventMessages
 import org.axonframework.messaging.MetaData
 import org.axonframework.modelling.annotation.InjectEntity
-import org.axonframework.modelling.configuration.StatefulCommandHandlingModule
+import org.axonframework.modelling.configuration.EntityModule
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.bind.annotation.*
@@ -46,7 +48,7 @@ data class RecruitCreature(
     val recruitmentId = RecruitmentId(dwellingId, armyId)
 }
 
-private data class State(
+internal data class State(
     val creatureId: String,
     val availableCreatures: Int,
     val costPerTroop: Map<ResourceType, Int>,
@@ -142,7 +144,7 @@ private fun evolve(state: State, event: HeroesEvent): State = when (event) {
 ///////////////////////////////////////////
 
 @EventSourcedEntity // ConsistencyBoundary
-private class EventSourcedState private constructor(val state: State) {
+internal class EventSourcedState private constructor(val state: State) {
 
     @EntityCreator
     constructor() : this(initialState)
@@ -168,7 +170,6 @@ private class EventSourcedState private constructor(val state: State) {
     )
 
     companion object {
-        @JvmStatic
         @EventCriteriaBuilder
         fun resolveCriteria(recruitmentId: RecruitCreature.RecruitmentId) =
             EventCriteria.either(
@@ -206,18 +207,23 @@ private class RecruitCreatureCommandHandler {
 internal class RecruitCreatureWriteSliceConfig {
 
     @Bean
-    fun recruitCreatureSlice(): StatefulCommandHandlingModule =
-        StatefulCommandHandlingModule.named(RecruitCreature::class.simpleName)
-            .entities()
-            .entity(
-                EventSourcedEntityModule.annotated(
-                    RecruitCreature.RecruitmentId::class.java,
-                    EventSourcedState::class.java
-                )
-            )
+    fun recruitCreatureSliceState(): EntityModule<RecruitCreature.RecruitmentId, EventSourcedState>
+    = EventSourcedEntityModule.annotated(
+        RecruitCreature.RecruitmentId::class.java,
+        EventSourcedState::class.java
+    )
+
+    @Bean
+    fun recruitCreatureSlice(): CommandHandlingModule =
+        CommandHandlingModule.named(RecruitCreature::class.simpleName!!)
             .commandHandlers()
             .annotatedCommandHandlingComponent { RecruitCreatureCommandHandler() }
             .build()
+
+    @Bean
+    fun registerEntity(cr: ComponentRegistry) {
+
+    }
 }
 
 ////////////////////////////////////////////

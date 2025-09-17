@@ -7,6 +7,7 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.application.GameMetaData
 import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.commandhandling.annotation.CommandHandler
+import org.axonframework.commandhandling.configuration.CommandHandlingModule
 import org.axonframework.commandhandling.gateway.CommandGateway
 import org.axonframework.eventhandling.gateway.EventAppender
 import org.axonframework.eventsourcing.EventSourcingHandler
@@ -17,7 +18,7 @@ import org.axonframework.extensions.kotlin.asCommandMessage
 import org.axonframework.extensions.kotlin.asEventMessage
 import org.axonframework.messaging.MetaData
 import org.axonframework.modelling.annotation.InjectEntity
-import org.axonframework.modelling.configuration.StatefulCommandHandlingModule
+import org.axonframework.modelling.configuration.EntityModule
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.bind.annotation.*
@@ -32,7 +33,7 @@ data class IncreaseAvailableCreatures(
     val increaseBy: Int,
 )
 
-private data class State(val isBuilt: Boolean, val availableCreatures: Int)
+internal data class State(val isBuilt: Boolean, val availableCreatures: Int)
 
 private val initialState = State(isBuilt = false, availableCreatures = 0)
 
@@ -69,7 +70,7 @@ private fun evolve(state: State, event: DwellingEvent): State = when (event) {
 ///////////////////////////////////////////
 
 @EventSourcedEntity(tagKey = EventTags.DWELLING_ID) // ConsistencyBoundary
-private class EventSourcedState private constructor(val state: State) {
+internal class EventSourcedState private constructor(val state: State) {
 
     @EntityCreator
     constructor() : this(initialState)
@@ -111,15 +112,15 @@ private class IncreaseAvailableCreaturesCommandHandler {
 internal class IncreaseAvailableCreaturesWriteSliceConfig {
 
     @Bean
-    fun increaseAvailableCreaturesSlice(): StatefulCommandHandlingModule =
-        StatefulCommandHandlingModule.named(IncreaseAvailableCreatures::class.simpleName)
-            .entities()
-            .entity(
-                EventSourcedEntityModule.annotated(
-                    String::class.java,
-                    EventSourcedState::class.java
-                )
-            )
+    fun increaseAvailableCreaturesSliceState(): EntityModule<String, EventSourcedState> =
+        EventSourcedEntityModule.annotated(
+            String::class.java,
+            EventSourcedState::class.java
+        )
+
+    @Bean
+    fun increaseAvailableCreaturesSlice(): CommandHandlingModule =
+        CommandHandlingModule.named(IncreaseAvailableCreatures::class.simpleName!!)
             .commandHandlers()
             .annotatedCommandHandlingComponent { IncreaseAvailableCreaturesCommandHandler() }
             .build()

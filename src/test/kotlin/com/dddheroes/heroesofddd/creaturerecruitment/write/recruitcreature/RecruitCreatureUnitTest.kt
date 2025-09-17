@@ -15,7 +15,7 @@ internal class RecruitCreatureUnitTest {
 
     private val sliceUnderTest = AxonTestFixture.with(
         UnitTestAxonApplication.configurer(
-            { registerStatefulCommandHandlingModule { RecruitCreatureWriteSliceConfig().recruitCreatureSlice() } },
+            { registerCommandHandlingModule { RecruitCreatureWriteSliceConfig().recruitCreatureSlice() } },
             { axonServerEnabled = false }
         ))
 

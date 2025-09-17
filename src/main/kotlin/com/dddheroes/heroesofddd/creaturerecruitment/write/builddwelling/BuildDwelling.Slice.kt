@@ -7,8 +7,8 @@ import com.dddheroes.heroesofddd.shared.application.GameMetaData
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.restapi.Headers
-import org.axonframework.commandhandling.GenericCommandMessage
 import org.axonframework.commandhandling.annotation.CommandHandler
+import org.axonframework.commandhandling.configuration.CommandHandlingModule
 import org.axonframework.commandhandling.gateway.CommandGateway
 import org.axonframework.eventhandling.gateway.EventAppender
 import org.axonframework.eventsourcing.EventSourcingHandler
@@ -17,10 +17,8 @@ import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.eventsourcing.configuration.EventSourcedEntityModule
 import org.axonframework.extensions.kotlin.asCommandMessage
 import org.axonframework.extensions.kotlin.asEventMessages
-import org.axonframework.messaging.MessageType
 import org.axonframework.messaging.MetaData
 import org.axonframework.modelling.annotation.InjectEntity
-import org.axonframework.modelling.configuration.StatefulCommandHandlingModule
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.bind.annotation.*
@@ -35,7 +33,7 @@ data class BuildDwelling(
     val costPerTroop: Map<ResourceType, Int>,
 )
 
-private data class State(val isBuilt: Boolean)
+internal data class State(val isBuilt: Boolean)
 
 private val initialState = State(isBuilt = false)
 
@@ -65,7 +63,7 @@ private fun evolve(state: State, event: DwellingEvent): State {
 ///////////////////////////////////////////
 
 @EventSourcedEntity(tagKey = EventTags.DWELLING_ID) // ConsistencyBoundary
-private class EventSourcedState private constructor(val state: State) {
+internal class EventSourcedState private constructor(val state: State) {
 
     @EntityCreator
     constructor() : this(initialState)
@@ -93,15 +91,16 @@ private class BuildDwellingCommandHandler {
 internal class BuildDwellingWriteSliceConfig {
 
     @Bean
-    fun buildDwellingSlice(): StatefulCommandHandlingModule =
-        StatefulCommandHandlingModule.named(BuildDwelling::class.simpleName)
-            .entities()
-            .entity(
-                EventSourcedEntityModule.annotated(
-                    String::class.java,
-                    EventSourcedState::class.java
-                )
-            )
+    fun buildDwellingSliceState(): EventSourcedEntityModule<String, EventSourcedState> =
+        EventSourcedEntityModule.annotated(
+            String::class.java,
+            EventSourcedState::class.java
+        )
+
+
+    @Bean
+    fun buildDwellingSlice(): CommandHandlingModule =
+        CommandHandlingModule.named(BuildDwelling::class.simpleName!!)
             .commandHandlers()
             .annotatedCommandHandlingComponent { BuildDwellingCommandHandler() }
             .build()
