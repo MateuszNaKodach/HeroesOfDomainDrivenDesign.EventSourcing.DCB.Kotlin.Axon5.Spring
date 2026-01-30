@@ -3,11 +3,15 @@ package com.dddheroes.heroesofddd.creaturerecruitment.write.increaseavailablecre
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
+import org.assertj.core.api.Assertions.assertThat
 import org.axonframework.common.configuration.ApplicationConfigurer
 import org.axonframework.test.fixture.AxonTestFixture
+import org.axonframework.test.fixture.MessagesRecordingConfigurationEnhancer
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.context.annotation.Bean
 import java.util.*
 
 @SpringBootTest
@@ -27,7 +31,7 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
             .`when`()
             .command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy = 5))
             .then()
-            .exception(IllegalStateException::class.java, "Only built dwelling can have available creatures")
+            .exceptionSatisfies { ex -> assertThat(ex).hasMessageContaining("Only built dwelling can have available creatures") }
     }
 
     @Test
@@ -62,6 +66,13 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
             .command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy = 2))
             .then()
             .events(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 2, changedTo = 3))
+    }
+
+    @TestConfiguration
+    class TestConfig {
+
+        @Bean
+        fun recordingEnhancer() = MessagesRecordingConfigurationEnhancer()
     }
 
 }

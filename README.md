@@ -27,15 +27,7 @@ I'm focused on domain modeling on the backend, but I'm going to implement UI lik
 ### Create Axon Server Context
 
 - Open the Axon Server UI at [http://localhost:8024](http://localhost:8024)
-- Go to: Event Store → Contexts
-- Click "Create Context"
-- Fill out details:
-  - Name: `heroesofddd`
-  - Replication group: Create new 
-  - Replication group name: `heroesofddd`
-  - Nodes: `axon-server`
-  - Role for axon-server: `PRIMARY'
-  - DCB context (beta): checked!!! — this is essential for the DCB support
+- The default DCB context should be created automatically.
 
 If you did not create the DCB context, the command execution will fail with the following error:
 ```

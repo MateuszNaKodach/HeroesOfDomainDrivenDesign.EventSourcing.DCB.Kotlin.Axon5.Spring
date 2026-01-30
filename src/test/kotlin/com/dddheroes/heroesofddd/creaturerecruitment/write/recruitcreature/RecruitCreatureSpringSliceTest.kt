@@ -5,12 +5,17 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesCh
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
+import org.assertj.core.api.Assertions.assertThat
 import org.axonframework.common.configuration.ApplicationConfigurer
 import org.axonframework.test.fixture.AxonTestFixture
+import org.axonframework.test.fixture.MessagesRecordingConfigurationEnhancer
 import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.context.annotation.Bean
 import java.util.*
 
 @SpringBootTest
@@ -39,7 +44,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurer:
                 )
             )
             .then()
-            .exception(IllegalStateException::class.java, "Recruit creatures cannot exceed available creatures")
+            .exceptionSatisfies { ex -> assertThat(ex).hasMessageContaining("Recruit creatures cannot exceed available creatures") }
     }
 
     @Test
@@ -63,7 +68,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurer:
                 )
             )
             .then()
-            .exception(IllegalStateException::class.java, "Recruit creatures cannot exceed available creatures")
+            .exceptionSatisfies { ex -> assertThat(ex).hasMessageContaining("Recruit creatures cannot exceed available creatures") }
     }
 
     @Test
@@ -224,7 +229,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurer:
                 )
             )
             .then()
-            .exception(IllegalStateException::class.java, "Recruit creatures cannot exceed available creatures")
+            .exceptionSatisfies { ex -> assertThat(ex).hasMessageContaining("Recruit creatures cannot exceed available creatures") }
     }
 
     @Test
@@ -250,7 +255,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurer:
                 )
             )
             .then()
-            .exception(IllegalStateException::class.java, "Recruit creatures cannot exceed available creatures")
+            .exceptionSatisfies { ex -> assertThat(ex).hasMessageContaining("Recruit creatures cannot exceed available creatures") }
     }
 
     @Test
@@ -283,7 +288,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurer:
                 )
             )
             .then()
-            .exception(IllegalStateException::class.java, "Recruit creatures cannot exceed available creatures")
+            .exceptionSatisfies { ex -> assertThat(ex).hasMessageContaining("Recruit creatures cannot exceed available creatures") }
     }
 
     @Test
@@ -356,7 +361,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurer:
                 )
             )
             .then()
-            .exception(IllegalStateException::class.java, "Recruit cost cannot differ than expected cost")
+            .exceptionSatisfies { ex -> assertThat(ex).hasMessageContaining("Recruit cost cannot differ than expected cost") }
     }
 
     @Nested
@@ -392,13 +397,10 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurer:
                     )
                 )
                 .then()
-                .exception(
-                    IllegalStateException::class.java,
-                    "Army cannot contain more than 7 different creature types"
-                )
+                .exceptionSatisfies { ex -> assertThat(ex).hasMessageContaining("Army cannot contain more than 7 different creature types") }
         }
 
-        @Test
+        @RepeatedTest(10)
         fun `given army with 7 different creature types, when recruit more of existing creature, then recruited`() {
             val dwellingId = UUID.randomUUID().toString()
             val armyId = UUID.randomUUID().toString()
@@ -410,7 +412,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurer:
                 .event(DwellingBuilt(dwellingId, existingCreatureId, costPerTroop))
                 .event(AvailableCreaturesChanged(dwellingId, existingCreatureId, changedBy = 2, changedTo = 2))
                 // Simulate army already having 7 different creature types including the one we want to recruit
-                .event(CreatureAddedToArmy(armyId, "angel", 5))
+                .event(CreatureAddedToArmy(armyId, existingCreatureId, 5))
                 .event(CreatureAddedToArmy(armyId, "griffin", 10))
                 .event(CreatureAddedToArmy(armyId, "swordsman", 20))
                 .event(CreatureAddedToArmy(armyId, "monk", 8))
@@ -544,5 +546,12 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurer:
                     changedTo = 0
                 )
             )
+    }
+
+    @TestConfiguration
+    class TestConfig {
+
+        @Bean
+        fun recordingEnhancer() = MessagesRecordingConfigurationEnhancer()
     }
 } 

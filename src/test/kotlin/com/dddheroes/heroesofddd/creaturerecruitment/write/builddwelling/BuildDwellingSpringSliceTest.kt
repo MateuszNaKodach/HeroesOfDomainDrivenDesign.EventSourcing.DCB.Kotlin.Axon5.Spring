@@ -16,7 +16,7 @@ import java.util.*
 @SpringBootTest
 internal class BuildDwellingSpringSliceTest @Autowired constructor(configurer: ApplicationConfigurer) {
 
-    private val fixture: AxonTestFixture = AxonTestFixture.with(configurer)
+    private val sliceUnderTest: AxonTestFixture = AxonTestFixture.with(configurer)
     private val gameId: String = UUID.randomUUID().toString()
     private val playerId: String = UUID.randomUUID().toString()
 
@@ -27,7 +27,7 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(configurer: A
         val creatureId = "angel"
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
-        fixture.given()
+        sliceUnderTest.given()
             .noPriorActivity()
             .`when`()
             .command(BuildDwelling(dwellingId, creatureId, costPerTroop), gameMetadata)
@@ -39,6 +39,22 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(configurer: A
                     costPerTroop = costPerTroop
                 )
             )
+    }
+
+    @Test
+    fun `given DwellingBuild, when BuildDwelling one more time, then nothing`() {
+        val dwellingId = UUID.randomUUID().toString()
+        val creatureId = "angel"
+        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
+
+        // then
+        sliceUnderTest
+            .given()
+            .events(DwellingBuilt(dwellingId, creatureId, costPerTroop))
+            .`when`()
+            .command(BuildDwelling(dwellingId, creatureId, costPerTroop))
+            .then()
+            .noEvents()
     }
 
     private val gameMetadata = AxonMetadata.with("gameId", gameId)

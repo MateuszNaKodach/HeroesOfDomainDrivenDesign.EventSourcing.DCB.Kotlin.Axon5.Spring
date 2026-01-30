@@ -29,12 +29,6 @@ Modeling patterns using Kotlin, Axon Framework 5.0.1, and Spring Boot 3.5.10.
 docker compose up
 ```
 
-**Axon Server DCB Context Setup** (required before running the app):
-
-1. Open http://localhost:8024
-2. Event Store → Contexts → Create Context
-3. Name: `heroesofddd`, DCB context (beta): **checked**
-
 ## Architecture
 
 ### Vertical Slice Architecture

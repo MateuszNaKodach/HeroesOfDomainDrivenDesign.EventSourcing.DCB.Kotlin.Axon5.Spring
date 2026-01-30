@@ -169,6 +169,7 @@ internal class RecruitCreatureEventSourcedState private constructor(val state: S
     )
 
     companion object {
+        @JvmStatic
         @EventCriteriaBuilder
         fun resolveCriteria(recruitmentId: RecruitCreature.RecruitmentId) =
             EventCriteria.either(

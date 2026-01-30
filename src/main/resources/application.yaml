@@ -3,7 +3,7 @@ spring:
     name: heroesofddd
   docker:
     compose:
-      enabled: false
+      enabled: true
 axon:
   axonserver:
     context: default
