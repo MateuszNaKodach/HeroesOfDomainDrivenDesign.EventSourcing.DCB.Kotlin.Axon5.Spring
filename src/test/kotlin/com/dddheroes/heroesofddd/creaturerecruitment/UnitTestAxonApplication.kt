@@ -2,9 +2,9 @@ package com.dddheroes.heroesofddd.creaturerecruitment
 
 import org.axonframework.axonserver.connector.AxonServerConfiguration
 import org.axonframework.axonserver.connector.AxonServerConfigurationEnhancer
-import org.axonframework.configuration.ApplicationConfigurer
-import org.axonframework.configuration.ComponentRegistry
-import org.axonframework.configuration.Configuration
+import org.axonframework.common.configuration.ApplicationConfigurer
+import org.axonframework.common.configuration.ComponentRegistry
+import org.axonframework.common.configuration.Configuration
 import org.axonframework.eventsourcing.configuration.EventSourcingConfigurer
 
 class UnitTestAxonApplication {

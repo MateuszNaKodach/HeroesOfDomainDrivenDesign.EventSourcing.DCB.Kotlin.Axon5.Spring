@@ -2,11 +2,10 @@ package com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling
 
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
-import org.axonframework.configuration.ApplicationConfigurer
-import org.axonframework.messaging.MetaData
+import org.axonframework.common.configuration.ApplicationConfigurer
+import org.axonframework.extensions.kotlin.AxonMetadata
 import org.axonframework.test.fixture.AxonTestFixture
 import org.axonframework.test.fixture.MessagesRecordingConfigurationEnhancer
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -32,7 +31,7 @@ internal class BuildDwellingSpringTest @Autowired constructor(configurer: Applic
         fixture.given()
             .noPriorActivity()
             .`when`()
-            .command(BuildDwelling(dwellingId, creatureId, costPerTroop), gameMetaData)
+            .command(BuildDwelling(dwellingId, creatureId, costPerTroop), gameMetadata)
             .then()
             .events(
                 DwellingBuilt(
@@ -43,7 +42,7 @@ internal class BuildDwellingSpringTest @Autowired constructor(configurer: Applic
             )
     }
 
-    private val gameMetaData = MetaData.with("gameId", gameId)
+    private val gameMetadata = AxonMetadata.with("gameId", gameId)
         .and("playerId", playerId)
 
     @TestConfiguration

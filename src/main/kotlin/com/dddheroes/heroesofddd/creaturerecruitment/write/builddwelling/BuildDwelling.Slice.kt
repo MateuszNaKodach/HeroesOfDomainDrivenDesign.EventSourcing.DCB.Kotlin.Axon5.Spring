@@ -3,21 +3,21 @@ package com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling
 import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
-import com.dddheroes.heroesofddd.shared.application.GameMetaData
+import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.restapi.Headers
-import org.axonframework.commandhandling.annotation.CommandHandler
-import org.axonframework.commandhandling.configuration.CommandHandlingModule
-import org.axonframework.commandhandling.gateway.CommandGateway
-import org.axonframework.eventhandling.gateway.EventAppender
-import org.axonframework.eventsourcing.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.EventSourcedEntity
+import org.axonframework.eventsourcing.annotation.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.eventsourcing.configuration.EventSourcedEntityModule
+import org.axonframework.extensions.kotlin.AxonMetadata
 import org.axonframework.extensions.kotlin.asCommandMessage
 import org.axonframework.extensions.kotlin.asEventMessages
-import org.axonframework.messaging.MetaData
+import org.axonframework.messaging.commandhandling.annotation.CommandHandler
+import org.axonframework.messaging.commandhandling.configuration.CommandHandlingModule
+import org.axonframework.messaging.commandhandling.gateway.CommandGateway
+import org.axonframework.messaging.eventhandling.gateway.EventAppender
 import org.axonframework.modelling.annotation.InjectEntity
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -77,12 +77,12 @@ private class BuildDwellingCommandHandler {
     @CommandHandler
     fun handle(
         command: BuildDwelling,
-        metaData: MetaData,
+        metadata: AxonMetadata,
         @InjectEntity(idProperty = EventTags.DWELLING_ID) eventSourced: EventSourcedState,
         eventAppender: EventAppender
     ) {
         val events = decide(command, eventSourced.state)
-        eventAppender.append(events.asEventMessages(metaData))
+        eventAppender.append(events.asEventMessages(metadata))
     }
 
 }
@@ -92,7 +92,7 @@ internal class BuildDwellingWriteSliceConfig {
 
     @Bean
     fun buildDwellingSliceState(): EventSourcedEntityModule<String, EventSourcedState> =
-        EventSourcedEntityModule.annotated(
+        EventSourcedEntityModule.autodetected(
             String::class.java,
             EventSourcedState::class.java
         )
@@ -130,8 +130,8 @@ private class BuildDwellingRestApi(private val commandGateway: CommandGateway) {
                 requestBody.costPerTroop.mapKeys { ResourceType.from(it.key) }
             )
 
-        val metaData = GameMetaData.with(gameId, playerId)
-        val message = command.asCommandMessage(metaData)
+        val metadata = GameMetadata.with(gameId, playerId)
+        val message = command.asCommandMessage(metadata)
 
         commandGateway.sendAndWait(message)
     }

@@ -1,7 +1,7 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.events
 
 import com.dddheroes.heroesofddd.EventTags
-import org.axonframework.eventsourcing.annotations.EventTag
+import org.axonframework.eventsourcing.annotation.EventTag
 
 data class AvailableCreaturesChanged(
     @get:EventTag(EventTags.DWELLING_ID)

@@ -6,24 +6,24 @@ import com.dddheroes.heroesofddd.armies.events.CreatureRemovedFromArmy
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
-import com.dddheroes.heroesofddd.shared.application.GameMetaData
+import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.restapi.Headers
-import org.axonframework.commandhandling.annotation.CommandHandler
-import org.axonframework.commandhandling.configuration.CommandHandlingModule
-import org.axonframework.commandhandling.gateway.CommandGateway
-import org.axonframework.eventhandling.gateway.EventAppender
-import org.axonframework.eventsourcing.EventSourcingHandler
+import org.axonframework.messaging.commandhandling.annotation.CommandHandler
+import org.axonframework.messaging.commandhandling.configuration.CommandHandlingModule
+import org.axonframework.messaging.commandhandling.gateway.CommandGateway
+import org.axonframework.messaging.eventhandling.gateway.EventAppender
+import org.axonframework.eventsourcing.annotation.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.EventCriteriaBuilder
 import org.axonframework.eventsourcing.annotation.EventSourcedEntity
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.eventsourcing.configuration.EventSourcedEntityModule
-import org.axonframework.eventstreaming.EventCriteria
-import org.axonframework.eventstreaming.Tag
+import org.axonframework.extensions.kotlin.AxonMetadata
+import org.axonframework.messaging.eventstreaming.EventCriteria
+import org.axonframework.messaging.eventstreaming.Tag
 import org.axonframework.extensions.kotlin.asCommandMessage
 import org.axonframework.extensions.kotlin.asEventMessages
-import org.axonframework.messaging.MetaData
 import org.axonframework.modelling.annotation.InjectEntity
 import org.axonframework.modelling.configuration.EntityModule
 import org.springframework.context.annotation.Bean
@@ -193,12 +193,12 @@ private class RecruitCreatureCommandHandler {
     @CommandHandler
     fun handle(
         command: RecruitCreature,
-        metaData: MetaData,
+        metadata: AxonMetadata,
         @InjectEntity(idProperty = "recruitmentId") eventSourced: EventSourcedState,
         eventAppender: EventAppender
     ) {
         val events = decide(command, eventSourced.state)
-        eventAppender.append(events.asEventMessages(metaData))
+        eventAppender.append(events.asEventMessages(metadata))
     }
 }
 
@@ -207,7 +207,7 @@ internal class RecruitCreatureWriteSliceConfig {
 
     @Bean
     fun recruitCreatureSliceState(): EntityModule<RecruitCreature.RecruitmentId, EventSourcedState>
-    = EventSourcedEntityModule.annotated(
+    = EventSourcedEntityModule.autodetected(
         RecruitCreature.RecruitmentId::class.java,
         EventSourcedState::class.java
     )
@@ -250,8 +250,8 @@ private class RecruitCreatureRestApi(private val commandGateway: CommandGateway)
             expectedCost = requestBody.expectedCost.mapKeys { ResourceType.from(it.key) }
         )
 
-        val metaData = GameMetaData.with(gameId, playerId)
-        val message = command.asCommandMessage(metaData)
+        val metadata = GameMetadata.with(gameId, playerId)
+        val message = command.asCommandMessage(metadata)
 
         commandGateway.sendAndWait(message)
     }
