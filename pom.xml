@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.3</version>
+        <version>3.5.10</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.dddheroes</groupId>
@@ -27,11 +27,11 @@
         <url/>
     </scm>
     <properties>
-        <axon.version>5.0.0-M3</axon.version>
+        <axon.version>5.0.1</axon.version>
         <java.version>21</java.version>
-        <kotlin.version>2.2.0</kotlin.version>
-        <spring-ai.version>1.0.0</spring-ai.version>
-        <spring-boot.version>3.5.5</spring-boot.version>
+        <kotlin.version>2.2.21</kotlin.version>
+        <spring-ai.version>1.1.2</spring-ai.version>
+        <spring-boot.version>3.5.10</spring-boot.version>
     </properties>
     
     <repositories>
@@ -51,7 +51,7 @@
     <dependencies>
         <!-- Axon Framework Dependencies -->
         <dependency>
-            <groupId>org.axonframework</groupId>
+            <groupId>org.axonframework.extensions.spring</groupId>
             <artifactId>axon-spring-boot-starter</artifactId>
             <version>${axon.version}</version>
         </dependency>
