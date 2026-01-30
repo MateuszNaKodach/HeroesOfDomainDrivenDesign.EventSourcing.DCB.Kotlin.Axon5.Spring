@@ -13,7 +13,6 @@ import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.commandhandling.annotation.CommandHandler
 import org.axonframework.commandhandling.configuration.CommandHandlingModule
 import org.axonframework.commandhandling.gateway.CommandGateway
-import org.axonframework.configuration.ComponentRegistry
 import org.axonframework.eventhandling.gateway.EventAppender
 import org.axonframework.eventsourcing.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.EventCriteriaBuilder
@@ -220,10 +219,6 @@ internal class RecruitCreatureWriteSliceConfig {
             .annotatedCommandHandlingComponent { RecruitCreatureCommandHandler() }
             .build()
 
-    @Bean
-    fun registerEntity(cr: ComponentRegistry) {
-
-    }
 }
 
 ////////////////////////////////////////////

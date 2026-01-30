@@ -14,7 +14,7 @@ import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import java.util.*
 
-@Disabled("Create context before running this test")
+//@Disabled("Create context before running this test")
 @SpringBootTest
 internal class BuildDwellingSpringTest @Autowired constructor(configurer: ApplicationConfigurer) {
 
