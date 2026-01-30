@@ -6,21 +6,17 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.heroesofddd.shared.restapi.Headers
-import org.axonframework.messaging.commandhandling.annotation.CommandHandler
-import org.axonframework.messaging.commandhandling.configuration.CommandHandlingModule
-import org.axonframework.messaging.commandhandling.gateway.CommandGateway
-import org.axonframework.messaging.eventhandling.gateway.EventAppender
 import org.axonframework.eventsourcing.annotation.EventSourcingHandler
-import org.axonframework.eventsourcing.annotation.EventSourcedEntity
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
-import org.axonframework.eventsourcing.configuration.EventSourcedEntityModule
+import org.axonframework.extension.spring.stereotype.EventSourced
 import org.axonframework.extensions.kotlin.AxonMetadata
 import org.axonframework.extensions.kotlin.asCommandMessage
 import org.axonframework.extensions.kotlin.asEventMessage
+import org.axonframework.messaging.commandhandling.annotation.CommandHandler
+import org.axonframework.messaging.commandhandling.gateway.CommandGateway
+import org.axonframework.messaging.eventhandling.gateway.EventAppender
 import org.axonframework.modelling.annotation.InjectEntity
-import org.axonframework.modelling.configuration.EntityModule
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
+import org.springframework.stereotype.Component
 import org.springframework.web.bind.annotation.*
 
 ////////////////////////////////////////////
@@ -69,14 +65,14 @@ private fun evolve(state: State, event: DwellingEvent): State = when (event) {
 ////////// Application
 ///////////////////////////////////////////
 
-@EventSourcedEntity(tagKey = EventTags.DWELLING_ID) // ConsistencyBoundary
-internal class EventSourcedState private constructor(val state: State) {
+@EventSourced(tagKey = EventTags.DWELLING_ID) // ConsistencyBoundary
+internal class IncreaseAvailableCreaturesEventSourcedState private constructor(val state: State) {
 
     @EntityCreator
     constructor() : this(initialState)
 
     @EventSourcingHandler
-    fun evolve(event: DwellingBuilt) = EventSourcedState(
+    fun evolve(event: DwellingBuilt) = IncreaseAvailableCreaturesEventSourcedState(
         evolve(
             state,
             event
@@ -84,7 +80,7 @@ internal class EventSourcedState private constructor(val state: State) {
     )
 
     @EventSourcingHandler
-    fun evolve(event: AvailableCreaturesChanged) = EventSourcedState(
+    fun evolve(event: AvailableCreaturesChanged) = IncreaseAvailableCreaturesEventSourcedState(
         evolve(
             state,
             event
@@ -92,13 +88,14 @@ internal class EventSourcedState private constructor(val state: State) {
     )
 }
 
+@Component
 private class IncreaseAvailableCreaturesCommandHandler {
 
     @CommandHandler
     fun handle(
         command: IncreaseAvailableCreatures,
         metadata: AxonMetadata,
-        @InjectEntity(idProperty = EventTags.DWELLING_ID) eventSourced: EventSourcedState,
+        @InjectEntity(idProperty = EventTags.DWELLING_ID) eventSourced: IncreaseAvailableCreaturesEventSourcedState,
         eventAppender: EventAppender
     ) {
         val events = decide(command, eventSourced.state)
@@ -106,26 +103,6 @@ private class IncreaseAvailableCreaturesCommandHandler {
     }
 
 }
-
-
-@Configuration
-internal class IncreaseAvailableCreaturesWriteSliceConfig {
-
-    @Bean
-    fun increaseAvailableCreaturesSliceState(): EntityModule<String, EventSourcedState> =
-        EventSourcedEntityModule.autodetected(
-            String::class.java,
-            EventSourcedState::class.java
-        )
-
-    @Bean
-    fun increaseAvailableCreaturesSlice(): CommandHandlingModule =
-        CommandHandlingModule.named(IncreaseAvailableCreatures::class.simpleName!!)
-            .commandHandlers()
-            .annotatedCommandHandlingComponent { IncreaseAvailableCreaturesCommandHandler() }
-            .build()
-}
-
 
 ////////////////////////////////////////////
 ////////// Presentation

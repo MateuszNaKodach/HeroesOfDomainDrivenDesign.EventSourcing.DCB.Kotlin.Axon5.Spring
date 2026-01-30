@@ -10,20 +10,20 @@ import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.restapi.Headers
+import org.axonframework.eventsourcing.annotation.EventCriteriaBuilder
+import org.axonframework.eventsourcing.annotation.EventSourcingHandler
+import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
+import org.axonframework.eventsourcing.configuration.EventSourcedEntityModule
+import org.axonframework.extension.spring.stereotype.EventSourced
+import org.axonframework.extensions.kotlin.AxonMetadata
+import org.axonframework.extensions.kotlin.asCommandMessage
+import org.axonframework.extensions.kotlin.asEventMessages
 import org.axonframework.messaging.commandhandling.annotation.CommandHandler
 import org.axonframework.messaging.commandhandling.configuration.CommandHandlingModule
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
 import org.axonframework.messaging.eventhandling.gateway.EventAppender
-import org.axonframework.eventsourcing.annotation.EventSourcingHandler
-import org.axonframework.eventsourcing.annotation.EventCriteriaBuilder
-import org.axonframework.eventsourcing.annotation.EventSourcedEntity
-import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
-import org.axonframework.eventsourcing.configuration.EventSourcedEntityModule
-import org.axonframework.extensions.kotlin.AxonMetadata
 import org.axonframework.messaging.eventstreaming.EventCriteria
 import org.axonframework.messaging.eventstreaming.Tag
-import org.axonframework.extensions.kotlin.asCommandMessage
-import org.axonframework.extensions.kotlin.asEventMessages
 import org.axonframework.modelling.annotation.InjectEntity
 import org.axonframework.modelling.configuration.EntityModule
 import org.springframework.context.annotation.Bean
@@ -142,29 +142,29 @@ private fun evolve(state: State, event: HeroesEvent): State = when (event) {
 ////////// Application
 ///////////////////////////////////////////
 
-@EventSourcedEntity // ConsistencyBoundary
-internal class EventSourcedState private constructor(val state: State) {
+@EventSourced // ConsistencyBoundary
+internal class RecruitCreatureEventSourcedState private constructor(val state: State) {
 
     @EntityCreator
     constructor() : this(initialState)
 
     @EventSourcingHandler
-    fun evolve(event: DwellingBuilt) = EventSourcedState(
+    fun evolve(event: DwellingBuilt) = RecruitCreatureEventSourcedState(
         evolve(state, event)
     )
 
     @EventSourcingHandler
-    fun evolve(event: AvailableCreaturesChanged) = EventSourcedState(
+    fun evolve(event: AvailableCreaturesChanged) = RecruitCreatureEventSourcedState(
         evolve(state, event)
     )
 
     @EventSourcingHandler
-    fun evolve(event: CreatureAddedToArmy) = EventSourcedState(
+    fun evolve(event: CreatureAddedToArmy) = RecruitCreatureEventSourcedState(
         evolve(state, event)
     )
 
     @EventSourcingHandler
-    fun evolve(event: CreatureRemovedFromArmy) = EventSourcedState(
+    fun evolve(event: CreatureRemovedFromArmy) = RecruitCreatureEventSourcedState(
         evolve(state, event)
     )
 
@@ -188,13 +188,14 @@ internal class EventSourcedState private constructor(val state: State) {
     }
 }
 
+
 private class RecruitCreatureCommandHandler {
 
     @CommandHandler
     fun handle(
         command: RecruitCreature,
         metadata: AxonMetadata,
-        @InjectEntity(idProperty = "recruitmentId") eventSourced: EventSourcedState,
+        @InjectEntity(idProperty = "recruitmentId") eventSourced: RecruitCreatureEventSourcedState,
         eventAppender: EventAppender
     ) {
         val events = decide(command, eventSourced.state)
@@ -206,10 +207,10 @@ private class RecruitCreatureCommandHandler {
 internal class RecruitCreatureWriteSliceConfig {
 
     @Bean
-    fun recruitCreatureSliceState(): EntityModule<RecruitCreature.RecruitmentId, EventSourcedState>
+    fun recruitCreatureSliceState(): EntityModule<RecruitCreature.RecruitmentId, RecruitCreatureEventSourcedState>
     = EventSourcedEntityModule.autodetected(
         RecruitCreature.RecruitmentId::class.java,
-        EventSourcedState::class.java
+        RecruitCreatureEventSourcedState::class.java
     )
 
     @Bean

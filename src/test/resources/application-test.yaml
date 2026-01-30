@@ -3,5 +3,5 @@ spring:
     name: heroesofddd
 axon:
   axonserver:
-    context: heroesofddd
-    enabled: false
+    context: default
+    enabled: true

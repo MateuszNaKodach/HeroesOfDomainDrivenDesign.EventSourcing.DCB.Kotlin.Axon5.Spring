@@ -1,9 +1,12 @@
 spring:
   application:
     name: heroesofddd
+  docker:
+    compose:
+      enabled: false
 axon:
   axonserver:
-    context: heroesofddd
+    context: default
     enabled: true
 logging:
   level:

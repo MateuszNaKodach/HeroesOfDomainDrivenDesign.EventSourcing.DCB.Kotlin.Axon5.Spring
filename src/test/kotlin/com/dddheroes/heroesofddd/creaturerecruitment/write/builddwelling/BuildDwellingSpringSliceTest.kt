@@ -13,9 +13,8 @@ import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import java.util.*
 
-//@Disabled("Create context before running this test")
 @SpringBootTest
-internal class BuildDwellingSpringTest @Autowired constructor(configurer: ApplicationConfigurer) {
+internal class BuildDwellingSpringSliceTest @Autowired constructor(configurer: ApplicationConfigurer) {
 
     private val fixture: AxonTestFixture = AxonTestFixture.with(configurer)
     private val gameId: String = UUID.randomUUID().toString()

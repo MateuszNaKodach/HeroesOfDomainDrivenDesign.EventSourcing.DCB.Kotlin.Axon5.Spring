@@ -1,23 +1,22 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature
 
 import com.dddheroes.heroesofddd.armies.events.CreatureAddedToArmy
-import com.dddheroes.heroesofddd.creaturerecruitment.UnitTestAxonApplication
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
+import org.axonframework.common.configuration.ApplicationConfigurer
 import org.axonframework.test.fixture.AxonTestFixture
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
 import java.util.*
 
-internal class RecruitCreatureUnitTest {
+@SpringBootTest
+internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurer: ApplicationConfigurer) {
 
-    private val sliceUnderTest = AxonTestFixture.with(
-        UnitTestAxonApplication.configurer(
-            { registerCommandHandlingModule { RecruitCreatureWriteSliceConfig().recruitCreatureSlice() } },
-            { axonServerEnabled = false }
-        ))
+    private val sliceUnderTest: AxonTestFixture = AxonTestFixture.with(configurer)
 
     @Test
     fun `given not built dwelling, when recruit creature, then exception`() {
@@ -393,7 +392,10 @@ internal class RecruitCreatureUnitTest {
                     )
                 )
                 .then()
-                .exception(IllegalStateException::class.java, "Army cannot contain more than 7 different creature types")
+                .exception(
+                    IllegalStateException::class.java,
+                    "Army cannot contain more than 7 different creature types"
+                )
         }
 
         @Test

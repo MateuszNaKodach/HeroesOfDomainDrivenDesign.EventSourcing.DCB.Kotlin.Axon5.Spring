@@ -1,20 +1,19 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.write.increaseavailablecreatures
 
-import com.dddheroes.heroesofddd.creaturerecruitment.UnitTestAxonApplication
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
+import org.axonframework.common.configuration.ApplicationConfigurer
 import org.axonframework.test.fixture.AxonTestFixture
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
 import java.util.*
 
-internal class IncreaseAvailableCreaturesUnitTest {
+@SpringBootTest
+internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(configurer: ApplicationConfigurer) {
 
-    private val sliceUnderTest = AxonTestFixture.with(
-        UnitTestAxonApplication.configurer(
-            { registerCommandHandlingModule { IncreaseAvailableCreaturesWriteSliceConfig().increaseAvailableCreaturesSlice() } },
-            { axonServerEnabled = false }
-        ))
+    private val sliceUnderTest: AxonTestFixture = AxonTestFixture.with(configurer)
 
     @Test
     fun `given DwellingBuild, when IncreaseAvailableCreatures, then exception`() {
@@ -32,7 +31,7 @@ internal class IncreaseAvailableCreaturesUnitTest {
     }
 
     @Test
-    fun `given DwellingBuilt, when IncreaseAvailableCreatures, then AvailableCreatuesChanged`() {
+    fun `given DwellingBuilt, when IncreaseAvailableCreatures, then AvailableCreaturesChanged`() {
         val dwellingId = UUID.randomUUID().toString()
         val creatureId = "angel"
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
@@ -49,7 +48,7 @@ internal class IncreaseAvailableCreaturesUnitTest {
     }
 
     @Test
-    fun `given DwellingBuilt with AvailableCreatuesChanged, when IncreaseAvailableCreatures, then AvailableCreatuesChanged`() {
+    fun `given DwellingBuilt with AvailableCreaturesChanged, when IncreaseAvailableCreatures, then AvailableCreaturesChanged`() {
         val dwellingId = UUID.randomUUID().toString()
         val creatureId = "angel"
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
