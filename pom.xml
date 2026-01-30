@@ -27,7 +27,7 @@
         <url/>
     </scm>
     <properties>
-        <axon.version>5.0.1</axon.version>
+        <axon.version>5.1.0-SNAPSHOT</axon.version>
         <java.version>21</java.version>
         <kotlin.version>2.2.21</kotlin.version>
         <spring-ai.version>1.1.2</spring-ai.version>

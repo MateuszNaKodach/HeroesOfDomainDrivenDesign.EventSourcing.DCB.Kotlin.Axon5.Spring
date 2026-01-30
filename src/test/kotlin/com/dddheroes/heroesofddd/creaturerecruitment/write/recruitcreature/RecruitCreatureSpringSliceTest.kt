@@ -9,9 +9,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.axonframework.common.configuration.ApplicationConfigurer
 import org.axonframework.test.fixture.AxonTestFixture
 import org.axonframework.test.fixture.MessagesRecordingConfigurationEnhancer
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.RepeatedTest
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
@@ -19,9 +17,19 @@ import org.springframework.context.annotation.Bean
 import java.util.*
 
 @SpringBootTest
-internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurer: ApplicationConfigurer) {
+internal class RecruitCreatureSpringSliceTest @Autowired constructor(private val configurer: ApplicationConfigurer) {
 
-    private val sliceUnderTest: AxonTestFixture = AxonTestFixture.with(configurer)
+    private lateinit var sliceUnderTest: AxonTestFixture;
+
+    @BeforeEach
+    fun beforeEach() {
+        sliceUnderTest = AxonTestFixture.with(configurer)
+    }
+
+    @AfterEach
+    fun afterEach() {
+        sliceUnderTest.stop()
+    }
 
     @Test
     fun `given not built dwelling, when recruit creature, then exception`() {
@@ -400,13 +408,14 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurer:
                 .exceptionSatisfies { ex -> assertThat(ex).hasMessageContaining("Army cannot contain more than 7 different creature types") }
         }
 
-        @RepeatedTest(10)
+        @RepeatedTest(5)
         fun `given army with 7 different creature types, when recruit more of existing creature, then recruited`() {
             val dwellingId = UUID.randomUUID().toString()
             val armyId = UUID.randomUUID().toString()
             val existingCreatureId = "angel"
             val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
+            println("DWELLING: " + dwellingId)
             sliceUnderTest
                 .given()
                 .event(DwellingBuilt(dwellingId, existingCreatureId, costPerTroop))

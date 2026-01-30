@@ -11,3 +11,6 @@ axon:
 logging:
   level:
     org.axonframework.configuration: DEBUG
+    org.axonframework.test.fixture: DEBUG
+
+

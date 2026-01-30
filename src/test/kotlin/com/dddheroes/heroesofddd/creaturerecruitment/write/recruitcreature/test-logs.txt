@@ -1,0 +1,212 @@
+/Users/mateusznowak/.sdkman/candidates/java/24.0.1-zulu/zulu-24.jdk/Contents/Home/bin/java -javaagent:/Users/mateusznowak/Library/Caches/JetBrains/IntelliJIdea2025.3/captureAgent/debugger-agent.jar=file:///var/folders/x_/3kr1bfq97j9d07qlsvggs3940000gn/T/capture14106897544838310993.props -ea -Didea.test.cyclic.buffer.size=1048576 -javaagent:/Users/mateusznowak/Applications/IntelliJ IDEA.app/Contents/lib/idea_rt.jar=62683 -Dkotlinx.coroutines.debug.enable.creation.stack.trace=false -Ddebugger.agent.enable.coroutines=true -Dkotlinx.coroutines.debug.enable.flows.stack.trace=true -Dkotlinx.coroutines.debug.enable.mutable.state.flows.stack.trace=true -Ddebugger.async.stack.trace.for.all.threads=true -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -classpath /Users/mateusznowak/.m2/repository/org/junit/platform/junit-platform-launcher/1.12.2/junit-platform-launcher-1.12.2.jar:/Users/mateusznowak/.m2/repository/org/junit/vintage/junit-vintage-engine/5.12.2/junit-vintage-engine-5.12.2.jar:/Users/mateusznowak/Applications/IntelliJ IDEA.app/Contents/lib/idea_rt.jar:/Users/mateusznowak/Applications/IntelliJ IDEA.app/Contents/plugins/junit/lib/junit6-rt.jar:/Users/mateusznowak/Applications/IntelliJ IDEA.app/Contents/plugins/junit/lib/junit5-rt.jar:/Users/mateusznowak/Applications/IntelliJ IDEA.app/Contents/plugins/junit/lib/junit-rt.jar:/Users/mateusznowak/GitRepos/MateuszNaKodach/HeroesOfDomainDrivenDesign.EventSourcing.DCB.Kotlin.Axon5.Spring/target/test-classes:/Users/mateusznowak/GitRepos/MateuszNaKodach/HeroesOfDomainDrivenDesign.EventSourcing.DCB.Kotlin.Axon5.Spring/target/classes:/Users/mateusznowak/.m2/repository/org/axonframework/extensions/spring/axon-spring-boot-starter/5.0.1/axon-spring-boot-starter-5.0.1.jar:/Users/mateusznowak/.m2/repository/org/axonframework/extensions/spring/axon-spring-boot-autoconfigure/5.0.1/axon-spring-boot-autoconfigure-5.0.1.jar:/Users/mateusznowak/.m2/repository/org/axonframework/extensions/spring/axon-spring/5.0.1/axon-spring-5.0.1.jar:/Users/mateusznowak/.m2/repository/org/slf4j/slf4j-api/2.0.17/slf4j-api-2.0.17.jar:/Users/mateusznowak/.m2/repository/org/axonframework/axon-eventsourcing/5.0.1/axon-eventsourcing-5.0.1.jar:/Users/mateusznowak/.m2/repository/org/reactivestreams/reactive-streams/1.0.4/reactive-streams-1.0.4.jar:/Users/mateusznowak/.m2/repository/org/axonframework/axon-messaging/5.0.1/axon-messaging-5.0.1.jar:/Users/mateusznowak/.m2/repository/org/axonframework/axon-common/5.0.1/axon-common-5.0.1.jar:/Users/mateusznowak/.m2/repository/org/axonframework/axon-update/5.0.1/axon-update-5.0.1.jar:/Users/mateusznowak/.m2/repository/org/axonframework/axon-conversion/5.0.1/axon-conversion-5.0.1.jar:/Users/mateusznowak/.m2/repository/org/axonframework/axon-modelling/5.0.1/axon-modelling-5.0.1.jar:/Users/mateusznowak/.m2/repository/jakarta/annotation/jakarta.annotation-api/2.1.1/jakarta.annotation-api-2.1.1.jar:/Users/mateusznowak/.m2/repository/org/axonframework/axon-server-connector/5.0.1/axon-server-connector-5.0.1.jar:/Users/mateusznowak/.m2/repository/io/axoniq/axonserver-connector-java/2025.2.1/axonserver-connector-java-2025.2.1.jar:/Users/mateusznowak/.m2/repository/com/google/protobuf/protobuf-java/4.33.1/protobuf-java-4.33.1.jar:/Users/mateusznowak/.m2/repository/io/grpc/grpc-protobuf/1.76.0/grpc-protobuf-1.76.0.jar:/Users/mateusznowak/.m2/repository/io/grpc/grpc-api/1.76.0/grpc-api-1.76.0.jar:/Users/mateusznowak/.m2/repository/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar:/Users/mateusznowak/.m2/repository/com/google/api/grpc/proto-google-common-protos/2.59.2/proto-google-common-protos-2.59.2.jar:/Users/mateusznowak/.m2/repository/com/google/guava/guava/33.4.8-android/guava-33.4.8-android.jar:/Users/mateusznowak/.m2/repository/com/google/guava/failureaccess/1.0.3/failureaccess-1.0.3.jar:/Users/mateusznowak/.m2/repository/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar:/Users/mateusznowak/.m2/repository/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.jar:/Users/mateusznowak/.m2/repository/com/google/j2objc/j2objc-annotations/3.0.0/j2objc-annotations-3.0.0.jar:/Users/mateusznowak/.m2/repository/io/grpc/grpc-protobuf-lite/1.76.0/grpc-protobuf-lite-1.76.0.jar:/Users/mateusznowak/.m2/repository/io/grpc/grpc-stub/1.76.0/grpc-stub-1.76.0.jar:/Users/mateusznowak/.m2/repository/org/codehaus/mojo/animal-sniffer-annotations/1.24/animal-sniffer-annotations-1.24.jar:/Users/mateusznowak/.m2/repository/io/grpc/grpc-netty-shaded/1.76.0/grpc-netty-shaded-1.76.0.jar:/Users/mateusznowak/.m2/repository/io/grpc/grpc-util/1.76.0/grpc-util-1.76.0.jar:/Users/mateusznowak/.m2/repository/io/grpc/grpc-core/1.76.0/grpc-core-1.76.0.jar:/Users/mateusznowak/.m2/repository/com/google/android/annotations/4.1.1.4/annotations-4.1.1.4.jar:/Users/mateusznowak/.m2/repository/io/grpc/grpc-context/1.76.0/grpc-context-1.76.0.jar:/Users/mateusznowak/.m2/repository/io/perfmark/perfmark-api/0.27.0/perfmark-api-0.27.0.jar:/Users/mateusznowak/.m2/repository/org/springframework/boot/spring-boot-starter-actuator/3.5.10/spring-boot-starter-actuator-3.5.10.jar:/Users/mateusznowak/.m2/repository/org/springframework/boot/spring-boot-starter/3.5.10/spring-boot-starter-3.5.10.jar:/Users/mateusznowak/.m2/repository/org/springframework/boot/spring-boot-starter-logging/3.5.10/spring-boot-starter-logging-3.5.10.jar:/Users/mateusznowak/.m2/repository/ch/qos/logback/logback-classic/1.5.25/logback-classic-1.5.25.jar:/Users/mateusznowak/.m2/repository/ch/qos/logback/logback-core/1.5.25/logback-core-1.5.25.jar:/Users/mateusznowak/.m2/repository/org/apache/logging/log4j/log4j-to-slf4j/2.24.3/log4j-to-slf4j-2.24.3.jar:/Users/mateusznowak/.m2/repository/org/apache/logging/log4j/log4j-api/2.24.3/log4j-api-2.24.3.jar:/Users/mateusznowak/.m2/repository/org/slf4j/jul-to-slf4j/2.0.17/jul-to-slf4j-2.0.17.jar:/Users/mateusznowak/.m2/repository/org/yaml/snakeyaml/2.4/snakeyaml-2.4.jar:/Users/mateusznowak/.m2/repository/org/springframework/boot/spring-boot-actuator-autoconfigure/3.5.10/spring-boot-actuator-autoconfigure-3.5.10.jar:/Users/mateusznowak/.m2/repository/org/springframework/boot/spring-boot-actuator/3.5.10/spring-boot-actuator-3.5.10.jar:/Users/mateusznowak/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.19.4/jackson-datatype-jsr310-2.19.4.jar:/Users/mateusznowak/.m2/repository/io/micrometer/micrometer-observation/1.15.8/micrometer-observation-1.15.8.jar:/Users/mateusznowak/.m2/repository/io/micrometer/micrometer-commons/1.15.8/micrometer-commons-1.15.8.jar:/Users/mateusznowak/.m2/repository/io/micrometer/micrometer-jakarta9/1.15.8/micrometer-jakarta9-1.15.8.jar:/Users/mateusznowak/.m2/repository/io/micrometer/micrometer-core/1.15.8/micrometer-core-1.15.8.jar:/Users/mateusznowak/.m2/repository/org/hdrhistogram/HdrHistogram/2.2.2/HdrHistogram-2.2.2.jar:/Users/mateusznowak/.m2/repository/org/latencyutils/LatencyUtils/2.0.3/LatencyUtils-2.0.3.jar:/Users/mateusznowak/.m2/repository/org/springframework/boot/spring-boot-starter-webflux/3.5.10/spring-boot-starter-webflux-3.5.10.jar:/Users/mateusznowak/.m2/repository/org/springframework/boot/spring-boot-starter-json/3.5.10/spring-boot-starter-json-3.5.10.jar:/Users/mateusznowak/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.19.4/jackson-datatype-jdk8-2.19.4.jar:/Users/mateusznowak/.m2/repository/org/springframework/boot/spring-boot-starter-reactor-netty/3.5.10/spring-boot-starter-reactor-netty-3.5.10.jar:/Users/mateusznowak/.m2/repository/io/projectreactor/netty/reactor-netty-http/1.2.14/reactor-netty-http-1.2.14.jar:/Users/mateusznowak/.m2/repository/io/netty/netty-codec-http/4.1.130.Final/netty-codec-http-4.1.130.Final.jar:/Users/mateusznowak/.m2/repository/io/netty/netty-common/4.1.130.Final/netty-common-4.1.130.Final.jar:/Users/mateusznowak/.m2/repository/io/netty/netty-buffer/4.1.130.Final/netty-buffer-4.1.130.Final.jar:/Users/mateusznowak/.m2/repository/io/netty/netty-transport/4.1.130.Final/netty-transport-4.1.130.Final.jar:/Users/mateusznowak/.m2/repository/io/netty/netty-codec/4.1.130.Final/netty-codec-4.1.130.Final.jar:/Users/mateusznowak/.m2/repository/io/netty/netty-handler/4.1.130.Final/netty-handler-4.1.130.Final.jar:/Users/mateusznowak/.m2/repository/io/netty/netty-codec-http2/4.1.130.Final/netty-codec-http2-4.1.130.Final.jar:/Users/mateusznowak/.m2/repository/io/netty/netty-resolver-dns/4.1.130.Final/netty-resolver-dns-4.1.130.Final.jar:/Users/mateusznowak/.m2/repository/io/netty/netty-resolver/4.1.130.Final/netty-resolver-4.1.130.Final.jar:/Users/mateusznowak/.m2/repository/io/netty/netty-codec-dns/4.1.130.Final/netty-codec-dns-4.1.130.Final.jar:/Users/mateusznowak/.m2/repository/io/netty/netty-resolver-dns-native-macos/4.1.130.Final/netty-resolver-dns-native-macos-4.1.130.Final-osx-x86_64.jar:/Users/mateusznowak/.m2/repository/io/netty/netty-resolver-dns-classes-macos/4.1.130.Final/netty-resolver-dns-classes-macos-4.1.130.Final.jar:/Users/mateusznowak/.m2/repository/io/netty/netty-transport-native-epoll/4.1.130.Final/netty-transport-native-epoll-4.1.130.Final-linux-x86_64.jar:/Users/mateusznowak/.m2/repository/io/netty/netty-transport-native-unix-common/4.1.130.Final/netty-transport-native-unix-common-4.1.130.Final.jar:/Users/mateusznowak/.m2/repository/io/netty/netty-transport-classes-epoll/4.1.130.Final/netty-transport-classes-epoll-4.1.130.Final.jar:/Users/mateusznowak/.m2/repository/io/projectreactor/netty/reactor-netty-core/1.2.14/reactor-netty-core-1.2.14.jar:/Users/mateusznowak/.m2/repository/io/netty/netty-handler-proxy/4.1.130.Final/netty-handler-proxy-4.1.130.Final.jar:/Users/mateusznowak/.m2/repository/io/netty/netty-codec-socks/4.1.130.Final/netty-codec-socks-4.1.130.Final.jar:/Users/mateusznowak/.m2/repository/org/springframework/spring-web/6.2.15/spring-web-6.2.15.jar:/Users/mateusznowak/.m2/repository/org/springframework/spring-beans/6.2.15/spring-beans-6.2.15.jar:/Users/mateusznowak/.m2/repository/org/springframework/spring-webflux/6.2.15/spring-webflux-6.2.15.jar:/Users/mateusznowak/.m2/repository/com/fasterxml/jackson/module/jackson-module-kotlin/2.19.4/jackson-module-kotlin-2.19.4.jar:/Users/mateusznowak/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.19.4/jackson-databind-2.19.4.jar:/Users/mateusznowak/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.19.4/jackson-core-2.19.4.jar:/Users/mateusznowak/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.19.4/jackson-annotations-2.19.4.jar:/Users/mateusznowak/.m2/repository/io/projectreactor/kotlin/reactor-kotlin-extensions/1.2.5/reactor-kotlin-extensions-1.2.5.jar:/Users/mateusznowak/.m2/repository/io/projectreactor/reactor-core/3.7.15/reactor-core-3.7.15.jar:/Users/mateusznowak/.m2/repository/org/jetbrains/kotlin/kotlin-reflect/1.9.25/kotlin-reflect-1.9.25.jar:/Users/mateusznowak/.m2/repository/org/jetbrains/kotlin/kotlin-stdlib/1.9.25/kotlin-stdlib-1.9.25.jar:/Users/mateusznowak/.m2/repository/org/jetbrains/annotations/13.0/annotations-13.0.jar:/Users/mateusznowak/.m2/repository/org/jetbrains/kotlinx/kotlinx-coroutines-reactor/1.8.1/kotlinx-coroutines-reactor-1.8.1.jar:/Users/mateusznowak/.m2/repository/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.8.1/kotlinx-coroutines-core-jvm-1.8.1.jar:/Users/mateusznowak/.m2/repository/org/jetbrains/kotlinx/kotlinx-coroutines-reactive/1.8.1/kotlinx-coroutines-reactive-1.8.1.jar:/Users/mateusznowak/.m2/repository/org/springframework/boot/spring-boot-devtools/3.5.10/spring-boot-devtools-3.5.10.jar:/Users/mateusznowak/.m2/repository/org/springframework/boot/spring-boot/3.5.10/spring-boot-3.5.10.jar:/Users/mateusznowak/.m2/repository/org/springframework/spring-context/6.2.15/spring-context-6.2.15.jar:/Users/mateusznowak/.m2/repository/org/springframework/spring-aop/6.2.15/spring-aop-6.2.15.jar:/Users/mateusznowak/.m2/repository/org/springframework/spring-expression/6.2.15/spring-expression-6.2.15.jar:/Users/mateusznowak/.m2/repository/org/springframework/boot/spring-boot-autoconfigure/3.5.10/spring-boot-autoconfigure-3.5.10.jar:/Users/mateusznowak/.m2/repository/org/springframework/boot/spring-boot-docker-compose/3.5.10/spring-boot-docker-compose-3.5.10.jar:/Users/mateusznowak/.m2/repository/com/fasterxml/jackson/module/jackson-module-parameter-names/2.19.4/jackson-module-parameter-names-2.19.4.jar:/Users/mateusznowak/.m2/repository/org/springframework/boot/spring-boot-configuration-processor/3.5.10/spring-boot-configuration-processor-3.5.10.jar:/Users/mateusznowak/.m2/repository/org/axonframework/axon-test/5.0.1/axon-test-5.0.1.jar:/Users/mateusznowak/.m2/repository/org/hamcrest/hamcrest/3.0/hamcrest-3.0.jar:/Users/mateusznowak/.m2/repository/org/hamcrest/hamcrest-library/3.0/hamcrest-library-3.0.jar:/Users/mateusznowak/.m2/repository/org/hamcrest/hamcrest-core/3.0/hamcrest-core-3.0.jar:/Users/mateusznowak/.m2/repository/org/awaitility/awaitility/4.2.2/awaitility-4.2.2.jar:/Users/mateusznowak/.m2/repository/com/google/code/gson/gson/2.13.2/gson-2.13.2.jar:/Users/mateusznowak/.m2/repository/com/google/errorprone/error_prone_annotations/2.41.0/error_prone_annotations-2.41.0.jar:/Users/mateusznowak/.m2/repository/org/junit/jupiter/junit-jupiter/5.12.2/junit-jupiter-5.12.2.jar:/Users/mateusznowak/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.12.2/junit-jupiter-params-5.12.2.jar:/Users/mateusznowak/.m2/repository/org/testcontainers/testcontainers/1.21.4/testcontainers-1.21.4.jar:/Users/mateusznowak/.m2/repository/junit/junit/4.13.2/junit-4.13.2.jar:/Users/mateusznowak/.m2/repository/org/apache/commons/commons-compress/1.24.0/commons-compress-1.24.0.jar:/Users/mateusznowak/.m2/repository/org/rnorth/duct-tape/duct-tape/1.0.8/duct-tape-1.0.8.jar:/Users/mateusznowak/.m2/repository/com/github/docker-java/docker-java-api/3.4.2/docker-java-api-3.4.2.jar:/Users/mateusznowak/.m2/repository/com/github/docker-java/docker-java-transport-zerodep/3.4.2/docker-java-transport-zerodep-3.4.2.jar:/Users/mateusznowak/.m2/repository/com/github/docker-java/docker-java-transport/3.4.2/docker-java-transport-3.4.2.jar:/Users/mateusznowak/.m2/repository/net/java/dev/jna/jna/5.13.0/jna-5.13.0.jar:/Users/mateusznowak/.m2/repository/org/springframework/boot/spring-boot-starter-test/3.5.10/spring-boot-starter-test-3.5.10.jar:/Users/mateusznowak/.m2/repository/org/springframework/boot/spring-boot-test/3.5.10/spring-boot-test-3.5.10.jar:/Users/mateusznowak/.m2/repository/org/springframework/boot/spring-boot-test-autoconfigure/3.5.10/spring-boot-test-autoconfigure-3.5.10.jar:/Users/mateusznowak/.m2/repository/com/jayway/jsonpath/json-path/2.9.0/json-path-2.9.0.jar:/Users/mateusznowak/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.4/jakarta.xml.bind-api-4.0.4.jar:/Users/mateusznowak/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.4/jakarta.activation-api-2.1.4.jar:/Users/mateusznowak/.m2/repository/net/minidev/json-smart/2.5.2/json-smart-2.5.2.jar:/Users/mateusznowak/.m2/repository/net/minidev/accessors-smart/2.5.2/accessors-smart-2.5.2.jar:/Users/mateusznowak/.m2/repository/org/ow2/asm/asm/9.7.1/asm-9.7.1.jar:/Users/mateusznowak/.m2/repository/org/assertj/assertj-core/3.27.6/assertj-core-3.27.6.jar:/Users/mateusznowak/.m2/repository/net/bytebuddy/byte-buddy/1.17.8/byte-buddy-1.17.8.jar:/Users/mateusznowak/.m2/repository/org/mockito/mockito-core/5.17.0/mockito-core-5.17.0.jar:/Users/mateusznowak/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar:/Users/mateusznowak/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/Users/mateusznowak/.m2/repository/org/mockito/mockito-junit-jupiter/5.17.0/mockito-junit-jupiter-5.17.0.jar:/Users/mateusznowak/.m2/repository/org/skyscreamer/jsonassert/1.5.3/jsonassert-1.5.3.jar:/Users/mateusznowak/.m2/repository/com/vaadin/external/google/android-json/0.0.20131108.vaadin1/android-json-0.0.20131108.vaadin1.jar:/Users/mateusznowak/.m2/repository/org/springframework/spring-core/6.2.15/spring-core-6.2.15.jar:/Users/mateusznowak/.m2/repository/org/springframework/spring-jcl/6.2.15/spring-jcl-6.2.15.jar:/Users/mateusznowak/.m2/repository/org/springframework/spring-test/6.2.15/spring-test-6.2.15.jar:/Users/mateusznowak/.m2/repository/org/xmlunit/xmlunit-core/2.10.4/xmlunit-core-2.10.4.jar:/Users/mateusznowak/.m2/repository/org/springframework/boot/spring-boot-testcontainers/3.5.10/spring-boot-testcontainers-3.5.10.jar:/Users/mateusznowak/.m2/repository/io/projectreactor/reactor-test/3.7.15/reactor-test-3.7.15.jar:/Users/mateusznowak/.m2/repository/org/jetbrains/kotlin/kotlin-test-junit5/1.9.25/kotlin-test-junit5-1.9.25.jar:/Users/mateusznowak/.m2/repository/org/jetbrains/kotlin/kotlin-test/1.9.25/kotlin-test-1.9.25.jar:/Users/mateusznowak/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.12.2/junit-jupiter-api-5.12.2.jar:/Users/mateusznowak/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/mateusznowak/.m2/repository/org/junit/platform/junit-platform-commons/1.12.2/junit-platform-commons-1.12.2.jar:/Users/mateusznowak/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/mateusznowak/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.12.2/junit-jupiter-engine-5.12.2.jar:/Users/mateusznowak/.m2/repository/org/junit/platform/junit-platform-engine/1.12.2/junit-platform-engine-1.12.2.jar:/Users/mateusznowak/.m2/repository/org/jetbrains/kotlinx/kotlinx-coroutines-test/1.8.1/kotlinx-coroutines-test-1.8.1.jar:/Users/mateusznowak/.m2/repository/org/jetbrains/kotlinx/kotlinx-coroutines-test-jvm/1.8.1/kotlinx-coroutines-test-jvm-1.8.1.jar:/Users/mateusznowak/.m2/repository/org/testcontainers/junit-jupiter/1.21.4/junit-jupiter-1.21.4.jar com.intellij.rt.junit.JUnitStarter -ideVersion5 -junit5 com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature.RecruitCreatureSpringSliceTest$ArmyCreatureTypesLimitTests,given army with 7 different creature types, when recruit more of existing creature, then recruited
+19:43:45.513 [main] WARN org.springframework.core.annotation.AnnotationTypeMapping -- Support for convention-based annotation attribute overrides is deprecated and will be removed in Spring Framework 7.0. Please annotate the following attributes in @org.axonframework.messaging.commandhandling.annotation.CommandHandler with appropriate @AliasFor declarations: [payloadType]
+19:43:45.521 [main] WARN org.springframework.core.annotation.AnnotationTypeMapping -- Support for convention-based annotation attribute overrides is deprecated and will be removed in Spring Framework 7.0. Please annotate the following attributes in @org.axonframework.eventsourcing.annotation.EventSourcingHandler with appropriate @AliasFor declarations: [payloadType]
+19:43:45.521 [main] WARN org.springframework.core.annotation.AnnotationTypeMapping -- Support for convention-based annotation attribute overrides is deprecated and will be removed in Spring Framework 7.0. Please annotate the following attributes in @org.axonframework.eventsourcing.annotation.EventSourcingHandler with appropriate @AliasFor declarations: [payloadType]
+19:43:45.545 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.dddheroes.heroesofddd.HeroesOfDDDApplication for test class com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature.RecruitCreatureSpringSliceTest
+19:43:45.590 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature.RecruitCreatureSpringSliceTest$ArmyCreatureTypesLimitTests]: ArmyCreatureTypesLimitTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+19:43:45.594 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.dddheroes.heroesofddd.HeroesOfDDDApplication for test class com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature.RecruitCreatureSpringSliceTest$ArmyCreatureTypesLimitTests
+19:43:45.624 [main] INFO org.springframework.boot.devtools.restart.RestartApplicationListener -- Restart disabled due to context in which it is running
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.10)
+
+2026-01-30T19:43:45.766+01:00  INFO 23509 --- [heroesofddd] [           main] d.h.c.w.r.RecruitCreatureSpringSliceTest : Starting RecruitCreatureSpringSliceTest using Java 24.0.1 with PID 23509 (started by mateusznowak in /Users/mateusznowak/GitRepos/MateuszNaKodach/HeroesOfDomainDrivenDesign.EventSourcing.DCB.Kotlin.Axon5.Spring)
+2026-01-30T19:43:45.766+01:00  INFO 23509 --- [heroesofddd] [           main] d.h.c.w.r.RecruitCreatureSpringSliceTest : No active profile set, falling back to 1 default profile: "default"
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::arrayBaseOffset has been called by com.google.protobuf.UnsafeUtil$MemoryAccessor (file:/Users/mateusznowak/.m2/repository/com/google/protobuf/protobuf-java/4.33.1/protobuf-java-4.33.1.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.protobuf.UnsafeUtil$MemoryAccessor
+WARNING: sun.misc.Unsafe::arrayBaseOffset will be removed in a future release
+2026-01-30T19:43:46.459+01:00  INFO 23509 --- [heroesofddd] [           main] i.a.a.c.impl.AxonServerManagedChannel    : Requesting connection details from localhost:8124
+2026-01-30T19:43:46.552+01:00  INFO 23509 --- [heroesofddd] [           main] i.a.a.c.impl.AxonServerManagedChannel    : Successfully connected to localhost:8124
+2026-01-30T19:43:46.556+01:00  INFO 23509 --- [heroesofddd] [           main] i.a.a.connector.impl.ControlChannelImpl  : Connected instruction stream for context 'default'. Sending client identification
+2026-01-30T19:43:46.724+01:00  INFO 23509 --- [heroesofddd] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-01-30T19:43:46.915+01:00  INFO 23509 --- [heroesofddd] [           main] i.a.a.c.command.impl.CommandChannelImpl  : CommandChannel for context 'default' connected, 0 command handlers registered
+2026-01-30T19:43:46.916+01:00  INFO 23509 --- [heroesofddd] [           main] i.a.a.c.command.impl.CommandChannelImpl  : Registered handler for command 'com.dddheroes.heroesofddd.creaturerecruitment.write.increaseavailablecreatures.IncreaseAvailableCreatures' in context 'default'
+2026-01-30T19:43:46.929+01:00  INFO 23509 --- [heroesofddd] [           main] i.a.a.c.command.impl.CommandChannelImpl  : Registered handler for command 'com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling.BuildDwelling' in context 'default'
+2026-01-30T19:43:46.934+01:00  INFO 23509 --- [heroesofddd] [           main] i.a.a.c.command.impl.CommandChannelImpl  : Registered handler for command 'com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature.RecruitCreature' in context 'default'
+2026-01-30T19:43:46.949+01:00  INFO 23509 --- [heroesofddd] [           main] d.h.c.w.r.RecruitCreatureSpringSliceTest : Started RecruitCreatureSpringSliceTest in 1.33 seconds (process running for 1.859)
+2026-01-30T19:43:46.959+01:00  INFO 23509 --- [heroesofddd] [           main] o.s.b.d.r.RestartApplicationListener     : Restart disabled due to context in which it is running
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.10)
+
+2026-01-30T19:43:46.968+01:00  INFO 23509 --- [heroesofddd] [           main] ingSliceTest$ArmyCreatureTypesLimitTests : Starting RecruitCreatureSpringSliceTest.ArmyCreatureTypesLimitTests using Java 24.0.1 with PID 23509 (started by mateusznowak in /Users/mateusznowak/GitRepos/MateuszNaKodach/HeroesOfDomainDrivenDesign.EventSourcing.DCB.Kotlin.Axon5.Spring)
+2026-01-30T19:43:46.969+01:00  INFO 23509 --- [heroesofddd] [           main] ingSliceTest$ArmyCreatureTypesLimitTests : No active profile set, falling back to 1 default profile: "default"
+2026-01-30T19:43:47.075+01:00  INFO 23509 --- [heroesofddd] [           main] i.a.a.c.impl.AxonServerManagedChannel    : Requesting connection details from localhost:8124
+2026-01-30T19:43:47.084+01:00  INFO 23509 --- [heroesofddd] [           main] i.a.a.c.impl.AxonServerManagedChannel    : Successfully connected to localhost:8124
+2026-01-30T19:43:47.084+01:00  INFO 23509 --- [heroesofddd] [           main] i.a.a.connector.impl.ControlChannelImpl  : Connected instruction stream for context 'default'. Sending client identification
+2026-01-30T19:43:47.118+01:00  INFO 23509 --- [heroesofddd] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-01-30T19:43:47.141+01:00  INFO 23509 --- [heroesofddd] [           main] i.a.a.c.command.impl.CommandChannelImpl  : CommandChannel for context 'default' connected, 0 command handlers registered
+2026-01-30T19:43:47.141+01:00  INFO 23509 --- [heroesofddd] [           main] i.a.a.c.command.impl.CommandChannelImpl  : Registered handler for command 'com.dddheroes.heroesofddd.creaturerecruitment.write.increaseavailablecreatures.IncreaseAvailableCreatures' in context 'default'
+2026-01-30T19:43:47.145+01:00  INFO 23509 --- [heroesofddd] [           main] i.a.a.c.command.impl.CommandChannelImpl  : Registered handler for command 'com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling.BuildDwelling' in context 'default'
+2026-01-30T19:43:47.149+01:00  INFO 23509 --- [heroesofddd] [           main] i.a.a.c.command.impl.CommandChannelImpl  : Registered handler for command 'com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature.RecruitCreature' in context 'default'
+2026-01-30T19:43:47.153+01:00  INFO 23509 --- [heroesofddd] [           main] ingSliceTest$ArmyCreatureTypesLimitTests : Started RecruitCreatureSpringSliceTest.ArmyCreatureTypesLimitTests in 0.194 seconds (process running for 2.063)
+2026-01-30T19:43:47.722+01:00  WARN 23509 --- [heroesofddd] [           main] o.a.e.s.config.SpringComponentRegistry   : Duplicate Configuration Enhancer registration detected. Replaced enhancer of type [MessagesRecordingConfigurationEnhancer].
+2026-01-30T19:43:47.764+01:00  WARN 23509 --- [heroesofddd] [           main] o.a.e.s.config.SpringComponentRegistry   : Duplicate Configuration Enhancer registration detected. Replaced enhancer of type [MessagesRecordingConfigurationEnhancer].
+2026-01-30T19:43:47.797+01:00  WARN 23509 --- [heroesofddd] [           main] o.a.e.s.config.SpringComponentRegistry   : Duplicate Configuration Enhancer registration detected. Replaced enhancer of type [MessagesRecordingConfigurationEnhancer].
+2026-01-30T19:43:47.830+01:00  WARN 23509 --- [heroesofddd] [           main] o.a.e.s.config.SpringComponentRegistry   : Duplicate Configuration Enhancer registration detected. Replaced enhancer of type [MessagesRecordingConfigurationEnhancer].
+2026-01-30T19:43:47.861+01:00  WARN 23509 --- [heroesofddd] [           main] o.a.e.s.config.SpringComponentRegistry   : Duplicate Configuration Enhancer registration detected. Replaced enhancer of type [MessagesRecordingConfigurationEnhancer].
+2026-01-30T19:43:47.890+01:00  WARN 23509 --- [heroesofddd] [           main] o.a.e.s.config.SpringComponentRegistry   : Duplicate Configuration Enhancer registration detected. Replaced enhancer of type [MessagesRecordingConfigurationEnhancer].
+2026-01-30T19:43:47.918+01:00  WARN 23509 --- [heroesofddd] [           main] o.a.e.s.config.SpringComponentRegistry   : Duplicate Configuration Enhancer registration detected. Replaced enhancer of type [MessagesRecordingConfigurationEnhancer].
+2026-01-30T19:43:47.948+01:00  WARN 23509 --- [heroesofddd] [           main] o.a.e.s.config.SpringComponentRegistry   : Duplicate Configuration Enhancer registration detected. Replaced enhancer of type [MessagesRecordingConfigurationEnhancer].
+2026-01-30T19:43:47.976+01:00  WARN 23509 --- [heroesofddd] [           main] o.a.e.s.config.SpringComponentRegistry   : Duplicate Configuration Enhancer registration detected. Replaced enhancer of type [MessagesRecordingConfigurationEnhancer].
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/Users/mateusznowak/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+org.axonframework.test.AxonAssertionError: The published events do not match the expected events
+
+Expected                                                                        |  Actual
+--------------------------------------------------------------------------------|--------------------------------------------------------------------------------
+com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited         <|>
+com.dddheroes.heroesofddd.armies.events.CreatureAddedToArmy                    <|>
+com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged <|>
+
+
+	at com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature.RecruitCreatureSpringSliceTest$ArmyCreatureTypesLimitTests.given army with 7 different creature types, when recruit more of existing creature, then recruited(RecruitCreatureSpringSliceTest.kt:433)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.Optional.ifPresent(Optional.java:178)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:186)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:215)
+	at java.base/java.util.stream.IntPipeline$1$1.accept(IntPipeline.java:180)
+	at java.base/java.util.stream.Streams$RangeIntSpliterator.forEachRemaining(Streams.java:104)
+	at java.base/java.util.Spliterator$OfInt.forEachRemaining(Spliterator.java:712)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:570)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:560)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:153)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:176)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:265)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:636)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+
+
+org.axonframework.test.AxonAssertionError: The published events do not match the expected events
+
+Expected                                                                        |  Actual
+--------------------------------------------------------------------------------|--------------------------------------------------------------------------------
+com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited         <|>
+com.dddheroes.heroesofddd.armies.events.CreatureAddedToArmy                    <|>
+com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged <|>
+
+
+	at com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature.RecruitCreatureSpringSliceTest$ArmyCreatureTypesLimitTests.given army with 7 different creature types, when recruit more of existing creature, then recruited(RecruitCreatureSpringSliceTest.kt:433)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.Optional.ifPresent(Optional.java:178)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:186)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:215)
+	at java.base/java.util.stream.IntPipeline$1$1.accept(IntPipeline.java:180)
+	at java.base/java.util.stream.Streams$RangeIntSpliterator.forEachRemaining(Streams.java:104)
+	at java.base/java.util.Spliterator$OfInt.forEachRemaining(Spliterator.java:712)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:570)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:560)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:153)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:176)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:265)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:636)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+
+
+org.axonframework.test.AxonAssertionError: The published events do not match the expected events
+
+Expected                                                                        |  Actual
+--------------------------------------------------------------------------------|--------------------------------------------------------------------------------
+com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited         <|>
+com.dddheroes.heroesofddd.armies.events.CreatureAddedToArmy                    <|>
+com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged <|>
+
+
+	at com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature.RecruitCreatureSpringSliceTest$ArmyCreatureTypesLimitTests.given army with 7 different creature types, when recruit more of existing creature, then recruited(RecruitCreatureSpringSliceTest.kt:433)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.Optional.ifPresent(Optional.java:178)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:186)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:215)
+	at java.base/java.util.stream.IntPipeline$1$1.accept(IntPipeline.java:180)
+	at java.base/java.util.stream.Streams$RangeIntSpliterator.forEachRemaining(Streams.java:104)
+	at java.base/java.util.Spliterator$OfInt.forEachRemaining(Spliterator.java:712)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:570)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:560)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:153)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:176)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:265)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:636)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+
+
+org.axonframework.test.AxonAssertionError: The published events do not match the expected events
+
+Expected                                                                        |  Actual
+--------------------------------------------------------------------------------|--------------------------------------------------------------------------------
+com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited         <|>
+com.dddheroes.heroesofddd.armies.events.CreatureAddedToArmy                    <|>
+com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged <|>
+
+
+	at com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature.RecruitCreatureSpringSliceTest$ArmyCreatureTypesLimitTests.given army with 7 different creature types, when recruit more of existing creature, then recruited(RecruitCreatureSpringSliceTest.kt:433)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.Optional.ifPresent(Optional.java:178)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:186)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:215)
+	at java.base/java.util.stream.IntPipeline$1$1.accept(IntPipeline.java:180)
+	at java.base/java.util.stream.Streams$RangeIntSpliterator.forEachRemaining(Streams.java:104)
+	at java.base/java.util.Spliterator$OfInt.forEachRemaining(Spliterator.java:712)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:570)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:560)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:153)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:176)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:265)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:636)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+
+
+org.axonframework.test.AxonAssertionError: The published events do not match the expected events
+
+Expected                                                                        |  Actual
+--------------------------------------------------------------------------------|--------------------------------------------------------------------------------
+com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited         <|>
+com.dddheroes.heroesofddd.armies.events.CreatureAddedToArmy                    <|>
+com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged <|>
+
+
+	at com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature.RecruitCreatureSpringSliceTest$ArmyCreatureTypesLimitTests.given army with 7 different creature types, when recruit more of existing creature, then recruited(RecruitCreatureSpringSliceTest.kt:433)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565)
+	at java.base/java.util.Optional.ifPresent(Optional.java:178)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:186)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:215)
+	at java.base/java.util.stream.IntPipeline$1$1.accept(IntPipeline.java:180)
+	at java.base/java.util.stream.Streams$RangeIntSpliterator.forEachRemaining(Streams.java:108)
+	at java.base/java.util.Spliterator$OfInt.forEachRemaining(Spliterator.java:712)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:570)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:560)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:153)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:176)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:265)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:636)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+
+
+Process finished with exit code 255

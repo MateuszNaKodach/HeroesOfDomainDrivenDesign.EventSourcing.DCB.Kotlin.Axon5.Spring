@@ -7,6 +7,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.axonframework.common.configuration.ApplicationConfigurer
 import org.axonframework.test.fixture.AxonTestFixture
 import org.axonframework.test.fixture.MessagesRecordingConfigurationEnhancer
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -15,9 +18,19 @@ import org.springframework.context.annotation.Bean
 import java.util.*
 
 @SpringBootTest
-internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(configurer: ApplicationConfigurer) {
+internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(private val configurer: ApplicationConfigurer) {
 
-    private val sliceUnderTest: AxonTestFixture = AxonTestFixture.with(configurer)
+    private lateinit var sliceUnderTest: AxonTestFixture;
+
+    @BeforeEach
+    fun beforeEach() {
+        sliceUnderTest = AxonTestFixture.with(configurer)
+    }
+
+    @AfterEach
+    fun afterEach() {
+        sliceUnderTest.stop()
+    }
 
     @Test
     fun `given DwellingBuild, when IncreaseAvailableCreatures, then exception`() {
@@ -51,7 +64,7 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
             .events(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = increaseBy, changedTo = increaseBy))
     }
 
-    @Test
+    @RepeatedTest(10)
     fun `given DwellingBuilt with AvailableCreaturesChanged, when IncreaseAvailableCreatures, then AvailableCreaturesChanged`() {
         val dwellingId = UUID.randomUUID().toString()
         val creatureId = "angel"

@@ -6,6 +6,8 @@ import org.axonframework.common.configuration.ApplicationConfigurer
 import org.axonframework.extensions.kotlin.AxonMetadata
 import org.axonframework.test.fixture.AxonTestFixture
 import org.axonframework.test.fixture.MessagesRecordingConfigurationEnhancer
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -14,9 +16,20 @@ import org.springframework.context.annotation.Bean
 import java.util.*
 
 @SpringBootTest
-internal class BuildDwellingSpringSliceTest @Autowired constructor(configurer: ApplicationConfigurer) {
+internal class BuildDwellingSpringSliceTest @Autowired constructor(private val configurer: ApplicationConfigurer) {
 
-    private val sliceUnderTest: AxonTestFixture = AxonTestFixture.with(configurer)
+    private lateinit var sliceUnderTest: AxonTestFixture;
+
+    @BeforeEach
+    fun beforeEach() {
+        sliceUnderTest = AxonTestFixture.with(configurer)
+    }
+
+    @AfterEach
+    fun afterEach() {
+        sliceUnderTest.stop()
+    }
+
     private val gameId: String = UUID.randomUUID().toString()
     private val playerId: String = UUID.randomUUID().toString()
 

@@ -5,3 +5,7 @@ axon:
   axonserver:
     context: default
     enabled: true
+
+logging:
+  level:
+    org.axonframework.test.fixture: DEBUG
