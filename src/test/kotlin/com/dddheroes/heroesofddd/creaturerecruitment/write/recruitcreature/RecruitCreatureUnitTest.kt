@@ -6,25 +6,21 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import org.assertj.core.api.Assertions.assertThat
-import org.axonframework.common.configuration.ApplicationConfigurer
+import org.axonframework.eventsourcing.configuration.EventSourcingConfigurer
 import org.axonframework.test.fixture.AxonTestFixture
-import org.axonframework.test.fixture.MessagesRecordingConfigurationEnhancer
 import org.junit.jupiter.api.*
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.context.annotation.Bean
-import org.springframework.test.annotation.DirtiesContext
 import java.util.*
 
-@SpringBootTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-internal class RecruitCreatureSpringSliceTest @Autowired constructor(private val configurer: ApplicationConfigurer) {
+internal class RecruitCreatureUnitTest {
 
     private lateinit var sliceUnderTest: AxonTestFixture;
 
     @BeforeEach
     fun beforeEach() {
+        val sliceConfig = RecruitCreatureWriteSliceConfig()
+        val configurer = EventSourcingConfigurer.create()
+            .registerEntity(sliceConfig.recruitCreatureSliceState())
+            .registerCommandHandlingModule(sliceConfig.recruitCreatureSlice())
         sliceUnderTest = AxonTestFixture.with(configurer)
     }
 
@@ -410,7 +406,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(private val
                 .exceptionSatisfies { ex -> assertThat(ex).hasMessageContaining("Army cannot contain more than 7 different creature types") }
         }
 
-        @RepeatedTest(10)
+        @RepeatedTest(100)
         fun `given army with 7 different creature types, when recruit more of existing creature, then recruited`() {
             val dwellingId = UUID.randomUUID().toString()
             val armyId = UUID.randomUUID().toString()
@@ -557,12 +553,5 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(private val
                     changedTo = 0
                 )
             )
-    }
-
-    @TestConfiguration
-    class TestConfig {
-
-        @Bean
-        fun recordingEnhancer() = MessagesRecordingConfigurationEnhancer()
     }
 } 

@@ -190,7 +190,7 @@ internal class RecruitCreatureEventSourcedState private constructor(val state: S
 }
 
 
-private class RecruitCreatureCommandHandler {
+internal class RecruitCreatureCommandHandler {
 
     @CommandHandler
     fun handle(
