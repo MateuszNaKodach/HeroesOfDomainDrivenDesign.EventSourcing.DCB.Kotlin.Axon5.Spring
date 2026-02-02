@@ -34,11 +34,16 @@ jobs:
       - name: 📦 Build with Maven
         run: mvn -B compile --file pom.xml
 
-      - name: 🧪 Run tests
+      - name: 🧪 Run unit tests
+        env:
+          AXON_AXONSERVER_ENABLED: false
+        run: mvn -B test -DexcludedGroups=integration --file pom.xml
+
+      - name: 🧪 Run integration tests
         env:
           SPRING_PROFILES_ACTIVE: test,testcontainers,axonserver
           AXON_AXONSERVER_ENABLED: true
-        run: mvn -B test --file pom.xml
+        run: mvn -B test -Dgroups=integration --file pom.xml
 
 #      - name: 📦 Package application
 #        run: mvn -B package --file pom.xml

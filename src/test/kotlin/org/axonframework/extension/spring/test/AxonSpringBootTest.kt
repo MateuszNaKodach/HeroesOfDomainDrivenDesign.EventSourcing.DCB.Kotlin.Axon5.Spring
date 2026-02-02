@@ -1,6 +1,7 @@
 package org.axonframework.extension.spring.test
 
 import org.axonframework.test.fixture.MessagesRecordingConfigurationEnhancer
+import org.junit.jupiter.api.Tag
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.UseMainMethod
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment
@@ -19,6 +20,7 @@ class AxonTestConfiguration {
 
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
+@Tag("integration")
 @SpringBootTest
 @Import(AxonTestConfiguration::class)
 annotation class AxonSpringBootTest(
