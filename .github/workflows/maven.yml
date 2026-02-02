@@ -36,8 +36,8 @@ jobs:
 
       - name: 🧪 Run tests
         env:
-          SPRING_PROFILES_ACTIVE: test
-          AXON_SERVER_ENABLED: false
+          SPRING_PROFILES_ACTIVE: test,testcontainers
+          AXON_AXONSERVER_ENABLED: true
         run: mvn -B test --file pom.xml
 
 #      - name: 📦 Package application
