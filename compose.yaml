@@ -1,27 +1,26 @@
 services:
-  axonserver-n1:
-    image: 'axoniq/axonserver:2025.2.3'
+  heroes-af5-axonserver-n1:
+    image: axoniq/axonserver:2025.2.4
+    hostname: axonserver
     ports:
-      - '8024:8024'  # HTTP port
-      - '8124:8124'  # gRPC port
+      - "8024:8024"  # HTTP port
+      - "8124:8124"  # gRPC port
     environment:
-      axoniq_axonserver_standalone: true
-      axoniq_axonserver_hostname: axon-server
-      axoniq_axonserver_autocluster_first: axon-server
-      axoniq_axonserver_autocluster_contexts: _admin,default
-      spring_servlet_multipart_max-file-size: 95MB
-      spring_servlet_multipart_max-request-size: 95MB
+      AXONIQ_AXONSERVER_HOSTNAME: axonserver
+      AXONIQ_AXONSERVER_STANDALONE_DCB: true
+      AXONIQ_AXONSERVER_DEVMODE_ENABLED: true
     volumes:
-      - ./axonserver/axonserver-1/data:/axonserver/data
-      - ./axonserver/axonserver-1/events:/axonserver/events
-      - ./axonserver/axonserver-1/plugins:/axonserver/plugins
-      - ./axonserver/axonserver-1/log:/axonserver/log
-#     - ./axonserver/axoniq.license:/axonserver/config/axoniq.license  # uncomment if you have a license file
-
-volumes:
-  db:
-    driver: local
-  data:
-    driver: local
-  events:
-    driver: local
+      - ./volumes/axonserver-n1/data:/axonserver/data
+      - ./volumes/axonserver-n1/events:/axonserver/events
+  #   - ./volumes/axonserver-n1/axoniq.license:/axonserver/config/axoniq.license  # uncomment if you have a license file
+  heroes-af5-postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: heroes_db
+      POSTGRES_USER: heroes_user
+      POSTGRES_PASSWORD: heroes_password
+    ports:
+      - "8768:8768"
+    volumes:
+      - ./volumes/postgres-axon:/var/lib/postgresql/18/docker
+    command: -p 8768
