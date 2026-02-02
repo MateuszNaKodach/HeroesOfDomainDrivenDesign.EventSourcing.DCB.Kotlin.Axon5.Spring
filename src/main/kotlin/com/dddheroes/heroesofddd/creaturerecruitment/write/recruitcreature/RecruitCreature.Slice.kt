@@ -10,10 +10,12 @@ import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.restapi.Headers
+import org.axonframework.common.configuration.AxonConfiguration
 import org.axonframework.eventsourcing.annotation.EventCriteriaBuilder
 import org.axonframework.eventsourcing.annotation.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.eventsourcing.configuration.EventSourcedEntityModule
+import org.axonframework.eventsourcing.eventstore.EventStore
 import org.axonframework.extension.spring.stereotype.EventSourced
 import org.axonframework.extensions.kotlin.AxonMetadata
 import org.axonframework.extensions.kotlin.asCommandMessage
@@ -21,11 +23,13 @@ import org.axonframework.extensions.kotlin.asEventMessages
 import org.axonframework.messaging.commandhandling.annotation.CommandHandler
 import org.axonframework.messaging.commandhandling.configuration.CommandHandlingModule
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
+import org.axonframework.messaging.core.unitofwork.ProcessingContext
 import org.axonframework.messaging.eventhandling.gateway.EventAppender
 import org.axonframework.messaging.eventstreaming.EventCriteria
 import org.axonframework.messaging.eventstreaming.Tag
 import org.axonframework.modelling.annotation.InjectEntity
 import org.axonframework.modelling.configuration.EntityModule
+import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.bind.annotation.*
@@ -145,28 +149,42 @@ private fun evolve(state: State, event: HeroesEvent): State = when (event) {
 @EventSourced // ConsistencyBoundary
 internal class RecruitCreatureEventSourcedState private constructor(val state: State) {
 
+    private val log = LoggerFactory.getLogger(RecruitCreatureEventSourcedState::class.java)
+
     @EntityCreator
     constructor() : this(initialState)
 
     @EventSourcingHandler
-    fun evolve(event: DwellingBuilt) = RecruitCreatureEventSourcedState(
-        evolve(state, event)
-    )
+    fun evolve(event: DwellingBuilt): RecruitCreatureEventSourcedState {
+//        log.info("[EventSourcing] Applying event: {}", event)
+        val newState = evolve(state, event)
+//        log.debug("[EventSourcing] State after DwellingBuilt: {}", newState)
+        return RecruitCreatureEventSourcedState(newState)
+    }
 
     @EventSourcingHandler
-    fun evolve(event: AvailableCreaturesChanged) = RecruitCreatureEventSourcedState(
-        evolve(state, event)
-    )
+    fun evolve(event: AvailableCreaturesChanged): RecruitCreatureEventSourcedState {
+//        log.info("[EventSourcing] Applying event: {}", event)
+        val newState = evolve(state, event)
+//        log.debug("[EventSourcing] State after AvailableCreaturesChanged: {}", newState)
+        return RecruitCreatureEventSourcedState(newState)
+    }
 
     @EventSourcingHandler
-    fun evolve(event: CreatureAddedToArmy) = RecruitCreatureEventSourcedState(
-        evolve(state, event)
-    )
+    fun evolve(event: CreatureAddedToArmy): RecruitCreatureEventSourcedState {
+//        log.info("[EventSourcing] Applying event: {}", event)
+        val newState = evolve(state, event)
+//        log.debug("[EventSourcing] State after CreatureAddedToArmy: {}", newState)
+        return RecruitCreatureEventSourcedState(newState)
+    }
 
     @EventSourcingHandler
-    fun evolve(event: CreatureRemovedFromArmy) = RecruitCreatureEventSourcedState(
-        evolve(state, event)
-    )
+    fun evolve(event: CreatureRemovedFromArmy): RecruitCreatureEventSourcedState {
+//        log.info("[EventSourcing] Applying event: {}", event)
+        val newState = evolve(state, event)
+//        log.debug("[EventSourcing] State after CreatureRemovedFromArmy: {}", newState)
+        return RecruitCreatureEventSourcedState(newState)
+    }
 
     companion object {
         @JvmStatic
@@ -192,15 +210,36 @@ internal class RecruitCreatureEventSourcedState private constructor(val state: S
 
 internal class RecruitCreatureCommandHandler {
 
+    private val log = LoggerFactory.getLogger(RecruitCreatureCommandHandler::class.java)
+
     @CommandHandler
     fun handle(
         command: RecruitCreature,
         metadata: AxonMetadata,
         @InjectEntity(idProperty = "recruitmentId") eventSourced: RecruitCreatureEventSourcedState,
-        eventAppender: EventAppender
+        eventAppender: EventAppender,
+        processingContext: ProcessingContext,
+        configuration: AxonConfiguration
     ) {
+        log.info("[CommandHandler] Handling command: {}", command)
+        log.info("[CommandHandler] Reconstructed state from events: {}", eventSourced.state)
+
         val events = decide(command, eventSourced.state)
+
+        log.info("[CommandHandler] Events to append ({} total):", events.size)
+        events.forEachIndexed { index, event ->
+            log.info("[CommandHandler]   [{}] {}", index + 1, event)
+        }
+        log.info(
+            "[EventStore] AxonConfiguration implementation [{}]",
+            configuration.getComponent(EventStore::class.java)::class.java
+        )
+        log.info(
+            "[EventStore] ProcessingContext implementation [{}]",
+            processingContext.component(EventStore::class.java)::class.java
+        )
         eventAppender.append(events.asEventMessages(metadata))
+        log.info("[CommandHandler] Events appended successfully")
     }
 }
 

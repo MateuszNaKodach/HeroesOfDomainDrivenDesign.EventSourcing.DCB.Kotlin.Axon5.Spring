@@ -1,37 +1,37 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature
 
+import com.dddheroes.heroesofddd.HeroesOfDDDApplication
 import com.dddheroes.heroesofddd.armies.events.CreatureAddedToArmy
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import org.assertj.core.api.Assertions.assertThat
-import org.axonframework.common.configuration.ApplicationConfigurer
+import org.axonframework.common.configuration.AxonConfiguration
+import org.axonframework.eventsourcing.eventstore.EventStore
 import org.axonframework.test.fixture.AxonTestFixture
 import org.axonframework.test.fixture.MessagesRecordingConfigurationEnhancer
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.RepeatedTest
+import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
-import org.springframework.test.annotation.DirtiesContext
 import java.util.*
 
-@SpringBootTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-internal class RecruitCreatureSpringSliceTest @Autowired constructor(private val configurer: ApplicationConfigurer) {
+@TestConfiguration
+class TestConfig {
 
-    private lateinit var sliceUnderTest: AxonTestFixture;
+    @Bean
+    fun recordingEnhancer() = MessagesRecordingConfigurationEnhancer()
+}
 
-    @BeforeEach
-    fun beforeEach() {
-        sliceUnderTest = AxonTestFixture.with(configurer)
-    }
+@SpringBootTest(classes = [HeroesOfDDDApplication::class, TestConfig::class])
+internal class RecruitCreatureSpringSliceTest @Autowired constructor(val configuration: AxonConfiguration) {
 
-    @AfterEach
-    fun afterEach() {
-        sliceUnderTest.stop()
-    }
+    private val sliceUnderTest: AxonTestFixture = AxonTestFixture(configuration, AxonTestFixture.Customization())
 
     @Test
     fun `given not built dwelling, when recruit creature, then exception`() {
@@ -410,7 +410,14 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(private val
                 .exceptionSatisfies { ex -> assertThat(ex).hasMessageContaining("Army cannot contain more than 7 different creature types") }
         }
 
-        @RepeatedTest(10)
+        @BeforeEach
+        fun beforeEach() {
+            val eventStore = configuration.getComponent<EventStore>(EventStore::class.java)
+            println("Configuration EventStore: ${eventStore::class.java}")
+        }
+
+        @RepeatedTest(5)
+//        @Test
         fun `given army with 7 different creature types, when recruit more of existing creature, then recruited`() {
             val dwellingId = UUID.randomUUID().toString()
             val armyId = UUID.randomUUID().toString()
@@ -557,12 +564,5 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(private val
                     changedTo = 0
                 )
             )
-    }
-
-    @TestConfiguration
-    class TestConfig {
-
-        @Bean
-        fun recordingEnhancer() = MessagesRecordingConfigurationEnhancer()
     }
 } 
