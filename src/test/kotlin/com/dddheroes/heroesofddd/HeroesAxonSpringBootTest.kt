@@ -11,8 +11,8 @@ import kotlin.reflect.KClass
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 @ActiveProfiles("test", "testcontainers", "axonserver")
+// @ActiveProfiles("test", "axonserver") // uncomment if you don't want to use testcontainers
 @Import(TestcontainersConfiguration::class)
-// @ActiveProfiles("test", "axonserver") // if you don't want to use testcontainers
 @AxonSpringBootTest
 annotation class HeroesAxonSpringBootTest(
 
