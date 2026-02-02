@@ -10,12 +10,10 @@ import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.restapi.Headers
-import org.axonframework.common.configuration.AxonConfiguration
 import org.axonframework.eventsourcing.annotation.EventCriteriaBuilder
 import org.axonframework.eventsourcing.annotation.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.eventsourcing.configuration.EventSourcedEntityModule
-import org.axonframework.eventsourcing.eventstore.EventStore
 import org.axonframework.extension.spring.stereotype.EventSourced
 import org.axonframework.extensions.kotlin.AxonMetadata
 import org.axonframework.extensions.kotlin.asCommandMessage
@@ -23,7 +21,6 @@ import org.axonframework.extensions.kotlin.asEventMessages
 import org.axonframework.messaging.commandhandling.annotation.CommandHandler
 import org.axonframework.messaging.commandhandling.configuration.CommandHandlingModule
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
-import org.axonframework.messaging.core.unitofwork.ProcessingContext
 import org.axonframework.messaging.eventhandling.gateway.EventAppender
 import org.axonframework.messaging.eventstreaming.EventCriteria
 import org.axonframework.messaging.eventstreaming.Tag
@@ -210,36 +207,15 @@ internal class RecruitCreatureEventSourcedState private constructor(val state: S
 
 internal class RecruitCreatureCommandHandler {
 
-    private val log = LoggerFactory.getLogger(RecruitCreatureCommandHandler::class.java)
-
     @CommandHandler
     fun handle(
         command: RecruitCreature,
         metadata: AxonMetadata,
         @InjectEntity(idProperty = "recruitmentId") eventSourced: RecruitCreatureEventSourcedState,
-        eventAppender: EventAppender,
-        processingContext: ProcessingContext,
-        configuration: AxonConfiguration
+        eventAppender: EventAppender
     ) {
-        log.info("[CommandHandler] Handling command: {}", command)
-        log.info("[CommandHandler] Reconstructed state from events: {}", eventSourced.state)
-
         val events = decide(command, eventSourced.state)
-
-        log.info("[CommandHandler] Events to append ({} total):", events.size)
-        events.forEachIndexed { index, event ->
-            log.info("[CommandHandler]   [{}] {}", index + 1, event)
-        }
-        log.info(
-            "[EventStore] AxonConfiguration implementation [{}]",
-            configuration.getComponent(EventStore::class.java)::class.java
-        )
-        log.info(
-            "[EventStore] ProcessingContext implementation [{}]",
-            processingContext.component(EventStore::class.java)::class.java
-        )
         eventAppender.append(events.asEventMessages(metadata))
-        log.info("[CommandHandler] Events appended successfully")
     }
 }
 
