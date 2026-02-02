@@ -15,7 +15,7 @@ class TestcontainersConfiguration {
     @Bean
     @ServiceConnection
     fun axonServerContainer(): AxonServerContainer {
-        return AxonServerContainer("axoniq/axonserver:latest")
+        return AxonServerContainer("axoniq/axonserver:2025.2.4")
             .withDevMode(true)
             .withDcbContext(true)
     }
