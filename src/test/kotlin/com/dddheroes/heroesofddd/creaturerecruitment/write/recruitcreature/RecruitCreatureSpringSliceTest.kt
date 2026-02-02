@@ -25,6 +25,13 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(private val
 
     private val sliceUnderTest: AxonTestFixture = AxonTestFixture(configuration, AxonTestFixture.Customization())
 
+    @TestConfiguration
+    class TestConfig {
+
+        @Bean
+        fun recordingEnhancer() = MessagesRecordingConfigurationEnhancer()
+    }
+
     @Test
     fun `given not built dwelling, when recruit creature, then exception`() {
         val dwellingId = UUID.randomUUID().toString()
@@ -555,12 +562,5 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(private val
                     changedTo = 0
                 )
             )
-    }
-
-    @TestConfiguration
-    class TestConfig {
-
-        @Bean
-        fun recordingEnhancer() = MessagesRecordingConfigurationEnhancer()
     }
 } 
