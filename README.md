@@ -1,5 +1,7 @@
-# Heroes of Domain-Driven Design (Kotlin)
-Shows how to use Domain-Driven Design, Event Storming, Event Modeling and Event Sourcing in Heroes of Might & Magic III domain.
+# Heroes of Domain-Driven Design (Kotlin + Axon Framework 5)
+
+Shows how to use Domain-Driven Design, Event Storming, Event Modeling and Event Sourcing (with Dynamic Consistency
+Boundary) in Heroes of Might & Magic III domain.
 
 👉 See also implementations in: 
 - [Java + Axon Framework 4](https://github.com/MateuszNaKodach/HeroesOfDomainDrivenDesign.EventSourcing.Java.Axon.Spring)

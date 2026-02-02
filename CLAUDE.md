@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 Educational Heroes of Might & Magic III implementation demonstrating Domain-Driven Design, Event Sourcing, and Event
-Modeling patterns using Kotlin, Axon Framework 5.0.1, and Spring Boot 3.5.10.
+Modeling patterns using Kotlin, Axon Framework 5, and Spring Boot 3.
 
 ## Build & Run Commands
 

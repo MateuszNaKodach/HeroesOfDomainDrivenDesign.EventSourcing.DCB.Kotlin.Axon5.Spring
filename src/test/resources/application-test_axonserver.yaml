@@ -4,4 +4,4 @@ spring:
 axon:
   axonserver:
     context: default # for CI only the ` default ` context is available
-    enabled: true
+    enabled: ${AXON_AXONSERVER_ENABLED:true}

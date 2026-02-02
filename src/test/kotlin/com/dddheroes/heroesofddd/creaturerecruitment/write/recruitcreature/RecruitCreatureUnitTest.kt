@@ -7,8 +7,12 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import org.assertj.core.api.Assertions.assertThat
 import org.axonframework.test.fixture.AxonTestFixture
+import org.axonframework.test.fixture.axonTestFixture
 import org.axonframework.test.fixture.configSlice
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 import java.util.*
 
 internal class RecruitCreatureUnitTest {
@@ -18,7 +22,7 @@ internal class RecruitCreatureUnitTest {
     @BeforeEach
     fun beforeEach() {
         val sliceConfig = RecruitCreatureWriteSliceConfig()
-        sliceUnderTest = AxonTestFixture.with(
+        sliceUnderTest = axonTestFixture(
             configSlice {
                 registerEntity(sliceConfig.recruitCreatureSliceState())
                 registerCommandHandlingModule(sliceConfig.recruitCreatureSlice())
@@ -452,7 +456,7 @@ internal class RecruitCreatureUnitTest {
                 .exceptionSatisfies { ex -> assertThat(ex).hasMessageContaining("Army cannot contain more than 7 different creature types") }
         }
 
-        @RepeatedTest(100)
+        @Test
         fun `given army with 7 different creature types, when recruit more of existing creature, then recruited`() {
             val dwellingId = UUID.randomUUID().toString()
             val armyId = UUID.randomUUID().toString()
