@@ -26,7 +26,6 @@ import org.axonframework.messaging.eventstreaming.EventCriteria
 import org.axonframework.messaging.eventstreaming.Tag
 import org.axonframework.modelling.annotation.InjectEntity
 import org.axonframework.modelling.configuration.EntityModule
-import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.bind.annotation.*
@@ -41,14 +40,14 @@ data class RecruitCreature(
     val armyId: String,
     val quantity: Int,
     val expectedCost: Map<ResourceType, Int>,
-){
+) {
     data class RecruitmentId(val dwellingId: String, val armyId: String)
 
     // used as a process identifier
     val recruitmentId = RecruitmentId(dwellingId, armyId)
 }
 
-internal data class State(
+private data class State(
     val creatureId: String,
     val availableCreatures: Int,
     val costPerTroop: Map<ResourceType, Int>,
@@ -144,44 +143,26 @@ private fun evolve(state: State, event: HeroesEvent): State = when (event) {
 ///////////////////////////////////////////
 
 @EventSourced // ConsistencyBoundary
-internal class RecruitCreatureEventSourcedState private constructor(val state: State) {
-
-    private val log = LoggerFactory.getLogger(RecruitCreatureEventSourcedState::class.java)
+private class RecruitCreatureEventSourcedState private constructor(val state: State) {
 
     @EntityCreator
     constructor() : this(initialState)
 
     @EventSourcingHandler
-    fun evolve(event: DwellingBuilt): RecruitCreatureEventSourcedState {
-//        log.info("[EventSourcing] Applying event: {}", event)
-        val newState = evolve(state, event)
-//        log.debug("[EventSourcing] State after DwellingBuilt: {}", newState)
-        return RecruitCreatureEventSourcedState(newState)
-    }
+    fun evolve(event: DwellingBuilt): RecruitCreatureEventSourcedState =
+        RecruitCreatureEventSourcedState(evolve(state, event))
 
     @EventSourcingHandler
-    fun evolve(event: AvailableCreaturesChanged): RecruitCreatureEventSourcedState {
-//        log.info("[EventSourcing] Applying event: {}", event)
-        val newState = evolve(state, event)
-//        log.debug("[EventSourcing] State after AvailableCreaturesChanged: {}", newState)
-        return RecruitCreatureEventSourcedState(newState)
-    }
+    fun evolve(event: AvailableCreaturesChanged): RecruitCreatureEventSourcedState =
+        RecruitCreatureEventSourcedState(evolve(state, event))
 
     @EventSourcingHandler
-    fun evolve(event: CreatureAddedToArmy): RecruitCreatureEventSourcedState {
-//        log.info("[EventSourcing] Applying event: {}", event)
-        val newState = evolve(state, event)
-//        log.debug("[EventSourcing] State after CreatureAddedToArmy: {}", newState)
-        return RecruitCreatureEventSourcedState(newState)
-    }
+    fun evolve(event: CreatureAddedToArmy): RecruitCreatureEventSourcedState =
+        RecruitCreatureEventSourcedState(evolve(state, event))
 
     @EventSourcingHandler
-    fun evolve(event: CreatureRemovedFromArmy): RecruitCreatureEventSourcedState {
-//        log.info("[EventSourcing] Applying event: {}", event)
-        val newState = evolve(state, event)
-//        log.debug("[EventSourcing] State after CreatureRemovedFromArmy: {}", newState)
-        return RecruitCreatureEventSourcedState(newState)
-    }
+    fun evolve(event: CreatureRemovedFromArmy): RecruitCreatureEventSourcedState =
+        RecruitCreatureEventSourcedState(evolve(state, event))
 
     companion object {
         @JvmStatic
@@ -205,7 +186,7 @@ internal class RecruitCreatureEventSourcedState private constructor(val state: S
 }
 
 
-internal class RecruitCreatureCommandHandler {
+private class RecruitCreatureCommandHandler {
 
     @CommandHandler
     fun handle(
@@ -223,11 +204,11 @@ internal class RecruitCreatureCommandHandler {
 internal class RecruitCreatureWriteSliceConfig {
 
     @Bean
-    fun recruitCreatureSliceState(): EntityModule<RecruitCreature.RecruitmentId, RecruitCreatureEventSourcedState>
-    = EventSourcedEntityModule.autodetected(
-        RecruitCreature.RecruitmentId::class.java,
-        RecruitCreatureEventSourcedState::class.java
-    )
+    fun recruitCreatureSliceState(): EntityModule<*, *> =
+        EventSourcedEntityModule.autodetected(
+            RecruitCreature.RecruitmentId::class.java,
+            RecruitCreatureEventSourcedState::class.java
+        )
 
     @Bean
     fun recruitCreatureSlice(): CommandHandlingModule =

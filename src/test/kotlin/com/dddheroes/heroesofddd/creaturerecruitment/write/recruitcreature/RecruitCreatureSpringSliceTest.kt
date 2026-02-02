@@ -9,6 +9,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.axonframework.common.configuration.AxonConfiguration
 import org.axonframework.extension.spring.test.AxonSpringBootTest
 import org.axonframework.test.fixture.AxonTestFixture
+import org.axonframework.test.fixture.springTestFixture
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
@@ -18,10 +19,7 @@ import java.util.*
 @AxonSpringBootTest
 internal class RecruitCreatureSpringSliceTest @Autowired constructor(configuration: AxonConfiguration) {
 
-    private val sliceUnderTest: AxonTestFixture = AxonTestFixture(
-        configuration,
-        AxonTestFixture.Customization()
-    )
+    private val sliceUnderTest: AxonTestFixture = springTestFixture(configuration)
 
     @Test
     fun `given not built dwelling, when recruit creature, then exception`() {

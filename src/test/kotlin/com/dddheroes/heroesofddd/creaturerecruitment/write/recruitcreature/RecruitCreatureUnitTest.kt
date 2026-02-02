@@ -6,8 +6,8 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import org.assertj.core.api.Assertions.assertThat
-import org.axonframework.eventsourcing.configuration.EventSourcingConfigurer
 import org.axonframework.test.fixture.AxonTestFixture
+import org.axonframework.test.fixture.configSlice
 import org.junit.jupiter.api.*
 import java.util.*
 
@@ -18,10 +18,12 @@ internal class RecruitCreatureUnitTest {
     @BeforeEach
     fun beforeEach() {
         val sliceConfig = RecruitCreatureWriteSliceConfig()
-        val configurer = EventSourcingConfigurer.create()
-            .registerEntity(sliceConfig.recruitCreatureSliceState())
-            .registerCommandHandlingModule(sliceConfig.recruitCreatureSlice())
-        sliceUnderTest = AxonTestFixture.with(configurer)
+        sliceUnderTest = AxonTestFixture.with(
+            configSlice {
+                registerEntity(sliceConfig.recruitCreatureSliceState())
+                registerCommandHandlingModule(sliceConfig.recruitCreatureSlice())
+            }
+        )
     }
 
     @AfterEach

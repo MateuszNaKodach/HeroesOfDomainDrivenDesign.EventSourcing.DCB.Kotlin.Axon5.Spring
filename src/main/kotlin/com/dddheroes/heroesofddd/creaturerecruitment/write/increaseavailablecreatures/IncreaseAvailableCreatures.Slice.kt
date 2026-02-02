@@ -29,7 +29,7 @@ data class IncreaseAvailableCreatures(
     val increaseBy: Int,
 )
 
-internal data class State(val isBuilt: Boolean, val availableCreatures: Int)
+private data class State(val isBuilt: Boolean, val availableCreatures: Int)
 
 private val initialState = State(isBuilt = false, availableCreatures = 0)
 
@@ -66,7 +66,7 @@ private fun evolve(state: State, event: DwellingEvent): State = when (event) {
 ///////////////////////////////////////////
 
 @EventSourced(tagKey = EventTags.DWELLING_ID) // ConsistencyBoundary
-internal class IncreaseAvailableCreaturesEventSourcedState private constructor(val state: State) {
+private class IncreaseAvailableCreaturesEventSourcedState private constructor(val state: State) {
 
     @EntityCreator
     constructor() : this(initialState)

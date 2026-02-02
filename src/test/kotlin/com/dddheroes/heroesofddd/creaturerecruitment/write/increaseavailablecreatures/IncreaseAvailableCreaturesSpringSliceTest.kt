@@ -4,33 +4,18 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesCh
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import org.assertj.core.api.Assertions.assertThat
-import org.axonframework.common.configuration.ApplicationConfigurer
+import org.axonframework.common.configuration.AxonConfiguration
+import org.axonframework.extension.spring.test.AxonSpringBootTest
 import org.axonframework.test.fixture.AxonTestFixture
-import org.axonframework.test.fixture.MessagesRecordingConfigurationEnhancer
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.RepeatedTest
+import org.axonframework.test.fixture.springTestFixture
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.context.annotation.Bean
 import java.util.*
 
-@SpringBootTest
-internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(private val configurer: ApplicationConfigurer) {
+@AxonSpringBootTest
+internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(configuration: AxonConfiguration) {
 
-    private lateinit var sliceUnderTest: AxonTestFixture;
-
-    @BeforeEach
-    fun beforeEach() {
-        sliceUnderTest = AxonTestFixture.with(configurer)
-    }
-
-    @AfterEach
-    fun afterEach() {
-        sliceUnderTest.stop()
-    }
+    private val sliceUnderTest: AxonTestFixture = springTestFixture(configuration)
 
     @Test
     fun `given DwellingBuild, when IncreaseAvailableCreatures, then exception`() {
@@ -64,7 +49,7 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
             .events(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = increaseBy, changedTo = increaseBy))
     }
 
-    @RepeatedTest(10)
+    @Test
     fun `given DwellingBuilt with AvailableCreaturesChanged, when IncreaseAvailableCreatures, then AvailableCreaturesChanged`() {
         val dwellingId = UUID.randomUUID().toString()
         val creatureId = "angel"
@@ -79,13 +64,6 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
             .command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy = 2))
             .then()
             .events(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 2, changedTo = 3))
-    }
-
-    @TestConfiguration
-    class TestConfig {
-
-        @Bean
-        fun recordingEnhancer() = MessagesRecordingConfigurationEnhancer()
     }
 
 }

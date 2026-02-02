@@ -30,7 +30,7 @@ data class BuildDwelling(
     val costPerTroop: Map<ResourceType, Int>,
 )
 
-internal data class State(val isBuilt: Boolean)
+private data class State(val isBuilt: Boolean)
 
 private val initialState = State(isBuilt = false)
 
@@ -60,7 +60,7 @@ private fun evolve(state: State, event: DwellingEvent): State {
 ///////////////////////////////////////////
 
 @EventSourced(tagKey = EventTags.DWELLING_ID) // ConsistencyBoundary
-internal class BuildDwellingEventSourcedState private constructor(val state: State) {
+private class BuildDwellingEventSourcedState private constructor(val state: State) {
 
     @EntityCreator
     constructor() : this(initialState)
