@@ -7,11 +7,4 @@ spring:
 axon:
   axonserver:
     context: default
-    enabled: true
-logging:
-  level:
-    org.axonframework.configuration: DEBUG
-    org.axonframework.test.fixture: DEBUG
-    com.dddheroes.heroesofddd.creatures: DEBUG
-
-
+    enabled: false
