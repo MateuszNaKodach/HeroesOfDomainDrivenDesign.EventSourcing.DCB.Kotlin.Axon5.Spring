@@ -374,6 +374,50 @@ internal class RecruitCreatureUnitTest {
     inner class ArmyCreatureTypesLimitTests {
 
         @Test
+        fun `given empty army, when recruit creature, then recruited`() {
+            val dwellingId = UUID.randomUUID().toString()
+            val armyId = UUID.randomUUID().toString()
+            val creatureId = "angel"
+            val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
+
+            sliceUnderTest
+                .given()
+                .event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
+                .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = 1))
+                .`when`()
+                .command(
+                    RecruitCreature(
+                        dwellingId = dwellingId,
+                        creatureId = creatureId,
+                        armyId = armyId,
+                        quantity = 1,
+                        expectedCost = costPerTroop
+                    )
+                )
+                .then()
+                .events(
+                    CreatureRecruited(
+                        dwellingId = dwellingId,
+                        creatureId = creatureId,
+                        toArmy = armyId,
+                        quantity = 1,
+                        totalCost = costPerTroop
+                    ),
+                    CreatureAddedToArmy(
+                        armyId = armyId,
+                        creatureId = creatureId,
+                        quantity = 1
+                    ),
+                    AvailableCreaturesChanged(
+                        dwellingId = dwellingId,
+                        creatureId = creatureId,
+                        changedBy = -1,
+                        changedTo = 0
+                    )
+                )
+        }
+
+        @Test
         fun `given army with 7 different creature types, when recruit new 8th creature type, then exception`() {
             val dwellingId = UUID.randomUUID().toString()
             val armyId = UUID.randomUUID().toString()
@@ -509,49 +553,5 @@ internal class RecruitCreatureUnitTest {
                     )
                 )
         }
-    }
-
-    @Test
-    fun `given empty army, when recruit creature, then recruited`() {
-        val dwellingId = UUID.randomUUID().toString()
-        val armyId = UUID.randomUUID().toString()
-        val creatureId = "angel"
-        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
-
-        sliceUnderTest
-            .given()
-            .event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = 1))
-            .`when`()
-            .command(
-                RecruitCreature(
-                    dwellingId = dwellingId,
-                    creatureId = creatureId,
-                    armyId = armyId,
-                    quantity = 1,
-                    expectedCost = costPerTroop
-                )
-            )
-            .then()
-            .events(
-                CreatureRecruited(
-                    dwellingId = dwellingId,
-                    creatureId = creatureId,
-                    toArmy = armyId,
-                    quantity = 1,
-                    totalCost = costPerTroop
-                ),
-                CreatureAddedToArmy(
-                    armyId = armyId,
-                    creatureId = creatureId,
-                    quantity = 1
-                ),
-                AvailableCreaturesChanged(
-                    dwellingId = dwellingId,
-                    creatureId = creatureId,
-                    changedBy = -1,
-                    changedTo = 0
-                )
-            )
     }
 } 
