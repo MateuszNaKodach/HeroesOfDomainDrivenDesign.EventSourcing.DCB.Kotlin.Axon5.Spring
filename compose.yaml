@@ -1,16 +1,22 @@
 services:
-  axon-server:
-    image: axoniq/axonserver:2025.1.2
+  axonserver-n1:
+    image: 'axoniq/axonserver:2025.2.3'
     ports:
-      - "8024:8024"
-      - "8124:8124"
+      - '8024:8024'  # HTTP port
+      - '8124:8124'  # gRPC port
     environment:
+      axoniq_axonserver_standalone: true
       axoniq_axonserver_hostname: axon-server
       axoniq_axonserver_autocluster_first: axon-server
-      axoniq_axonserver_autocluster_contexts: _admin
+      axoniq_axonserver_autocluster_contexts: _admin,default
+      spring_servlet_multipart_max-file-size: 95MB
+      spring_servlet_multipart_max-request-size: 95MB
     volumes:
-      - data:/axonserver/data
-      - events:/axonserver/events
+      - ./axonserver/axonserver-1/data:/axonserver/data
+      - ./axonserver/axonserver-1/events:/axonserver/events
+      - ./axonserver/axonserver-1/plugins:/axonserver/plugins
+      - ./axonserver/axonserver-1/log:/axonserver/log
+#     - ./axonserver/axoniq.license:/axonserver/config/axoniq.license  # uncomment if you have a license file
 
 volumes:
   db:

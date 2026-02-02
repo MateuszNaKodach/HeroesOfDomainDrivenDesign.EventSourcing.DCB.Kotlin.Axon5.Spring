@@ -2,7 +2,7 @@ package com.dddheroes.heroesofddd.creaturerecruitment.events
 
 import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
-import org.axonframework.eventsourcing.annotations.EventTag
+import org.axonframework.eventsourcing.annotation.EventTag
 
 data class DwellingBuilt(
     @get:EventTag(EventTags.DWELLING_ID)

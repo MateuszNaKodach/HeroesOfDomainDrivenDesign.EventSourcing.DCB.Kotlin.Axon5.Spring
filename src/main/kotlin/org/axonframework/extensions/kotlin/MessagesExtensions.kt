@@ -1,39 +1,40 @@
 package org.axonframework.extensions.kotlin
 
-import org.axonframework.eventhandling.GenericEventMessage
-import org.axonframework.messaging.MessageType
-import org.axonframework.messaging.MetaData
+import org.axonframework.messaging.eventhandling.GenericEventMessage
+import org.axonframework.messaging.core.MessageType
 
 /**
  * Extension function that treats a Collection as a list of event payloads
  * and converts each payload into a GenericEventMessage with the provided metadata.
  *
- * @param metaData The metadata to attach to each event message
+ * @param metadata The metadata to attach to each event message
  * @return List of GenericEventMessage instances, one for each element in the collection
  */
-fun <T> Collection<T>.asEventMessages(metaData: MetaData = MetaData.emptyInstance()): List<GenericEventMessage<T>> {
+fun <T> Collection<T>.asEventMessages(metadata: AxonMetadata = AxonMetadata.emptyInstance()): List<GenericEventMessage> {
     return this.map { payload ->
         GenericEventMessage(
             MessageType(payload!!::class.java),
             payload,
-            metaData
+            metadata
         )
     }
 }
 
-fun <T> T.asEventMessage(metaData: MetaData = MetaData.emptyInstance()): GenericEventMessage<T> {
+fun <T> T.asEventMessage(metadata: AxonMetadata = AxonMetadata.emptyInstance()): GenericEventMessage {
     return GenericEventMessage(
         MessageType(this!!::class.java),
         this,
-        metaData
+        metadata
     )
 }
 
-fun <T> T.asCommandMessage(metaData: MetaData = MetaData.emptyInstance()): GenericEventMessage<T> {
+fun <T> T.asCommandMessage(metadata: AxonMetadata = AxonMetadata.emptyInstance()): GenericEventMessage {
     return GenericEventMessage(
         MessageType(this!!::class.java),
         this,
-        metaData
+        metadata
     )
 }
+
+typealias AxonMetadata = org.axonframework.messaging.core.Metadata
 

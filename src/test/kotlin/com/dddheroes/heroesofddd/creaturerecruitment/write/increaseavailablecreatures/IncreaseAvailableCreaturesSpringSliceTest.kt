@@ -1,20 +1,21 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.write.increaseavailablecreatures
 
-import com.dddheroes.heroesofddd.creaturerecruitment.UnitTestAxonApplication
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
+import org.assertj.core.api.Assertions.assertThat
+import org.axonframework.common.configuration.AxonConfiguration
+import org.axonframework.extension.spring.test.AxonSpringBootTest
 import org.axonframework.test.fixture.AxonTestFixture
+import org.axonframework.test.fixture.springTestFixture
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import java.util.*
 
-internal class IncreaseAvailableCreaturesUnitTest {
+@AxonSpringBootTest
+internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(configuration: AxonConfiguration) {
 
-    private val sliceUnderTest = AxonTestFixture.with(
-        UnitTestAxonApplication.configurer(
-            { registerStatefulCommandHandlingModule { IncreaseAvailableCreaturesWriteSliceConfig().increaseAvailableCreaturesSlice() } },
-            { axonServerEnabled = false }
-        ))
+    private val sliceUnderTest: AxonTestFixture = springTestFixture(configuration)
 
     @Test
     fun `given DwellingBuild, when IncreaseAvailableCreatures, then exception`() {
@@ -28,11 +29,11 @@ internal class IncreaseAvailableCreaturesUnitTest {
             .`when`()
             .command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy = 5))
             .then()
-            .exception(IllegalStateException::class.java, "Only built dwelling can have available creatures")
+            .exceptionSatisfies { ex -> assertThat(ex).hasMessageContaining("Only built dwelling can have available creatures") }
     }
 
     @Test
-    fun `given DwellingBuilt, when IncreaseAvailableCreatures, then AvailableCreatuesChanged`() {
+    fun `given DwellingBuilt, when IncreaseAvailableCreatures, then AvailableCreaturesChanged`() {
         val dwellingId = UUID.randomUUID().toString()
         val creatureId = "angel"
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
@@ -49,7 +50,7 @@ internal class IncreaseAvailableCreaturesUnitTest {
     }
 
     @Test
-    fun `given DwellingBuilt with AvailableCreatuesChanged, when IncreaseAvailableCreatures, then AvailableCreatuesChanged`() {
+    fun `given DwellingBuilt with AvailableCreaturesChanged, when IncreaseAvailableCreatures, then AvailableCreaturesChanged`() {
         val dwellingId = UUID.randomUUID().toString()
         val creatureId = "angel"
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)

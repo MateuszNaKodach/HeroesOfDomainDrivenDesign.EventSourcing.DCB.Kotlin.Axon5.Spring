@@ -1,10 +1,10 @@
 spring:
   application:
     name: heroesofddd
+  docker:
+    compose:
+      enabled: true
 axon:
   axonserver:
-    context: heroesofddd
-    enabled: true
-logging:
-  level:
-    org.axonframework.configuration: DEBUG
+    context: default
+    enabled: ${AXON_AXONSERVER_ENABLED:false}
