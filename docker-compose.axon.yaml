@@ -17,6 +17,8 @@ services:
   #   - ./volumes/axonserver-n1/axoniq.license:/axonserver/config/axoniq.license  # uncomment if you have a license file
   heroes-af5-postgres:
     image: postgres:18
+    labels:
+      org.springframework.boot.ignore: true
     environment:
       POSTGRES_DB: heroes_db
       POSTGRES_USER: heroes_user
