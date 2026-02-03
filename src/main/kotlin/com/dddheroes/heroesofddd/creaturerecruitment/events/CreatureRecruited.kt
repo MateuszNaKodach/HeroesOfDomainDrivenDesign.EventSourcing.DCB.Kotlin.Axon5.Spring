@@ -7,6 +7,7 @@ import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import org.axonframework.eventsourcing.annotation.EventTag
 
 data class CreatureRecruited(
+    @get:JvmName("dwellingId")
     override val dwellingId: DwellingId,
     val creatureId: String,
     @EventTag(EventTags.ARMY_ID)

@@ -8,6 +8,7 @@ import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.restapi.Headers
+import com.fasterxml.jackson.annotation.JsonProperty
 import org.axonframework.eventsourcing.annotation.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.extension.spring.stereotype.EventSourced
@@ -26,6 +27,8 @@ import org.springframework.web.bind.annotation.*
 ///////////////////////////////////////////
 
 data class BuildDwelling(
+    @field:JsonProperty("dwellingId")
+    @get:JvmName("dwellingId")
     val dwellingId: DwellingId,
     val creatureId: String,
     val costPerTroop: Map<ResourceType, Int>,
