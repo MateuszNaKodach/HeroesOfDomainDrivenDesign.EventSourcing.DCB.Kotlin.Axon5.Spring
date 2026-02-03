@@ -2,6 +2,7 @@ package com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling
 
 import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.shared.application.CommandHandlerResult
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
@@ -35,7 +36,7 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(configuration
             .`when`()
             .command(BuildDwelling(dwellingId, creatureId, costPerTroop), gameMetadata)
             .then()
-            .success()
+            .resultMessagePayload(CommandHandlerResult.Success)
             .events(
                 DwellingBuilt(
                     dwellingId = dwellingId,
@@ -58,7 +59,7 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(configuration
             .`when`()
             .command(BuildDwelling(dwellingId, creatureId, costPerTroop))
             .then()
-            .success()
+            .resultMessagePayload(CommandHandlerResult.Success)
             .noEvents()
     }
 

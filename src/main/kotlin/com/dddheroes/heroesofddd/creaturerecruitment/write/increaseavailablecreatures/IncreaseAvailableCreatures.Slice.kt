@@ -4,13 +4,17 @@ import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
+import com.dddheroes.heroesofddd.shared.application.CommandHandlerResult
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
+import com.dddheroes.heroesofddd.shared.application.resultOf
+import com.dddheroes.heroesofddd.shared.application.toCommandResult
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.PlayerId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.Quantity
 import com.dddheroes.heroesofddd.shared.restapi.Headers
+import com.dddheroes.heroesofddd.shared.restapi.toResponseEntity
 import org.axonframework.eventsourcing.annotation.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.extension.spring.stereotype.EventSourced
@@ -22,8 +26,10 @@ import org.axonframework.messaging.commandhandling.gateway.CommandGateway
 import org.axonframework.messaging.eventhandling.gateway.EventAppender
 import org.axonframework.modelling.annotation.InjectEntity
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
 import org.springframework.web.bind.annotation.*
+import java.util.concurrent.CompletableFuture
 
 ////////////////////////////////////////////
 ////////// Domain
@@ -107,9 +113,10 @@ private class IncreaseAvailableCreaturesCommandHandler {
         metadata: AxonMetadata,
         @InjectEntity(idProperty = EventTags.DWELLING_ID) eventSourced: IncreaseAvailableCreaturesEventSourcedState,
         eventAppender: EventAppender
-    ) {
+    ): CommandHandlerResult = resultOf {
         val events = decide(command, eventSourced.state)
         eventAppender.append(events.asEventMessage(metadata))
+        events.toCommandResult()
     }
 
 }
@@ -131,7 +138,7 @@ private class IncreaseAvailableCreaturesRestApi(private val commandGateway: Comm
         @PathVariable gameId: String,
         @PathVariable dwellingId: String,
         @RequestBody requestBody: Body
-    ) {
+    ): CompletableFuture<ResponseEntity<Any>> {
         val command =
             IncreaseAvailableCreatures(
                 DwellingId(dwellingId),
@@ -144,7 +151,9 @@ private class IncreaseAvailableCreaturesRestApi(private val commandGateway: Comm
         val metadata = GameMetadata.with(gameId, playerId)
         val message = command.asCommandMessage(metadata)
 
-        commandGateway.sendAndWait(message)
+        return commandGateway.send(message)
+            .resultAs(CommandHandlerResult::class.java)
+            .toResponseEntity()
     }
 }
 

@@ -5,13 +5,13 @@ import com.dddheroes.heroesofddd.armies.events.CreatureAddedToArmy
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.shared.application.CommandHandlerResult
 import com.dddheroes.heroesofddd.shared.domain.identifiers.ArmyId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.Quantity
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.Resources
-import org.assertj.core.api.Assertions.assertThat
 import org.axonframework.common.configuration.AxonConfiguration
 import org.axonframework.test.fixture.AxonTestFixture
 import org.axonframework.test.fixture.springTestFixture
@@ -48,7 +48,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurati
                 )
             )
             .then()
-            .exceptionSatisfies { ex -> assertThat(ex).hasMessageContaining("Recruit creatures cannot exceed available creatures") }
+            .resultMessagePayload(CommandHandlerResult.Failure("Recruit creatures cannot exceed available creatures"))
     }
 
     @Test
@@ -72,7 +72,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurati
                 )
             )
             .then()
-            .exceptionSatisfies { ex -> assertThat(ex).hasMessageContaining("Recruit creatures cannot exceed available creatures") }
+            .resultMessagePayload(CommandHandlerResult.Failure("Recruit creatures cannot exceed available creatures"))
     }
 
     @Test
@@ -97,7 +97,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurati
                 )
             )
             .then()
-            .success()
+            .resultMessagePayload(CommandHandlerResult.Success)
             .events(
                 CreatureRecruited(
                     dwellingId = dwellingId,
@@ -143,7 +143,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurati
                 )
             )
             .then()
-            .success()
+            .resultMessagePayload(CommandHandlerResult.Success)
             .events(
                 CreatureRecruited(
                     dwellingId = dwellingId,
@@ -190,7 +190,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurati
                 )
             )
             .then()
-            .success()
+            .resultMessagePayload(CommandHandlerResult.Success)
             .events(
                 CreatureRecruited(
                     dwellingId = dwellingId,
@@ -236,7 +236,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurati
                 )
             )
             .then()
-            .exceptionSatisfies { ex -> assertThat(ex).hasMessageContaining("Recruit creatures cannot exceed available creatures") }
+            .resultMessagePayload(CommandHandlerResult.Failure("Recruit creatures cannot exceed available creatures"))
     }
 
     @Test
@@ -262,7 +262,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurati
                 )
             )
             .then()
-            .exceptionSatisfies { ex -> assertThat(ex).hasMessageContaining("Recruit creatures cannot exceed available creatures") }
+            .resultMessagePayload(CommandHandlerResult.Failure("Recruit creatures cannot exceed available creatures"))
     }
 
     @Test
@@ -295,7 +295,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurati
                 )
             )
             .then()
-            .exceptionSatisfies { ex -> assertThat(ex).hasMessageContaining("Recruit creatures cannot exceed available creatures") }
+            .resultMessagePayload(CommandHandlerResult.Failure("Recruit creatures cannot exceed available creatures"))
     }
 
     @Test
@@ -323,7 +323,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurati
                 )
             )
             .then()
-            .success()
+            .resultMessagePayload(CommandHandlerResult.Success)
             .events(
                 CreatureRecruited(
                     dwellingId = dwellingId,
@@ -369,7 +369,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurati
                 )
             )
             .then()
-            .exceptionSatisfies { ex -> assertThat(ex).hasMessageContaining("Recruit cost cannot differ than expected cost") }
+            .resultMessagePayload(CommandHandlerResult.Failure("Recruit cost cannot differ than expected cost"))
     }
 
     @Nested
@@ -397,7 +397,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurati
                     )
                 )
                 .then()
-                .success()
+                .resultMessagePayload(CommandHandlerResult.Success)
                 .events(
                     CreatureRecruited(
                         dwellingId = dwellingId,
@@ -450,7 +450,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurati
                     )
                 )
                 .then()
-                .exceptionSatisfies { ex -> assertThat(ex).hasMessageContaining("Army cannot contain more than 7 different creature types") }
+                .resultMessagePayload(CommandHandlerResult.Failure("Army cannot contain more than 7 different creature types"))
         }
 
         @Test
@@ -482,7 +482,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurati
                     )
                 )
                 .then()
-                .success()
+                .resultMessagePayload(CommandHandlerResult.Success)
                 .events(
                     CreatureRecruited(
                         dwellingId = dwellingId,
@@ -542,7 +542,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(configurati
                     )
                 )
                 .then()
-                .success()
+                .resultMessagePayload(CommandHandlerResult.Success)
                 .events(
                     CreatureRecruited(
                         dwellingId = dwellingId,
