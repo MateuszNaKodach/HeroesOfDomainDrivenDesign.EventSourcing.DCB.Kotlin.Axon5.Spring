@@ -9,6 +9,7 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ArmyId
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.CreatureId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.restapi.Headers
@@ -39,7 +40,8 @@ import org.springframework.web.bind.annotation.*
 data class RecruitCreature(
     @get:JvmName("getDwellingId")
     val dwellingId: DwellingId,
-    val creatureId: String,
+    @get:JvmName("getCreatureId")
+    val creatureId: CreatureId,
     val armyId: ArmyId,
     val quantity: Int,
     val expectedCost: Map<ResourceType, Int>,
@@ -51,14 +53,14 @@ data class RecruitCreature(
 }
 
 private data class State(
-    val creatureId: String,
+    val creatureId: CreatureId,
     val availableCreatures: Int,
     val costPerTroop: Map<ResourceType, Int>,
-    val creaturesInArmy: Map<String, Int>
+    val creaturesInArmy: Map<CreatureId, Int>
 )
 
 private val initialState = State(
-    creatureId = "",
+    creatureId = CreatureId("undefined"),
     availableCreatures = 0,
     costPerTroop = emptyMap(),
     creaturesInArmy = emptyMap()
@@ -245,7 +247,7 @@ private class RecruitCreatureRestApi(private val commandGateway: CommandGateway)
     ) {
         val command = RecruitCreature(
             dwellingId = DwellingId(dwellingId),
-            creatureId = requestBody.creatureId,
+            creatureId = CreatureId(requestBody.creatureId),
             armyId = ArmyId(requestBody.armyId),
             quantity = requestBody.quantity,
             expectedCost = requestBody.expectedCost.mapKeys { ResourceType.from(it.key) }
