@@ -1,9 +1,25 @@
+server:
+  port: 3775
 spring:
   application:
     name: heroesofddd
   docker:
     compose:
       enabled: true
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: jdbc:postgresql://localhost:6555/heroes_db
+    username: heroes_user
+    password: heroes_password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 axon:
   axonserver:
     context: default

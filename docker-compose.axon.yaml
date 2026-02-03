@@ -12,6 +12,8 @@ services:
     volumes:
       - ./volumes/axonserver-n1/data:/axonserver/data
       - ./volumes/axonserver-n1/events:/axonserver/events
+      - ./volumes/axonserver-n1/plugins:/axonserver/plugins
+      - ./volumes/axonserver-n1/log:/axonserver/log
   #   - ./volumes/axonserver-n1/axoniq.license:/axonserver/config/axoniq.license  # uncomment if you have a license file
   heroes-af5-postgres:
     image: postgres:18
@@ -20,7 +22,7 @@ services:
       POSTGRES_USER: heroes_user
       POSTGRES_PASSWORD: heroes_password
     ports:
-      - "8768:8768"
+      - "6555:6555"
     volumes:
       - ./volumes/postgres-axon:/var/lib/postgresql/18/docker
-    command: -p 8768
+    command: -p 6555
