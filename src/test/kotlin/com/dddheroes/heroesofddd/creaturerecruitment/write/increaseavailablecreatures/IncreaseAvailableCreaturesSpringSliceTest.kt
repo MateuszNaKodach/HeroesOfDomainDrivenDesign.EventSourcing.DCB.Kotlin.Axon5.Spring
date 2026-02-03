@@ -1,6 +1,7 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.write.increaseavailablecreatures
 
 import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
+import com.dddheroes.heroesofddd.creaturerecruitment.DwellingId
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
@@ -10,7 +11,6 @@ import org.axonframework.test.fixture.AxonTestFixture
 import org.axonframework.test.fixture.springTestFixture
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.util.*
 
 @HeroesAxonSpringBootTest
 internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(configuration: AxonConfiguration) {
@@ -19,7 +19,7 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
 
     @Test
     fun `given DwellingBuild, when IncreaseAvailableCreatures, then exception`() {
-        val dwellingId = UUID.randomUUID().toString()
+        val dwellingId = DwellingId.random()
         val creatureId = "angel"
 
         // then
@@ -34,7 +34,7 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
 
     @Test
     fun `given DwellingBuilt, when IncreaseAvailableCreatures, then AvailableCreaturesChanged`() {
-        val dwellingId = UUID.randomUUID().toString()
+        val dwellingId = DwellingId.random()
         val creatureId = "angel"
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
         val increaseBy = 3
@@ -51,7 +51,7 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
 
     @Test
     fun `given DwellingBuilt with AvailableCreaturesChanged, when IncreaseAvailableCreatures, then AvailableCreaturesChanged`() {
-        val dwellingId = UUID.randomUUID().toString()
+        val dwellingId = DwellingId.random()
         val creatureId = "angel"
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 

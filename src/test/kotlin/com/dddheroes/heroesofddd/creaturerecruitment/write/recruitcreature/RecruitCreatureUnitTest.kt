@@ -1,6 +1,7 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature
 
 import com.dddheroes.heroesofddd.armies.events.CreatureAddedToArmy
+import com.dddheroes.heroesofddd.creaturerecruitment.DwellingId
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
@@ -37,7 +38,7 @@ internal class RecruitCreatureUnitTest {
 
     @Test
     fun `given not built dwelling, when recruit creature, then exception`() {
-        val dwellingId = UUID.randomUUID().toString()
+        val dwellingId = DwellingId.random()
         val armyId = UUID.randomUUID().toString()
         val creatureId = "angel"
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
@@ -61,7 +62,7 @@ internal class RecruitCreatureUnitTest {
 
     @Test
     fun `given built but empty dwelling, when recruit creature, then exception`() {
-        val dwellingId = UUID.randomUUID().toString()
+        val dwellingId = DwellingId.random()
         val armyId = UUID.randomUUID().toString()
         val creatureId = "angel"
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
@@ -85,7 +86,7 @@ internal class RecruitCreatureUnitTest {
 
     @Test
     fun `given dwelling with 1 creature, when recruit 1 creature, then recruited`() {
-        val dwellingId = UUID.randomUUID().toString()
+        val dwellingId = DwellingId.random()
         val armyId = UUID.randomUUID().toString()
         val creatureId = "angel"
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
@@ -129,7 +130,7 @@ internal class RecruitCreatureUnitTest {
 
     @Test
     fun `given dwelling with 2 creatures, when recruit 2 creatures, then recruited`() {
-        val dwellingId = UUID.randomUUID().toString()
+        val dwellingId = DwellingId.random()
         val armyId = UUID.randomUUID().toString()
         val creatureId = "angel"
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
@@ -174,7 +175,7 @@ internal class RecruitCreatureUnitTest {
 
     @Test
     fun `given dwelling with 4 creatures, when recruit 3 creatures, then recruited`() {
-        val dwellingId = UUID.randomUUID().toString()
+        val dwellingId = DwellingId.random()
         val armyId = UUID.randomUUID().toString()
         val creatureId = "angel"
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
@@ -220,7 +221,7 @@ internal class RecruitCreatureUnitTest {
 
     @Test
     fun `given dwelling with 5 creatures, when recruit 6 creatures, then exception`() {
-        val dwellingId = UUID.randomUUID().toString()
+        val dwellingId = DwellingId.random()
         val armyId = UUID.randomUUID().toString()
         val creatureId = "angel"
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
@@ -246,7 +247,7 @@ internal class RecruitCreatureUnitTest {
 
     @Test
     fun `given dwelling with 1 creature, when recruit creature not from this dwelling, then exception`() {
-        val dwellingId = UUID.randomUUID().toString()
+        val dwellingId = DwellingId.random()
         val armyId = UUID.randomUUID().toString()
         val creatureId = "angel"
         val anotherCreatureId = "black-dragon"
@@ -272,7 +273,7 @@ internal class RecruitCreatureUnitTest {
 
     @Test
     fun `given dwelling with recruited all available creatures, when recruit creature, then exception`() {
-        val dwellingId = UUID.randomUUID().toString()
+        val dwellingId = DwellingId.random()
         val armyId = UUID.randomUUID().toString()
         val creatureId = "angel"
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
@@ -305,7 +306,7 @@ internal class RecruitCreatureUnitTest {
 
     @Test
     fun `given dwelling with recruited some creatures and 1 left, when recruit 1 creature, then recruited`() {
-        val dwellingId = UUID.randomUUID().toString()
+        val dwellingId = DwellingId.random()
         val armyId = UUID.randomUUID().toString()
         val creatureId = "angel"
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
@@ -352,7 +353,7 @@ internal class RecruitCreatureUnitTest {
 
     @Test
     fun `given dwelling with 1 creature, when expected cost does not match actual cost, then exception`() {
-        val dwellingId = UUID.randomUUID().toString()
+        val dwellingId = DwellingId.random()
         val armyId = UUID.randomUUID().toString()
         val creatureId = "angel"
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
@@ -381,7 +382,7 @@ internal class RecruitCreatureUnitTest {
 
         @Test
         fun `given empty army, when recruit creature, then recruited`() {
-            val dwellingId = UUID.randomUUID().toString()
+            val dwellingId = DwellingId.random()
             val armyId = UUID.randomUUID().toString()
             val creatureId = "angel"
             val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
@@ -425,7 +426,7 @@ internal class RecruitCreatureUnitTest {
 
         @Test
         fun `given army with 7 different creature types, when recruit new 8th creature type, then exception`() {
-            val dwellingId = UUID.randomUUID().toString()
+            val dwellingId = DwellingId.random()
             val armyId = UUID.randomUUID().toString()
             val newCreatureId = "black-dragon"
             val costPerTroop = mapOf(ResourceType.GOLD to 4000, ResourceType.GEMS to 2)
@@ -458,7 +459,7 @@ internal class RecruitCreatureUnitTest {
 
         @Test
         fun `given army with 7 different creature types, when recruit more of existing creature, then recruited`() {
-            val dwellingId = UUID.randomUUID().toString()
+            val dwellingId = DwellingId.random()
             val armyId = UUID.randomUUID().toString()
             val existingCreatureId = "angel"
             val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
@@ -511,7 +512,7 @@ internal class RecruitCreatureUnitTest {
 
         @Test
         fun `given army with 6 different creature types, when recruit new 7th creature type, then recruited`() {
-            val dwellingId = UUID.randomUUID().toString()
+            val dwellingId = DwellingId.random()
             val armyId = UUID.randomUUID().toString()
             val newCreatureId = "black-dragon"
             val costPerTroop = mapOf(ResourceType.GOLD to 4000, ResourceType.GEMS to 2)

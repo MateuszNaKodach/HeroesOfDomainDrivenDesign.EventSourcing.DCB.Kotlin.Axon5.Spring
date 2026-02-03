@@ -3,6 +3,7 @@ package com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature
 import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.armies.events.CreatureAddedToArmy
 import com.dddheroes.heroesofddd.armies.events.CreatureRemovedFromArmy
+import com.dddheroes.heroesofddd.creaturerecruitment.DwellingId
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
@@ -35,13 +36,13 @@ import org.springframework.web.bind.annotation.*
 ///////////////////////////////////////////
 
 data class RecruitCreature(
-    val dwellingId: String,
+    val dwellingId: DwellingId,
     val creatureId: String,
     val armyId: String,
     val quantity: Int,
     val expectedCost: Map<ResourceType, Int>,
 ) {
-    data class RecruitmentId(val dwellingId: String, val armyId: String)
+    data class RecruitmentId(val dwellingId: DwellingId, val armyId: String)
 
     // used as a process identifier
     val recruitmentId = RecruitmentId(dwellingId, armyId)
@@ -170,7 +171,7 @@ private class RecruitCreatureEventSourcedState private constructor(val state: St
         fun resolveCriteria(recruitmentId: RecruitCreature.RecruitmentId) =
             EventCriteria.either(
                 EventCriteria
-                    .havingTags(Tag.of(EventTags.DWELLING_ID, recruitmentId.dwellingId))
+                    .havingTags(Tag.of(EventTags.DWELLING_ID, recruitmentId.dwellingId.raw))
                     .andBeingOneOfTypes(
                         DwellingBuilt::class.java.getName(),
                         AvailableCreaturesChanged::class.java.getName(),
@@ -241,7 +242,7 @@ private class RecruitCreatureRestApi(private val commandGateway: CommandGateway)
         @RequestBody requestBody: Body
     ) {
         val command = RecruitCreature(
-            dwellingId = dwellingId,
+            dwellingId = DwellingId(dwellingId),
             creatureId = requestBody.creatureId,
             armyId = requestBody.armyId,
             quantity = requestBody.quantity,

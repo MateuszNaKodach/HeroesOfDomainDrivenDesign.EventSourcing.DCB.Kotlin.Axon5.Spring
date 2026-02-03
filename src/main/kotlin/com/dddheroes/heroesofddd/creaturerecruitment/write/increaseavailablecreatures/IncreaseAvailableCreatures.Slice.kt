@@ -1,6 +1,7 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.write.increaseavailablecreatures
 
 import com.dddheroes.heroesofddd.EventTags
+import com.dddheroes.heroesofddd.creaturerecruitment.DwellingId
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
@@ -24,7 +25,7 @@ import org.springframework.web.bind.annotation.*
 ///////////////////////////////////////////
 
 data class IncreaseAvailableCreatures(
-    val dwellingId: String,
+    val dwellingId: DwellingId,
     val creatureId: String,
     val increaseBy: Int,
 )
@@ -123,7 +124,7 @@ private class IncreaseAvailableCreaturesRestApi(private val commandGateway: Comm
     ) {
         val command =
             IncreaseAvailableCreatures(
-                dwellingId,
+                DwellingId(dwellingId),
                 requestBody.creatureId,
                 requestBody.increaseBy
             )
