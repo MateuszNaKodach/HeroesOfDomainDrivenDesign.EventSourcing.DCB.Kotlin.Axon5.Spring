@@ -1,7 +1,7 @@
 axon:
   axonserver:
     context: default
-    enabled: ${AXON_AXONSERVER_ENABLED:false}
+    enabled: ${AXON_AXONSERVER_ENABLED:true}
 
 # Feature flags - allows you to enable/disable certain slices
 

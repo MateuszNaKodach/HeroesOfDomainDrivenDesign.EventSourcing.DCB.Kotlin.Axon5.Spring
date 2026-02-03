@@ -3,10 +3,23 @@ package com.dddheroes.heroesofddd.shared.application
 import com.dddheroes.heroesofddd.shared.domain.DomainEvent
 import com.dddheroes.heroesofddd.shared.domain.DomainRuleViolatedException
 import com.dddheroes.heroesofddd.shared.domain.FailureEvent
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes(
+    JsonSubTypes.Type(value = CommandHandlerResult.Success::class, name = "Success"),
+    JsonSubTypes.Type(value = CommandHandlerResult.Failure::class, name = "Failure")
+)
 sealed class CommandHandlerResult {
-    data object Success : CommandHandlerResult()
-    data class Failure(val message: String) : CommandHandlerResult()
+    data object Success : CommandHandlerResult() {
+        @JvmStatic
+        @JsonCreator
+        fun create() = Success
+    }
+
+    data class Failure @JsonCreator constructor(val message: String) : CommandHandlerResult()
 
     fun throwIfFailure(): CommandHandlerResult {
         if (this is Failure) {

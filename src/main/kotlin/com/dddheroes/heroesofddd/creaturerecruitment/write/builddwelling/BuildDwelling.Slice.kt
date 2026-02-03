@@ -131,8 +131,7 @@ private class BuildDwellingRestApi(private val commandGateway: CommandGateway) {
         val metadata = GameMetadata.with(gameId, playerId)
         val message = command.asCommandMessage(metadata)
 
-        return commandGateway.send(message)
-            .resultAs(CommandHandlerResult::class.java)
+        return commandGateway.send(message, CommandHandlerResult::class.java)
             .toResponseEntity()
     }
 }
