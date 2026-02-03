@@ -19,7 +19,9 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.test.context.TestPropertySource
 
+@TestPropertySource(properties = ["slices.creaturerecruitment.write.recruitcreature.enabled=true"])
 @HeroesAxonSpringBootTest
 internal class RecruitCreatureSpringSliceTest @Autowired constructor(configuration: AxonConfiguration) {
 

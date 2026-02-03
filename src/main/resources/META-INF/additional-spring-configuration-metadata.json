@@ -1,0 +1,24 @@
+{
+  "properties": [
+    {
+      "name": "slices.creaturerecruitment.read.getalldwellings.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable/disable the GetAllDwellings vertical slice in the Creature Recruitment bounded context."
+    },
+    {
+      "name": "slices.creaturerecruitment.write.builddwelling.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable/disable the BuildDwelling vertical slice in the Creature Recruitment bounded context."
+    },
+    {
+      "name": "slices.creaturerecruitment.write.increaseavailablecreatures.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable/disable the IncreaseAvailableCreatures vertical slice in the Creature Recruitment bounded context."
+    },
+    {
+      "name": "slices.creaturerecruitment.write.recruitcreature.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable/disable the RecruitCreature vertical slice in the Creature Recruitment bounded context."
+    }
+  ]
+}

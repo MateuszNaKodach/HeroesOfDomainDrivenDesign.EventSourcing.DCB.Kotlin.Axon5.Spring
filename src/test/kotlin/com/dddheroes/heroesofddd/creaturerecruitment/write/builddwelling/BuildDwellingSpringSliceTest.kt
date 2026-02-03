@@ -12,8 +12,10 @@ import org.axonframework.test.fixture.AxonTestFixture
 import org.axonframework.test.fixture.springTestFixture
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.test.context.TestPropertySource
 import java.util.*
 
+@TestPropertySource(properties = ["slices.creaturerecruitment.write.builddwelling.enabled=true"])
 @HeroesAxonSpringBootTest
 internal class BuildDwellingSpringSliceTest @Autowired constructor(configuration: AxonConfiguration) {
 

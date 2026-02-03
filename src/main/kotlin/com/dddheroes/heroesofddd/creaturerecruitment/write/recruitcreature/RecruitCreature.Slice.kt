@@ -29,6 +29,7 @@ import org.axonframework.messaging.eventstreaming.EventCriteria
 import org.axonframework.messaging.eventstreaming.Tag
 import org.axonframework.modelling.annotation.InjectEntity
 import org.axonframework.modelling.configuration.EntityModule
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.bind.annotation.*
@@ -202,6 +203,7 @@ private class RecruitCreatureCommandHandler {
     }
 }
 
+@ConditionalOnProperty(prefix = "slices.creaturerecruitment", name = ["write.recruitcreature.enabled"])
 @Configuration
 internal class RecruitCreatureWriteSliceConfig {
 
@@ -225,6 +227,7 @@ internal class RecruitCreatureWriteSliceConfig {
 ////////// Presentation
 ///////////////////////////////////////////
 
+@ConditionalOnProperty(prefix = "slices.creaturerecruitment", name = ["write.recruitcreature.enabled"])
 @RestController
 @RequestMapping("games/{gameId}")
 private class RecruitCreatureRestApi(private val commandGateway: CommandGateway) {

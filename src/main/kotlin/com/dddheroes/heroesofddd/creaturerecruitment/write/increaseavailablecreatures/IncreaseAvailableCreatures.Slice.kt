@@ -21,6 +21,7 @@ import org.axonframework.messaging.commandhandling.annotation.CommandHandler
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
 import org.axonframework.messaging.eventhandling.gateway.EventAppender
 import org.axonframework.modelling.annotation.InjectEntity
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 import org.springframework.web.bind.annotation.*
 
@@ -72,6 +73,7 @@ private fun evolve(state: State, event: DwellingEvent): State = when (event) {
 ////////// Application
 ///////////////////////////////////////////
 
+@ConditionalOnProperty(prefix = "slices.creaturerecruitment", name = ["write.increaseavailablecreatures.enabled"])
 @EventSourced(tagKey = EventTags.DWELLING_ID) // ConsistencyBoundary
 private class IncreaseAvailableCreaturesEventSourcedState private constructor(val state: State) {
 
@@ -95,6 +97,7 @@ private class IncreaseAvailableCreaturesEventSourcedState private constructor(va
     )
 }
 
+@ConditionalOnProperty(prefix = "slices.creaturerecruitment", name = ["write.increaseavailablecreatures.enabled"])
 @Component
 private class IncreaseAvailableCreaturesCommandHandler {
 
@@ -115,6 +118,7 @@ private class IncreaseAvailableCreaturesCommandHandler {
 ////////// Presentation
 ///////////////////////////////////////////
 
+@ConditionalOnProperty(prefix = "slices.creaturerecruitment", name = ["write.increaseavailablecreatures.enabled"])
 @RestController
 @RequestMapping("games/{gameId}")
 private class IncreaseAvailableCreaturesRestApi(private val commandGateway: CommandGateway) {

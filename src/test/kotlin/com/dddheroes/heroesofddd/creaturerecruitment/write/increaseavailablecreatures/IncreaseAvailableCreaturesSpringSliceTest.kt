@@ -14,7 +14,9 @@ import org.axonframework.test.fixture.AxonTestFixture
 import org.axonframework.test.fixture.springTestFixture
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.test.context.TestPropertySource
 
+@TestPropertySource(properties = ["slices.creaturerecruitment.write.increaseavailablecreatures.enabled=true"])
 @HeroesAxonSpringBootTest
 internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(configuration: AxonConfiguration) {
 

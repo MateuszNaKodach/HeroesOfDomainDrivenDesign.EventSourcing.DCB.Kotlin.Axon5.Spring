@@ -2,3 +2,15 @@ axon:
   axonserver:
     context: default
     enabled: ${AXON_AXONSERVER_ENABLED:false}
+
+# Feature flags - allows you to enable/disable certain slices
+
+slices:
+  creaturerecruitment.write.builddwelling:
+    enabled: false
+  creaturerecruitment.write.increaseavailablecreatures:
+    enabled: false
+  creaturerecruitment.write.recruitcreature:
+    enabled: false
+  creaturerecruitment.read.getalldwellings:
+    enabled: false

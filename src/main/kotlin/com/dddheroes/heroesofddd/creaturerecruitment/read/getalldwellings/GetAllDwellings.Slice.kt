@@ -17,6 +17,7 @@ import org.axonframework.messaging.queryhandling.annotation.QueryHandler
 import org.axonframework.messaging.queryhandling.gateway.QueryGateway
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
@@ -46,11 +47,13 @@ data class DwellingReadModel(
     val availableCreatures: Int = 0
 )
 
+@ConditionalOnProperty(prefix = "slices.creaturerecruitment", name = ["read.getalldwellings.enabled"])
 @Repository
 private interface DwellingReadModelRepository : JpaRepository<DwellingReadModel, String> {
     fun findAllByGameId(gameId: String): List<DwellingReadModel>
 }
 
+@ConditionalOnProperty(prefix = "slices.creaturerecruitment", name = ["read.getalldwellings.enabled"])
 @Component
 @SequencingPolicy(type = MetadataSequencingPolicy::class, parameters = ["gameId"])
 private class DwellingReadModelProjector(
@@ -87,6 +90,7 @@ private class DwellingReadModelProjector(
 
 }
 
+@ConditionalOnProperty(prefix = "slices.creaturerecruitment", name = ["read.getalldwellings.enabled"])
 @Component
 private class DwellingReadModelQueryHandler(
     private val repository: DwellingReadModelRepository
@@ -99,6 +103,7 @@ private class DwellingReadModelQueryHandler(
     }
 }
 
+@ConditionalOnProperty(prefix = "slices.creaturerecruitment", name = ["read.getalldwellings.enabled"])
 @RestController
 @RequestMapping("games/{gameId}")
 internal class GetDwellingByIdRestApi(private val queryGateway: QueryGateway) {
