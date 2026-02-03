@@ -1,4 +1,4 @@
-package com.dddheroes.heroesofddd.creaturerecruitment
+package com.dddheroes.heroesofddd.shared.domain.valueobjects
 
 import java.util.*
 
