@@ -6,7 +6,6 @@ import org.axonframework.eventsourcing.annotation.EventTag
 
 data class AvailableCreaturesChanged(
     @get:EventTag(EventTags.DWELLING_ID)
-    @get:JvmName("dwellingId")
     override val dwellingId: DwellingId,
     val creatureId: String,
     val changedBy: Int,

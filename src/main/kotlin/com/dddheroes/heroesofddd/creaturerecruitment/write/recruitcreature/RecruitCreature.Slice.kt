@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.*
 ///////////////////////////////////////////
 
 data class RecruitCreature(
+    @get:JvmName("getDwellingId")
     val dwellingId: DwellingId,
     val creatureId: String,
     val armyId: ArmyId,

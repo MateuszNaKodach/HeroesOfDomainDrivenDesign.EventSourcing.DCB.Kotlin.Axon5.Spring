@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*
 ///////////////////////////////////////////
 
 data class IncreaseAvailableCreatures(
+    @get:JvmName("getDwellingId")
     val dwellingId: DwellingId,
     val creatureId: String,
     val increaseBy: Int,
