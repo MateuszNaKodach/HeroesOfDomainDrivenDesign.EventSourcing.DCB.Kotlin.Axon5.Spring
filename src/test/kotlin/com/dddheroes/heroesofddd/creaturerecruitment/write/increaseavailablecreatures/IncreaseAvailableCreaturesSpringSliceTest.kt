@@ -46,6 +46,7 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
             .`when`()
             .command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy))
             .then()
+            .success()
             .events(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = increaseBy, changedTo = increaseBy))
     }
 
@@ -63,6 +64,7 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
             .`when`()
             .command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy = 2))
             .then()
+            .success()
             .events(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 2, changedTo = 3))
     }
 

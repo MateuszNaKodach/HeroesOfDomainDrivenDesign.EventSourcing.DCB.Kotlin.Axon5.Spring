@@ -8,14 +8,15 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.ArmyId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.eventsourcing.annotation.EventCriteriaBuilder
+import org.axonframework.eventsourcing.annotation.EventSourcedEntity
 import org.axonframework.eventsourcing.annotation.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.eventsourcing.configuration.EventSourcedEntityModule
-import org.axonframework.extension.spring.stereotype.EventSourced
 import org.axonframework.extensions.kotlin.AxonMetadata
 import org.axonframework.extensions.kotlin.asCommandMessage
 import org.axonframework.extensions.kotlin.asEventMessages
@@ -38,11 +39,11 @@ import org.springframework.web.bind.annotation.*
 data class RecruitCreature(
     val dwellingId: DwellingId,
     val creatureId: String,
-    val armyId: String,
+    val armyId: ArmyId,
     val quantity: Int,
     val expectedCost: Map<ResourceType, Int>,
 ) {
-    data class RecruitmentId(val dwellingId: DwellingId, val armyId: String)
+    data class RecruitmentId(val dwellingId: DwellingId, val armyId: ArmyId)
 
     // used as a process identifier
     val recruitmentId = RecruitmentId(dwellingId, armyId)
@@ -143,7 +144,7 @@ private fun evolve(state: State, event: HeroesEvent): State = when (event) {
 ////////// Application
 ///////////////////////////////////////////
 
-@EventSourced // ConsistencyBoundary
+@EventSourcedEntity // ConsistencyBoundary
 private class RecruitCreatureEventSourcedState private constructor(val state: State) {
 
     @EntityCreator
@@ -177,7 +178,7 @@ private class RecruitCreatureEventSourcedState private constructor(val state: St
                         AvailableCreaturesChanged::class.java.getName(),
                     ),
                 EventCriteria
-                    .havingTags(Tag.of(EventTags.ARMY_ID, recruitmentId.armyId))
+                    .havingTags(Tag.of(EventTags.ARMY_ID, recruitmentId.armyId.raw))
                     .andBeingOneOfTypes(
                         CreatureAddedToArmy::class.java.getName(),
                         CreatureRemovedFromArmy::class.java.getName(),
@@ -244,7 +245,7 @@ private class RecruitCreatureRestApi(private val commandGateway: CommandGateway)
         val command = RecruitCreature(
             dwellingId = DwellingId(dwellingId),
             creatureId = requestBody.creatureId,
-            armyId = requestBody.armyId,
+            armyId = ArmyId(requestBody.armyId),
             quantity = requestBody.quantity,
             expectedCost = requestBody.expectedCost.mapKeys { ResourceType.from(it.key) }
         )

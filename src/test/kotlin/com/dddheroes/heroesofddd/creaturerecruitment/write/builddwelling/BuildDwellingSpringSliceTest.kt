@@ -31,6 +31,7 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(configuration
             .`when`()
             .command(BuildDwelling(dwellingId, creatureId, costPerTroop), gameMetadata)
             .then()
+            .success()
             .events(
                 DwellingBuilt(
                     dwellingId = dwellingId,
@@ -53,6 +54,7 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(configuration
             .`when`()
             .command(BuildDwelling(dwellingId, creatureId, costPerTroop))
             .then()
+            .success()
             .noEvents()
     }
 
