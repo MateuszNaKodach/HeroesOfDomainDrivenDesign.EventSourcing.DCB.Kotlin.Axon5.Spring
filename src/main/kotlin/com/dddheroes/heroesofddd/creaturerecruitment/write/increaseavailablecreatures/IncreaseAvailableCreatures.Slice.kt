@@ -7,6 +7,8 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.CreatureId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.DwellingId
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.GameId
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.PlayerId
 import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.eventsourcing.annotation.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
@@ -132,6 +134,8 @@ private class IncreaseAvailableCreaturesRestApi(private val commandGateway: Comm
                 requestBody.increaseBy
             )
 
+        val gameId = GameId(gameId)
+        val playerId = PlayerId(playerId)
         val metadata = GameMetadata.with(gameId, playerId)
         val message = command.asCommandMessage(metadata)
 

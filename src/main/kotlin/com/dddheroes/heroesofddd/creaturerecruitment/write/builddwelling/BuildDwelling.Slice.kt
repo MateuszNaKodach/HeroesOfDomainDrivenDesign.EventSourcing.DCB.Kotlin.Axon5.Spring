@@ -5,9 +5,7 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
-import com.dddheroes.heroesofddd.shared.domain.valueobjects.CreatureId
-import com.dddheroes.heroesofddd.shared.domain.valueobjects.DwellingId
-import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.*
 import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.eventsourcing.annotation.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
@@ -113,6 +111,8 @@ private class BuildDwellingRestApi(private val commandGateway: CommandGateway) {
                 requestBody.costPerTroop.mapKeys { ResourceType.from(it.key) }
             )
 
+        val gameId = GameId(gameId)
+        val playerId = PlayerId(playerId)
         val metadata = GameMetadata.with(gameId, playerId)
         val message = command.asCommandMessage(metadata)
 

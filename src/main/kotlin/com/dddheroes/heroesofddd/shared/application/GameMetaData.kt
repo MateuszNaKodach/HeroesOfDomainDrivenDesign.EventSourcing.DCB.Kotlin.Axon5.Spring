@@ -1,17 +1,19 @@
 package com.dddheroes.heroesofddd.shared.application
 
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.GameId
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.PlayerId
 import org.axonframework.extensions.kotlin.AxonMetadata
 
 object GameMetadata {
     const val GAME_ID_KEY: String = "gameId"
     const val PLAYER_ID_KEY: String = "playerId"
 
-    fun with(gameId: String): AxonMetadata {
-        return with(gameId, "unknown")
+    fun with(gameId: GameId): AxonMetadata {
+        return with(gameId, PlayerId.unknown())
     }
 
-    fun with(gameId: String, playerId: String): AxonMetadata {
-        return AxonMetadata.with(GAME_ID_KEY, gameId)
-            .and(PLAYER_ID_KEY, playerId)
+    fun with(gameId: GameId, playerId: PlayerId): AxonMetadata {
+        return AxonMetadata.with(GAME_ID_KEY, gameId.raw)
+            .and(PLAYER_ID_KEY, playerId.raw)
     }
 }

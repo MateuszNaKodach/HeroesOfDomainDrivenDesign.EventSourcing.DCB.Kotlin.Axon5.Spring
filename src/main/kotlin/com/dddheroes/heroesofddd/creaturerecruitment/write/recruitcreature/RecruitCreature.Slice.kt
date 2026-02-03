@@ -8,10 +8,7 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
-import com.dddheroes.heroesofddd.shared.domain.valueobjects.ArmyId
-import com.dddheroes.heroesofddd.shared.domain.valueobjects.CreatureId
-import com.dddheroes.heroesofddd.shared.domain.valueobjects.DwellingId
-import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.*
 import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.eventsourcing.annotation.EventCriteriaBuilder
 import org.axonframework.eventsourcing.annotation.EventSourcedEntity
@@ -253,6 +250,8 @@ private class RecruitCreatureRestApi(private val commandGateway: CommandGateway)
             expectedCost = requestBody.expectedCost.mapKeys { ResourceType.from(it.key) }
         )
 
+        val gameId = GameId(gameId)
+        val playerId = PlayerId(playerId)
         val metadata = GameMetadata.with(gameId, playerId)
         val message = command.asCommandMessage(metadata)
 
