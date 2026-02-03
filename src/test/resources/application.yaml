@@ -1,4 +1,4 @@
 axon:
   axonserver:
     context: default
-    enabled: ${AXON_AXONSERVER_ENABLED:true}
+    enabled: ${AXON_AXONSERVER_ENABLED:false}
