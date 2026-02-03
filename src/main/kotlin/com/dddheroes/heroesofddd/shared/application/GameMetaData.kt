@@ -1,7 +1,7 @@
 package com.dddheroes.heroesofddd.shared.application
 
-import com.dddheroes.heroesofddd.shared.domain.valueobjects.GameId
-import com.dddheroes.heroesofddd.shared.domain.valueobjects.PlayerId
+import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
+import com.dddheroes.heroesofddd.shared.domain.identifiers.PlayerId
 import org.axonframework.extensions.kotlin.AxonMetadata
 
 object GameMetadata {

@@ -4,10 +4,12 @@ import com.dddheroes.heroesofddd.armies.events.CreatureAddedToArmy
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
-import com.dddheroes.heroesofddd.shared.domain.valueobjects.ArmyId
-import com.dddheroes.heroesofddd.shared.domain.valueobjects.CreatureId
-import com.dddheroes.heroesofddd.shared.domain.valueobjects.DwellingId
+import com.dddheroes.heroesofddd.shared.domain.identifiers.ArmyId
+import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
+import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.Quantity
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.Resources
 import org.assertj.core.api.Assertions.assertThat
 import org.axonframework.test.fixture.AxonTestFixture
 import org.axonframework.test.fixture.axonTestFixture
@@ -34,12 +36,13 @@ internal class RecruitCreatureUnitTest {
         sliceUnderTest.stop()
     }
 
+
     @Test
     fun `given not built dwelling, when recruit creature, then exception`() {
         val dwellingId = DwellingId.random()
         val armyId = ArmyId.random()
         val creatureId = CreatureId("angel")
-        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
+        val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
         sliceUnderTest
             .given()
@@ -50,7 +53,7 @@ internal class RecruitCreatureUnitTest {
                     dwellingId = dwellingId,
                     creatureId = creatureId,
                     armyId = armyId,
-                    quantity = 1,
+                    quantity = Quantity(1),
                     expectedCost = costPerTroop
                 )
             )
@@ -63,7 +66,7 @@ internal class RecruitCreatureUnitTest {
         val dwellingId = DwellingId.random()
         val armyId = ArmyId.random()
         val creatureId = CreatureId("angel")
-        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
+        val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
         sliceUnderTest
             .given()
@@ -74,7 +77,7 @@ internal class RecruitCreatureUnitTest {
                     dwellingId = dwellingId,
                     creatureId = creatureId,
                     armyId = armyId,
-                    quantity = 1,
+                    quantity = Quantity(1),
                     expectedCost = costPerTroop
                 )
             )
@@ -87,19 +90,19 @@ internal class RecruitCreatureUnitTest {
         val dwellingId = DwellingId.random()
         val armyId = ArmyId.random()
         val creatureId = CreatureId("angel")
-        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
+        val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
         sliceUnderTest
             .given()
             .event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = 1))
+            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)))
             .`when`()
             .command(
                 RecruitCreature(
                     dwellingId = dwellingId,
                     creatureId = creatureId,
                     armyId = armyId,
-                    quantity = 1,
+                    quantity = Quantity(1),
                     expectedCost = costPerTroop
                 )
             )
@@ -110,19 +113,19 @@ internal class RecruitCreatureUnitTest {
                     dwellingId = dwellingId,
                     creatureId = creatureId,
                     toArmy = armyId,
-                    quantity = 1,
+                    quantity = Quantity(1),
                     totalCost = costPerTroop
                 ),
                 CreatureAddedToArmy(
                     armyId = armyId,
                     creatureId = creatureId,
-                    quantity = 1
+                    quantity = Quantity(1)
                 ),
                 AvailableCreaturesChanged(
                     dwellingId = dwellingId,
                     creatureId = creatureId,
                     changedBy = -1,
-                    changedTo = 0
+                    changedTo = Quantity(0)
                 )
             )
     }
@@ -132,20 +135,20 @@ internal class RecruitCreatureUnitTest {
         val dwellingId = DwellingId.random()
         val armyId = ArmyId.random()
         val creatureId = CreatureId("angel")
-        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
-        val expectedCost = mapOf(ResourceType.GOLD to 6000, ResourceType.GEMS to 2)
+        val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
+        val expectedCost = Resources.of(ResourceType.GOLD to 6000, ResourceType.GEMS to 2)
 
         sliceUnderTest
             .given()
             .event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 2, changedTo = 2))
+            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 2, changedTo = Quantity(2)))
             .`when`()
             .command(
                 RecruitCreature(
                     dwellingId = dwellingId,
                     creatureId = creatureId,
                     armyId = armyId,
-                    quantity = 2,
+                    quantity = Quantity(2),
                     expectedCost = expectedCost
                 )
             )
@@ -156,19 +159,19 @@ internal class RecruitCreatureUnitTest {
                     dwellingId = dwellingId,
                     creatureId = creatureId,
                     toArmy = armyId,
-                    quantity = 2,
+                    quantity = Quantity(2),
                     totalCost = expectedCost
                 ),
                 CreatureAddedToArmy(
                     armyId = armyId,
                     creatureId = creatureId,
-                    quantity = 2
+                    quantity = Quantity(2)
                 ),
                 AvailableCreaturesChanged(
                     dwellingId = dwellingId,
                     creatureId = creatureId,
                     changedBy = -2,
-                    changedTo = 0
+                    changedTo = Quantity(0)
                 )
             )
     }
@@ -178,21 +181,21 @@ internal class RecruitCreatureUnitTest {
         val dwellingId = DwellingId.random()
         val armyId = ArmyId.random()
         val creatureId = CreatureId("angel")
-        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
-        val expectedCost = mapOf(ResourceType.GOLD to 9000, ResourceType.GEMS to 3)
+        val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
+        val expectedCost = Resources.of(ResourceType.GOLD to 9000, ResourceType.GEMS to 3)
 
         sliceUnderTest
             .given()
             .event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 3, changedTo = 3))
-            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = 4))
+            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 3, changedTo = Quantity(3)))
+            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(4)))
             .`when`()
             .command(
                 RecruitCreature(
                     dwellingId = dwellingId,
                     creatureId = creatureId,
                     armyId = armyId,
-                    quantity = 3,
+                    quantity = Quantity(3),
                     expectedCost = expectedCost
                 )
             )
@@ -203,19 +206,19 @@ internal class RecruitCreatureUnitTest {
                     dwellingId = dwellingId,
                     creatureId = creatureId,
                     toArmy = armyId,
-                    quantity = 3,
+                    quantity = Quantity(3),
                     totalCost = expectedCost
                 ),
                 CreatureAddedToArmy(
                     armyId = armyId,
                     creatureId = creatureId,
-                    quantity = 3
+                    quantity = Quantity(3)
                 ),
                 AvailableCreaturesChanged(
                     dwellingId = dwellingId,
                     creatureId = creatureId,
                     changedBy = -3,
-                    changedTo = 1
+                    changedTo = Quantity(1)
                 )
             )
     }
@@ -225,20 +228,20 @@ internal class RecruitCreatureUnitTest {
         val dwellingId = DwellingId.random()
         val armyId = ArmyId.random()
         val creatureId = CreatureId("angel")
-        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
-        val expectedCost = mapOf(ResourceType.GOLD to 18000, ResourceType.GEMS to 6)
+        val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
+        val expectedCost = Resources.of(ResourceType.GOLD to 18000, ResourceType.GEMS to 6)
 
         sliceUnderTest
             .given()
             .event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 5, changedTo = 5))
+            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 5, changedTo = Quantity(5)))
             .`when`()
             .command(
                 RecruitCreature(
                     dwellingId = dwellingId,
                     creatureId = creatureId,
                     armyId = armyId,
-                    quantity = 6,
+                    quantity = Quantity(6),
                     expectedCost = expectedCost
                 )
             )
@@ -252,19 +255,19 @@ internal class RecruitCreatureUnitTest {
         val armyId = ArmyId.random()
         val creatureId = CreatureId("angel")
         val anotherCreatureId = CreatureId("black-dragon")
-        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
+        val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
         sliceUnderTest
             .given()
             .event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = 1))
+            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)))
             .`when`()
             .command(
                 RecruitCreature(
                     dwellingId = dwellingId,
                     creatureId = anotherCreatureId,
                     armyId = armyId,
-                    quantity = 1,
+                    quantity = Quantity(1),
                     expectedCost = costPerTroop
                 )
             )
@@ -277,27 +280,27 @@ internal class RecruitCreatureUnitTest {
         val dwellingId = DwellingId.random()
         val armyId = ArmyId.random()
         val creatureId = CreatureId("angel")
-        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
-        val cost2 = mapOf(ResourceType.GOLD to 6000, ResourceType.GEMS to 2)
-        val cost3 = mapOf(ResourceType.GOLD to 9000, ResourceType.GEMS to 3)
-        val cost4 = mapOf(ResourceType.GOLD to 12000, ResourceType.GEMS to 4)
+        val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
+        val cost2 = Resources.of(ResourceType.GOLD to 6000, ResourceType.GEMS to 2)
+        val cost3 = Resources.of(ResourceType.GOLD to 9000, ResourceType.GEMS to 3)
+        val cost4 = Resources.of(ResourceType.GOLD to 12000, ResourceType.GEMS to 4)
 
         sliceUnderTest
             .given()
             .event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 3, changedTo = 3))
-            .event(CreatureRecruited(dwellingId, creatureId, armyId, 2, cost2))
-            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = -2, changedTo = 1))
-            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 3, changedTo = 4))
-            .event(CreatureRecruited(dwellingId, creatureId, armyId, 4, cost4))
-            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = -4, changedTo = 0))
+            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 3, changedTo = Quantity(3)))
+            .event(CreatureRecruited(dwellingId, creatureId, armyId, Quantity(2), cost2))
+            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = -2, changedTo = Quantity(1)))
+            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 3, changedTo = Quantity(4)))
+            .event(CreatureRecruited(dwellingId, creatureId, armyId, Quantity(4), cost4))
+            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = -4, changedTo = Quantity(0)))
             .`when`()
             .command(
                 RecruitCreature(
                     dwellingId = dwellingId,
                     creatureId = creatureId,
                     armyId = armyId,
-                    quantity = 3,
+                    quantity = Quantity(3),
                     expectedCost = cost3
                 )
             )
@@ -310,22 +313,22 @@ internal class RecruitCreatureUnitTest {
         val dwellingId = DwellingId.random()
         val armyId = ArmyId.random()
         val creatureId = CreatureId("angel")
-        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
-        val cost3 = mapOf(ResourceType.GOLD to 9000, ResourceType.GEMS to 3)
+        val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
+        val cost3 = Resources.of(ResourceType.GOLD to 9000, ResourceType.GEMS to 3)
 
         sliceUnderTest
             .given()
             .event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 4, changedTo = 4))
-            .event(CreatureRecruited(dwellingId, creatureId, armyId, 3, cost3))
-            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = -3, changedTo = 1))
+            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 4, changedTo = Quantity(4)))
+            .event(CreatureRecruited(dwellingId, creatureId, armyId, Quantity(3), cost3))
+            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = -3, changedTo = Quantity(1)))
             .`when`()
             .command(
                 RecruitCreature(
                     dwellingId = dwellingId,
                     creatureId = creatureId,
                     armyId = armyId,
-                    quantity = 1,
+                    quantity = Quantity(1),
                     expectedCost = costPerTroop
                 )
             )
@@ -336,19 +339,19 @@ internal class RecruitCreatureUnitTest {
                     dwellingId = dwellingId,
                     creatureId = creatureId,
                     toArmy = armyId,
-                    quantity = 1,
+                    quantity = Quantity(1),
                     totalCost = costPerTroop
                 ),
                 CreatureAddedToArmy(
                     armyId = armyId,
                     creatureId = creatureId,
-                    quantity = 1
+                    quantity = Quantity(1)
                 ),
                 AvailableCreaturesChanged(
                     dwellingId = dwellingId,
                     creatureId = creatureId,
                     changedBy = -1,
-                    changedTo = 0
+                    changedTo = Quantity(0)
                 )
             )
     }
@@ -358,20 +361,20 @@ internal class RecruitCreatureUnitTest {
         val dwellingId = DwellingId.random()
         val armyId = ArmyId.random()
         val creatureId = CreatureId("angel")
-        val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
-        val wrongExpectedCost = mapOf(ResourceType.GOLD to 999999, ResourceType.GEMS to 0)
+        val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
+        val wrongExpectedCost = Resources.of(ResourceType.GOLD to 999999, ResourceType.GEMS to 0)
 
         sliceUnderTest
             .given()
             .event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = 1))
+            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)))
             .`when`()
             .command(
                 RecruitCreature(
                     dwellingId = dwellingId,
                     creatureId = creatureId,
                     armyId = armyId,
-                    quantity = 1,
+                    quantity = Quantity(1),
                     expectedCost = wrongExpectedCost
                 )
             )
@@ -387,19 +390,19 @@ internal class RecruitCreatureUnitTest {
             val dwellingId = DwellingId.random()
             val armyId = ArmyId.random()
             val creatureId = CreatureId("angel")
-            val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
+            val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
             sliceUnderTest
                 .given()
                 .event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-                .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = 1))
+                .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)))
                 .`when`()
                 .command(
                     RecruitCreature(
                         dwellingId = dwellingId,
                         creatureId = creatureId,
                         armyId = armyId,
-                        quantity = 1,
+                        quantity = Quantity(1),
                         expectedCost = costPerTroop
                     )
                 )
@@ -410,19 +413,19 @@ internal class RecruitCreatureUnitTest {
                         dwellingId = dwellingId,
                         creatureId = creatureId,
                         toArmy = armyId,
-                        quantity = 1,
+                        quantity = Quantity(1),
                         totalCost = costPerTroop
                     ),
                     CreatureAddedToArmy(
                         armyId = armyId,
                         creatureId = creatureId,
-                        quantity = 1
+                        quantity = Quantity(1)
                     ),
                     AvailableCreaturesChanged(
                         dwellingId = dwellingId,
                         creatureId = creatureId,
                         changedBy = -1,
-                        changedTo = 0
+                        changedTo = Quantity(0)
                     )
                 )
         }
@@ -432,27 +435,27 @@ internal class RecruitCreatureUnitTest {
             val dwellingId = DwellingId.random()
             val armyId = ArmyId.random()
             val newCreatureId = CreatureId("black-dragon")
-            val costPerTroop = mapOf(ResourceType.GOLD to 4000, ResourceType.GEMS to 2)
+            val costPerTroop = Resources.of(ResourceType.GOLD to 4000, ResourceType.GEMS to 2)
 
             sliceUnderTest
                 .given()
                 .event(DwellingBuilt(dwellingId, newCreatureId, costPerTroop))
-                .event(AvailableCreaturesChanged(dwellingId, newCreatureId, changedBy = 1, changedTo = 1))
+                .event(AvailableCreaturesChanged(dwellingId, newCreatureId, changedBy = 1, changedTo = Quantity(1)))
                 // Simulate army already having 7 different creature types
-                .event(CreatureAddedToArmy(armyId, CreatureId("angel"), 5))
-                .event(CreatureAddedToArmy(armyId, CreatureId("griffin"), 10))
-                .event(CreatureAddedToArmy(armyId, CreatureId("swordsman"), 20))
-                .event(CreatureAddedToArmy(armyId, CreatureId("monk"), 8))
-                .event(CreatureAddedToArmy(armyId, CreatureId("cavalier"), 6))
-                .event(CreatureAddedToArmy(armyId, CreatureId("mage"), 4))
-                .event(CreatureAddedToArmy(armyId, CreatureId("titan"), 2))
+                .event(CreatureAddedToArmy(armyId, CreatureId("angel"), Quantity(5)))
+                .event(CreatureAddedToArmy(armyId, CreatureId("griffin"), Quantity(10)))
+                .event(CreatureAddedToArmy(armyId, CreatureId("swordsman"), Quantity(20)))
+                .event(CreatureAddedToArmy(armyId, CreatureId("monk"), Quantity(8)))
+                .event(CreatureAddedToArmy(armyId, CreatureId("cavalier"), Quantity(6)))
+                .event(CreatureAddedToArmy(armyId, CreatureId("mage"), Quantity(4)))
+                .event(CreatureAddedToArmy(armyId, CreatureId("titan"), Quantity(2)))
                 .`when`()
                 .command(
                     RecruitCreature(
                         dwellingId = dwellingId,
                         creatureId = newCreatureId,
                         armyId = armyId,
-                        quantity = 1,
+                        quantity = Quantity(1),
                         expectedCost = costPerTroop
                     )
                 )
@@ -465,26 +468,26 @@ internal class RecruitCreatureUnitTest {
             val dwellingId = DwellingId.random()
             val armyId = ArmyId.random()
             val newCreatureId = CreatureId("black-dragon")
-            val costPerTroop = mapOf(ResourceType.GOLD to 4000, ResourceType.GEMS to 2)
+            val costPerTroop = Resources.of(ResourceType.GOLD to 4000, ResourceType.GEMS to 2)
 
             sliceUnderTest
                 .given()
                 .event(DwellingBuilt(dwellingId, newCreatureId, costPerTroop))
-                .event(AvailableCreaturesChanged(dwellingId, newCreatureId, changedBy = 1, changedTo = 1))
+                .event(AvailableCreaturesChanged(dwellingId, newCreatureId, changedBy = 1, changedTo = Quantity(1)))
                 // Simulate army having 6 different creature types
-                .event(CreatureAddedToArmy(armyId, CreatureId("angel"), 5))
-                .event(CreatureAddedToArmy(armyId, CreatureId("griffin"), 10))
-                .event(CreatureAddedToArmy(armyId, CreatureId("swordsman"), 20))
-                .event(CreatureAddedToArmy(armyId, CreatureId("monk"), 8))
-                .event(CreatureAddedToArmy(armyId, CreatureId("cavalier"), 6))
-                .event(CreatureAddedToArmy(armyId, CreatureId("mage"), 4))
+                .event(CreatureAddedToArmy(armyId, CreatureId("angel"), Quantity(5)))
+                .event(CreatureAddedToArmy(armyId, CreatureId("griffin"), Quantity(10)))
+                .event(CreatureAddedToArmy(armyId, CreatureId("swordsman"), Quantity(20)))
+                .event(CreatureAddedToArmy(armyId, CreatureId("monk"), Quantity(8)))
+                .event(CreatureAddedToArmy(armyId, CreatureId("cavalier"), Quantity(6)))
+                .event(CreatureAddedToArmy(armyId, CreatureId("mage"), Quantity(4)))
                 .`when`()
                 .command(
                     RecruitCreature(
                         dwellingId = dwellingId,
                         creatureId = newCreatureId,
                         armyId = armyId,
-                        quantity = 1,
+                        quantity = Quantity(1),
                         expectedCost = costPerTroop
                     )
                 )
@@ -495,19 +498,19 @@ internal class RecruitCreatureUnitTest {
                         dwellingId = dwellingId,
                         creatureId = newCreatureId,
                         toArmy = armyId,
-                        quantity = 1,
+                        quantity = Quantity(1),
                         totalCost = costPerTroop
                     ),
                     CreatureAddedToArmy(
                         armyId = armyId,
                         creatureId = newCreatureId,
-                        quantity = 1
+                        quantity = Quantity(1)
                     ),
                     AvailableCreaturesChanged(
                         dwellingId = dwellingId,
                         creatureId = newCreatureId,
                         changedBy = -1,
-                        changedTo = 0
+                        changedTo = Quantity(0)
                     )
                 )
         }
@@ -517,28 +520,35 @@ internal class RecruitCreatureUnitTest {
             val dwellingId = DwellingId.random()
             val armyId = ArmyId.random()
             val existingCreatureId = CreatureId("angel")
-            val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
+            val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
             sliceUnderTest
                 .given()
                 .event(DwellingBuilt(dwellingId, existingCreatureId, costPerTroop))
-                .event(AvailableCreaturesChanged(dwellingId, existingCreatureId, changedBy = 2, changedTo = 2))
+                .event(
+                    AvailableCreaturesChanged(
+                        dwellingId,
+                        existingCreatureId,
+                        changedBy = 2,
+                        changedTo = Quantity(2)
+                    )
+                )
                 // Simulate army already having 7 different creature types including the one we want to recruit
-                .event(CreatureAddedToArmy(armyId, existingCreatureId, 5))
-                .event(CreatureAddedToArmy(armyId, CreatureId("griffin"), 10))
-                .event(CreatureAddedToArmy(armyId, CreatureId("swordsman"), 20))
-                .event(CreatureAddedToArmy(armyId, CreatureId("monk"), 8))
-                .event(CreatureAddedToArmy(armyId, CreatureId("cavalier"), 6))
-                .event(CreatureAddedToArmy(armyId, CreatureId("mage"), 4))
-                .event(CreatureAddedToArmy(armyId, CreatureId("titan"), 2))
+                .event(CreatureAddedToArmy(armyId, existingCreatureId, Quantity(5)))
+                .event(CreatureAddedToArmy(armyId, CreatureId("griffin"), Quantity(10)))
+                .event(CreatureAddedToArmy(armyId, CreatureId("swordsman"), Quantity(20)))
+                .event(CreatureAddedToArmy(armyId, CreatureId("monk"), Quantity(8)))
+                .event(CreatureAddedToArmy(armyId, CreatureId("cavalier"), Quantity(6)))
+                .event(CreatureAddedToArmy(armyId, CreatureId("mage"), Quantity(4)))
+                .event(CreatureAddedToArmy(armyId, CreatureId("titan"), Quantity(2)))
                 .`when`()
                 .command(
                     RecruitCreature(
                         dwellingId = dwellingId,
                         creatureId = existingCreatureId,
                         armyId = armyId,
-                        quantity = 2,
-                        expectedCost = mapOf(ResourceType.GOLD to 6000, ResourceType.GEMS to 2)
+                        quantity = Quantity(2),
+                        expectedCost = Resources.of(ResourceType.GOLD to 6000, ResourceType.GEMS to 2)
                     )
                 )
                 .then()
@@ -548,22 +558,23 @@ internal class RecruitCreatureUnitTest {
                         dwellingId = dwellingId,
                         creatureId = existingCreatureId,
                         toArmy = armyId,
-                        quantity = 2,
-                        totalCost = mapOf(ResourceType.GOLD to 6000, ResourceType.GEMS to 2)
+                        quantity = Quantity(2),
+                        totalCost = Resources.of(ResourceType.GOLD to 6000, ResourceType.GEMS to 2)
                     ),
                     CreatureAddedToArmy(
                         armyId = armyId,
                         creatureId = existingCreatureId,
-                        quantity = 2
+                        quantity = Quantity(2)
                     ),
                     AvailableCreaturesChanged(
                         dwellingId = dwellingId,
                         creatureId = existingCreatureId,
                         changedBy = -2,
-                        changedTo = 0
+                        changedTo = Quantity(0)
                     )
                 )
         }
 
     }
+
 } 

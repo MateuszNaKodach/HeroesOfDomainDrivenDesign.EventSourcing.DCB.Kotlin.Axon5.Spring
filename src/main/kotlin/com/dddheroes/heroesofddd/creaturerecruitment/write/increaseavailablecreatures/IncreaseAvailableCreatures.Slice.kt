@@ -5,10 +5,11 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesCh
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
-import com.dddheroes.heroesofddd.shared.domain.valueobjects.CreatureId
-import com.dddheroes.heroesofddd.shared.domain.valueobjects.DwellingId
-import com.dddheroes.heroesofddd.shared.domain.valueobjects.GameId
-import com.dddheroes.heroesofddd.shared.domain.valueobjects.PlayerId
+import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
+import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
+import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
+import com.dddheroes.heroesofddd.shared.domain.identifiers.PlayerId
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.Quantity
 import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.eventsourcing.annotation.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
@@ -32,12 +33,12 @@ data class IncreaseAvailableCreatures(
     val dwellingId: DwellingId,
     @get:JvmName("getCreatureId")
     val creatureId: CreatureId,
-    val increaseBy: Int,
+    val increaseBy: Quantity,
 )
 
-private data class State(val isBuilt: Boolean, val availableCreatures: Int)
+private data class State(val isBuilt: Boolean, val availableCreatures: Quantity)
 
-private val initialState = State(isBuilt = false, availableCreatures = 0)
+private val initialState = State(isBuilt = false, availableCreatures = Quantity.zero())
 
 private fun decide(
     command: IncreaseAvailableCreatures,
@@ -52,7 +53,7 @@ private fun decide(
     return AvailableCreaturesChanged(
         dwellingId = command.dwellingId,
         creatureId = command.creatureId,
-        changedBy = command.increaseBy,
+        changedBy = command.increaseBy.raw,
         changedTo = state.availableCreatures + command.increaseBy
     )
 }
@@ -131,7 +132,7 @@ private class IncreaseAvailableCreaturesRestApi(private val commandGateway: Comm
             IncreaseAvailableCreatures(
                 DwellingId(dwellingId),
                 CreatureId(requestBody.creatureId),
-                requestBody.increaseBy
+                Quantity(requestBody.increaseBy)
             )
 
         val gameId = GameId(gameId)

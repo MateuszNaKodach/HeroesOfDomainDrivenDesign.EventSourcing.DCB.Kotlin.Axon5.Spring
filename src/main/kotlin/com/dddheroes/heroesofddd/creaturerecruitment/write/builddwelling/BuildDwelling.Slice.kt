@@ -5,7 +5,11 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
-import com.dddheroes.heroesofddd.shared.domain.valueobjects.*
+import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
+import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
+import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
+import com.dddheroes.heroesofddd.shared.domain.identifiers.PlayerId
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.Resources
 import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.eventsourcing.annotation.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
@@ -29,7 +33,7 @@ data class BuildDwelling(
     val dwellingId: DwellingId,
     @get:JvmName("getCreatureId")
     val creatureId: CreatureId,
-    val costPerTroop: Map<ResourceType, Int>,
+    val costPerTroop: Resources,
 )
 
 private data class State(val isBuilt: Boolean)
@@ -95,7 +99,7 @@ private class BuildDwellingCommandHandler {
 @RequestMapping("games/{gameId}")
 private class BuildDwellingRestApi(private val commandGateway: CommandGateway) {
     @JvmRecord
-    data class Body(val creatureId: String, val costPerTroop: MutableMap<String, Int>)
+    data class Body(val creatureId: String, val costPerTroop: Map<String, Int>)
 
     @PutMapping("/dwellings/{dwellingId}")
     fun putDwellings(
@@ -108,7 +112,7 @@ private class BuildDwellingRestApi(private val commandGateway: CommandGateway) {
             BuildDwelling(
                 DwellingId(dwellingId),
                 CreatureId(requestBody.creatureId),
-                requestBody.costPerTroop.mapKeys { ResourceType.from(it.key) }
+                Resources.of(requestBody.costPerTroop)
             )
 
         val gameId = GameId(gameId)

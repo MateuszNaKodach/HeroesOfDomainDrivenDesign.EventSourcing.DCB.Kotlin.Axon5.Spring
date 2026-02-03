@@ -3,7 +3,7 @@ package com.dddheroes.heroesofddd.creaturerecruitment.read.getalldwellings
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
-import com.dddheroes.heroesofddd.shared.domain.valueobjects.GameId
+import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
@@ -63,8 +63,8 @@ private class DwellingReadModelProjector(
             gameId,
             event.dwellingId.raw,
             event.creatureId.raw,
-            event.costPerTroop.entries
-                .associate { it.key.name to it.value },
+            event.costPerTroop.raw.entries
+                .associate { it.key.name to it.value.raw },
             0
         )
         repository.save(state)
@@ -75,7 +75,7 @@ private class DwellingReadModelProjector(
         val dwellingId = event.dwellingId.raw
         val state = repository.findByIdOrNull(dwellingId)
         if (state != null) {
-            val updatedState = state.copy(availableCreatures = event.changedTo)
+            val updatedState = state.copy(availableCreatures = event.changedTo.raw)
             repository.save(updatedState)
         }
     }

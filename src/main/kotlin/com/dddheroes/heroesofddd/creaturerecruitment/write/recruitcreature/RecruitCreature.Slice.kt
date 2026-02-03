@@ -8,7 +8,10 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
-import com.dddheroes.heroesofddd.shared.domain.valueobjects.*
+import com.dddheroes.heroesofddd.shared.domain.identifiers.*
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.Quantity
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.Resources
 import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.eventsourcing.annotation.EventCriteriaBuilder
 import org.axonframework.eventsourcing.annotation.EventSourcedEntity
@@ -40,8 +43,8 @@ data class RecruitCreature(
     @get:JvmName("getCreatureId")
     val creatureId: CreatureId,
     val armyId: ArmyId,
-    val quantity: Int,
-    val expectedCost: Map<ResourceType, Int>,
+    val quantity: Quantity,
+    val expectedCost: Resources,
 ) {
     data class RecruitmentId(val dwellingId: DwellingId, val armyId: ArmyId)
 
@@ -51,21 +54,18 @@ data class RecruitCreature(
 
 private data class State(
     val creatureId: CreatureId,
-    val availableCreatures: Int,
-    val costPerTroop: Map<ResourceType, Int>,
-    val creaturesInArmy: Map<CreatureId, Int>
+    val availableCreatures: Quantity,
+    val costPerTroop: Resources,
+    val creaturesInArmy: Map<CreatureId, Quantity>
 )
 
 private val initialState = State(
     creatureId = CreatureId("undefined"),
-    availableCreatures = 0,
-    costPerTroop = emptyMap(),
+    availableCreatures = Quantity.zero(),
+    costPerTroop = Resources.empty(),
     creaturesInArmy = emptyMap()
 )
 
-private fun multiplyCost(cost: Map<ResourceType, Int>, multiplier: Int): Map<ResourceType, Int> {
-    return cost.mapValues { (_, value) -> value * multiplier }
-}
 
 private fun isSameCost(cost1: Map<ResourceType, Int>, cost2: Map<ResourceType, Int>): Boolean {
     return cost1 == cost2
@@ -79,8 +79,8 @@ private fun decide(
         throw IllegalStateException("Recruit creatures cannot exceed available creatures")
     }
 
-    val recruitCost = multiplyCost(state.costPerTroop, command.quantity)
-    if (!isSameCost(command.expectedCost, recruitCost)) {
+    val recruitCost = state.costPerTroop * command.quantity
+    if (command.expectedCost != recruitCost) {
         throw IllegalStateException("Recruit cost cannot differ than expected cost")
     }
 
@@ -104,7 +104,7 @@ private fun decide(
         AvailableCreaturesChanged(
             dwellingId = command.dwellingId,
             creatureId = command.creatureId,
-            changedBy = -command.quantity,
+            changedBy = -command.quantity.raw,
             changedTo = state.availableCreatures - command.quantity
         )
     )
@@ -121,15 +121,15 @@ private fun evolve(state: State, event: HeroesEvent): State = when (event) {
         state.copy(availableCreatures = event.changedTo)
 
     is CreatureAddedToArmy -> {
-        val currentQuantity = state.creaturesInArmy[event.creatureId] ?: 0
+        val currentQuantity = state.creaturesInArmy[event.creatureId] ?: Quantity.zero()
         val updatedCreatures = state.creaturesInArmy + (event.creatureId to currentQuantity + event.quantity)
         state.copy(creaturesInArmy = updatedCreatures)
     }
 
     is CreatureRemovedFromArmy -> {
-        val currentQuantity = state.creaturesInArmy[event.creatureId] ?: 0
-        val newQuantity = (currentQuantity - event.quantity).coerceAtLeast(0)
-        val updatedCreatures = if (newQuantity == 0) {
+        val currentQuantity = state.creaturesInArmy[event.creatureId] ?: Quantity.zero()
+        val newQuantity = currentQuantity - event.quantity
+        val updatedCreatures = if (newQuantity == Quantity.zero()) {
             state.creaturesInArmy - event.creatureId
         } else {
             state.creaturesInArmy + (event.creatureId to newQuantity)
@@ -246,8 +246,8 @@ private class RecruitCreatureRestApi(private val commandGateway: CommandGateway)
             dwellingId = DwellingId(dwellingId),
             creatureId = CreatureId(requestBody.creatureId),
             armyId = ArmyId(requestBody.armyId),
-            quantity = requestBody.quantity,
-            expectedCost = requestBody.expectedCost.mapKeys { ResourceType.from(it.key) }
+            quantity = Quantity(requestBody.quantity),
+            expectedCost = Resources.of(requestBody.expectedCost)
         )
 
         val gameId = GameId(gameId)

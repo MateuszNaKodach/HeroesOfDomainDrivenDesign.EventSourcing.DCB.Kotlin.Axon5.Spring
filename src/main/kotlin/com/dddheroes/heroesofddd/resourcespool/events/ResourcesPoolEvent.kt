@@ -2,7 +2,7 @@ package com.dddheroes.heroesofddd.resourcespool.events
 
 import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
-import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourcesPoolId
+import com.dddheroes.heroesofddd.shared.domain.identifiers.ResourcesPoolId
 import org.axonframework.eventsourcing.annotation.EventTag
 
 sealed interface ResourcesPoolEvent : HeroesEvent {

@@ -1,4 +1,4 @@
-package com.dddheroes.heroesofddd.shared.domain.valueobjects
+package com.dddheroes.heroesofddd.shared.domain.identifiers
 
 @JvmInline
 value class CreatureId(val raw: String) {
