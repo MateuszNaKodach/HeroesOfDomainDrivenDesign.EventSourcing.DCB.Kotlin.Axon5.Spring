@@ -1,8 +1,8 @@
 package com.dddheroes.heroesofddd.shared.application
 
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.*
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.databind.module.SimpleModule
 import org.springframework.stereotype.Component
 
@@ -10,41 +10,25 @@ import org.springframework.stereotype.Component
 class CommandHandlerResultJacksonModule : SimpleModule() {
 
     init {
-        addSerializer(CommandHandlerResult::class.java, CommandHandlerResultSerializer())
-        addDeserializer(CommandHandlerResult::class.java, CommandHandlerResultDeserializer())
+        setMixInAnnotation(CommandHandlerResult::class.java, CommandHandlerResultMixin::class.java)
+        setMixInAnnotation(CommandHandlerResult.Success::class.java, SuccessMixin::class.java)
+        setMixInAnnotation(CommandHandlerResult.Failure::class.java, FailureMixin::class.java)
     }
 
-    private class CommandHandlerResultSerializer : JsonSerializer<CommandHandlerResult>() {
-        override fun serialize(value: CommandHandlerResult, gen: JsonGenerator, serializers: SerializerProvider) {
-            gen.writeStartObject()
-            when (value) {
-                is CommandHandlerResult.Success -> {
-                    gen.writeStringField("type", "Success")
-                }
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+    @JsonSubTypes(
+        JsonSubTypes.Type(value = CommandHandlerResult.Success::class, name = "Success"),
+        JsonSubTypes.Type(value = CommandHandlerResult.Failure::class, name = "Failure")
+    )
+    private interface CommandHandlerResultMixin
 
-                is CommandHandlerResult.Failure -> {
-                    gen.writeStringField("type", "Failure")
-                    gen.writeStringField("message", value.message)
-                }
-            }
-            gen.writeEndObject()
+    private abstract class SuccessMixin {
+        companion object {
+            @JvmStatic
+            @JsonCreator
+            fun create(): CommandHandlerResult.Success = CommandHandlerResult.Success
         }
     }
 
-    private class CommandHandlerResultDeserializer : JsonDeserializer<CommandHandlerResult>() {
-        override fun deserialize(parser: JsonParser, ctxt: DeserializationContext): CommandHandlerResult {
-            val node: JsonNode = parser.codec.readTree(parser)
-            val type = node.get("type")?.asText()
-
-            return when (type) {
-                "Success" -> CommandHandlerResult.Success
-                "Failure" -> {
-                    val message = node.get("message")?.asText() ?: "Unknown error"
-                    CommandHandlerResult.Failure(message)
-                }
-
-                else -> throw IllegalArgumentException("Unknown CommandHandlerResult type: $type")
-            }
-        }
-    }
+    private abstract class FailureMixin @JsonCreator constructor(val message: String)
 }
