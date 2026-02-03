@@ -3,6 +3,7 @@ package com.dddheroes.heroesofddd.creaturerecruitment.write.increaseavailablecre
 import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.CreatureId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import org.assertj.core.api.Assertions.assertThat
@@ -20,7 +21,7 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
     @Test
     fun `given DwellingBuild, when IncreaseAvailableCreatures, then exception`() {
         val dwellingId = DwellingId.random()
-        val creatureId = "angel"
+        val creatureId = CreatureId("angel")
 
         // then
         sliceUnderTest
@@ -35,7 +36,7 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
     @Test
     fun `given DwellingBuilt, when IncreaseAvailableCreatures, then AvailableCreaturesChanged`() {
         val dwellingId = DwellingId.random()
-        val creatureId = "angel"
+        val creatureId = CreatureId("angel")
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
         val increaseBy = 3
 
@@ -53,7 +54,7 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
     @Test
     fun `given DwellingBuilt with AvailableCreaturesChanged, when IncreaseAvailableCreatures, then AvailableCreaturesChanged`() {
         val dwellingId = DwellingId.random()
-        val creatureId = "angel"
+        val creatureId = CreatureId("angel")
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
         // then

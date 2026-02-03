@@ -128,7 +128,7 @@ private class IncreaseAvailableCreaturesRestApi(private val commandGateway: Comm
         val command =
             IncreaseAvailableCreatures(
                 DwellingId(dwellingId),
-                requestBody.creatureId,
+                CreatureId(requestBody.creatureId),
                 requestBody.increaseBy
             )
 
