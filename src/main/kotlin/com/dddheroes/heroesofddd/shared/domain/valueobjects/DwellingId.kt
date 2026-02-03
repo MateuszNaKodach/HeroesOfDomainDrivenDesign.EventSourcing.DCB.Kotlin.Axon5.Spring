@@ -6,7 +6,7 @@ import java.util.*
 value class DwellingId(val raw: String) {
 
     init {
-        require(raw.isNotBlank()) { "Dwelling id cannot be empty" }
+        require(raw.isNotBlank()) { "Dwelling ID cannot be empty" }
     }
 
     companion object {

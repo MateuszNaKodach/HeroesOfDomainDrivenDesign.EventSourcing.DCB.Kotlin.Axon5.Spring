@@ -1,6 +1,8 @@
 package com.dddheroes.heroesofddd.resourcespool.events
 
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourcesPoolId
+
 data class ResourcesDeposited(
-    override val resourcesPoolId: String,
+    override val resourcesPoolId: ResourcesPoolId,
     val resources: Map<String, Int>
 ) : ResourcesPoolEvent

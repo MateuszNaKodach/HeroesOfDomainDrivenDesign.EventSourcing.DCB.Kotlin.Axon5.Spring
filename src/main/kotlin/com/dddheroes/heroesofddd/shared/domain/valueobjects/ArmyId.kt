@@ -6,7 +6,7 @@ import java.util.*
 value class ArmyId(val raw: String) {
 
     init {
-        require(raw.isNotBlank()) { "Army id cannot be empty" }
+        require(raw.isNotBlank()) { "Army ID cannot be empty" }
     }
 
     companion object {
