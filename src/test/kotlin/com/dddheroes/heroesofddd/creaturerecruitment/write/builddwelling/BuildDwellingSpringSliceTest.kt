@@ -2,6 +2,8 @@ package com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling
 
 import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.CreatureId
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import org.axonframework.common.configuration.AxonConfiguration
 import org.axonframework.extensions.kotlin.AxonMetadata
@@ -21,8 +23,8 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(configuration
 
     @Test
     fun `given not built dwelling, when build, then built`() {
-        val dwellingId = UUID.randomUUID().toString()
-        val creatureId = "angel"
+        val dwellingId = DwellingId.random()
+        val creatureId = CreatureId("angel")
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
         sliceUnderTest.given()
@@ -30,6 +32,7 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(configuration
             .`when`()
             .command(BuildDwelling(dwellingId, creatureId, costPerTroop), gameMetadata)
             .then()
+            .success()
             .events(
                 DwellingBuilt(
                     dwellingId = dwellingId,
@@ -41,8 +44,8 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(configuration
 
     @Test
     fun `given DwellingBuild, when BuildDwelling one more time, then nothing`() {
-        val dwellingId = UUID.randomUUID().toString()
-        val creatureId = "angel"
+        val dwellingId = DwellingId.random()
+        val creatureId = CreatureId("angel")
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
         // then
@@ -52,6 +55,7 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(configuration
             .`when`()
             .command(BuildDwelling(dwellingId, creatureId, costPerTroop))
             .then()
+            .success()
             .noEvents()
     }
 

@@ -1,0 +1,4 @@
+axon:
+  axonserver:
+    context: default
+    enabled: ${AXON_AXONSERVER_ENABLED:false}

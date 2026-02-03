@@ -3,6 +3,8 @@ package com.dddheroes.heroesofddd.creaturerecruitment.write.increaseavailablecre
 import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.CreatureId
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import org.assertj.core.api.Assertions.assertThat
 import org.axonframework.common.configuration.AxonConfiguration
@@ -10,7 +12,6 @@ import org.axonframework.test.fixture.AxonTestFixture
 import org.axonframework.test.fixture.springTestFixture
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.util.*
 
 @HeroesAxonSpringBootTest
 internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(configuration: AxonConfiguration) {
@@ -19,8 +20,8 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
 
     @Test
     fun `given DwellingBuild, when IncreaseAvailableCreatures, then exception`() {
-        val dwellingId = UUID.randomUUID().toString()
-        val creatureId = "angel"
+        val dwellingId = DwellingId.random()
+        val creatureId = CreatureId("angel")
 
         // then
         sliceUnderTest
@@ -34,8 +35,8 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
 
     @Test
     fun `given DwellingBuilt, when IncreaseAvailableCreatures, then AvailableCreaturesChanged`() {
-        val dwellingId = UUID.randomUUID().toString()
-        val creatureId = "angel"
+        val dwellingId = DwellingId.random()
+        val creatureId = CreatureId("angel")
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
         val increaseBy = 3
 
@@ -46,13 +47,14 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
             .`when`()
             .command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy))
             .then()
+            .success()
             .events(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = increaseBy, changedTo = increaseBy))
     }
 
     @Test
     fun `given DwellingBuilt with AvailableCreaturesChanged, when IncreaseAvailableCreatures, then AvailableCreaturesChanged`() {
-        val dwellingId = UUID.randomUUID().toString()
-        val creatureId = "angel"
+        val dwellingId = DwellingId.random()
+        val creatureId = CreatureId("angel")
         val costPerTroop = mapOf(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
         // then
@@ -63,6 +65,7 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
             .`when`()
             .command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy = 2))
             .then()
+            .success()
             .events(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 2, changedTo = 3))
     }
 

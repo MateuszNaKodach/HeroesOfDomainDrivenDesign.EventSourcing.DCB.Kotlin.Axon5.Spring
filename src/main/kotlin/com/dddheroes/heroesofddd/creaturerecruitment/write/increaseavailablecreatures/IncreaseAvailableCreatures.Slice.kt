@@ -5,6 +5,8 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesCh
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.CreatureId
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.DwellingId
 import com.dddheroes.heroesofddd.shared.restapi.Headers
 import org.axonframework.eventsourcing.annotation.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
@@ -24,8 +26,10 @@ import org.springframework.web.bind.annotation.*
 ///////////////////////////////////////////
 
 data class IncreaseAvailableCreatures(
-    val dwellingId: String,
-    val creatureId: String,
+    @get:JvmName("getDwellingId")
+    val dwellingId: DwellingId,
+    @get:JvmName("getCreatureId")
+    val creatureId: CreatureId,
     val increaseBy: Int,
 )
 
@@ -123,8 +127,8 @@ private class IncreaseAvailableCreaturesRestApi(private val commandGateway: Comm
     ) {
         val command =
             IncreaseAvailableCreatures(
-                dwellingId,
-                requestBody.creatureId,
+                DwellingId(dwellingId),
+                CreatureId(requestBody.creatureId),
                 requestBody.increaseBy
             )
 

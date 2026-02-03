@@ -1,12 +1,11 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.events
 
-import com.dddheroes.heroesofddd.EventTags
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.CreatureId
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
-import org.axonframework.eventsourcing.annotation.EventTag
 
 data class DwellingBuilt(
-    @get:EventTag(EventTags.DWELLING_ID)
-    override val dwellingId: String,
-    val creatureId: String,
+    override val dwellingId: DwellingId,
+    val creatureId: CreatureId,
     val costPerTroop: Map<ResourceType, Int>
 ) : DwellingEvent
