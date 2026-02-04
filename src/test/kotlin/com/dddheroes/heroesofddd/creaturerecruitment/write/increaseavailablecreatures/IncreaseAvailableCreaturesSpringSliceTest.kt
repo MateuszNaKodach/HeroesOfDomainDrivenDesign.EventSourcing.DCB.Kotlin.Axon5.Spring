@@ -3,12 +3,12 @@ package com.dddheroes.heroesofddd.creaturerecruitment.write.increaseavailablecre
 import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.shared.application.CommandHandlerResult
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.Quantity
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.Resources
-import org.assertj.core.api.Assertions.assertThat
 import org.axonframework.common.configuration.AxonConfiguration
 import org.axonframework.test.fixture.AxonTestFixture
 import org.axonframework.test.fixture.springTestFixture
@@ -34,7 +34,7 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
             .`when`()
             .command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy = Quantity(5)))
             .then()
-            .exceptionSatisfies { ex -> assertThat(ex).hasMessageContaining("Only built dwelling can have available creatures") }
+            .resultMessagePayload(CommandHandlerResult.Failure("Only built dwelling can have available creatures"))
     }
 
     @Test
@@ -51,7 +51,7 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
             .`when`()
             .command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy))
             .then()
-            .success()
+            .resultMessagePayload(CommandHandlerResult.Success)
             .events(
                 AvailableCreaturesChanged(
                     dwellingId,
@@ -76,7 +76,7 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
             .`when`()
             .command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy = Quantity(2)))
             .then()
-            .success()
+            .resultMessagePayload(CommandHandlerResult.Success)
             .events(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 2, changedTo = Quantity(3)))
     }
 

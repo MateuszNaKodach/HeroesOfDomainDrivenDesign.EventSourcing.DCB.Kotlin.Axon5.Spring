@@ -6,13 +6,17 @@ import com.dddheroes.heroesofddd.armies.events.CreatureRemovedFromArmy
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.shared.application.CommandHandlerResult
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
+import com.dddheroes.heroesofddd.shared.application.resultOf
+import com.dddheroes.heroesofddd.shared.application.toCommandResult
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
 import com.dddheroes.heroesofddd.shared.domain.identifiers.*
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.Quantity
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.Resources
 import com.dddheroes.heroesofddd.shared.restapi.Headers
+import com.dddheroes.heroesofddd.shared.restapi.toResponseEntity
 import org.axonframework.eventsourcing.annotation.EventCriteriaBuilder
 import org.axonframework.eventsourcing.annotation.EventSourcedEntity
 import org.axonframework.eventsourcing.annotation.EventSourcingHandler
@@ -32,7 +36,9 @@ import org.axonframework.modelling.configuration.EntityModule
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.util.concurrent.CompletableFuture
 
 ////////////////////////////////////////////
 ////////// Domain
@@ -197,9 +203,10 @@ private class RecruitCreatureCommandHandler {
         metadata: AxonMetadata,
         @InjectEntity(idProperty = "recruitmentId") eventSourced: RecruitCreatureEventSourcedState,
         eventAppender: EventAppender
-    ) {
+    ): CommandHandlerResult = resultOf {
         val events = decide(command, eventSourced.state)
         eventAppender.append(events.asEventMessages(metadata))
+        events.toCommandResult()
     }
 }
 
@@ -244,7 +251,7 @@ private class RecruitCreatureRestApi(private val commandGateway: CommandGateway)
         @PathVariable gameId: String,
         @PathVariable dwellingId: String,
         @RequestBody requestBody: Body
-    ) {
+    ): CompletableFuture<ResponseEntity<Any>> {
         val command = RecruitCreature(
             dwellingId = DwellingId(dwellingId),
             creatureId = CreatureId(requestBody.creatureId),
@@ -258,7 +265,9 @@ private class RecruitCreatureRestApi(private val commandGateway: CommandGateway)
         val metadata = GameMetadata.with(gameId, playerId)
         val message = command.asCommandMessage(metadata)
 
-        commandGateway.sendAndWait(message)
+        return commandGateway.send(message)
+            .resultAs(CommandHandlerResult::class.java)
+            .toResponseEntity()
     }
 }
 
