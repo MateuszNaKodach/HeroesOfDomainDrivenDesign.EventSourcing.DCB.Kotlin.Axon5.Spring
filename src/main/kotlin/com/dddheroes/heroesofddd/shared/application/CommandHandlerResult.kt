@@ -12,7 +12,7 @@ sealed class CommandHandlerResult {
         if (this is Failure) {
             throw DomainRuleViolatedException(message)
         }
-        return this;
+        return this
     }
 }
 

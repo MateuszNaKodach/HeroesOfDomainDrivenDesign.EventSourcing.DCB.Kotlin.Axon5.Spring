@@ -5,6 +5,6 @@ inline fun <reified T : DomainEvent> Collection<T>.throwIfFailure(): Collection<
     if (failureEvents.isEmpty()) {
         return this
     }
-    val message: String = failureEvents.map { it.reason }.joinToString { ", " }
+    val message: String = failureEvents.joinToString(", ") { it.reason }
     throw DomainRuleViolatedException(message)
 }

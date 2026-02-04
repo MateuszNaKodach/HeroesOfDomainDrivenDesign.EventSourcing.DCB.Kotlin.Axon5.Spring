@@ -1,6 +1,7 @@
 package com.dddheroes.heroesofddd
 
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
+import com.dddheroes.heroesofddd.shared.domain.DomainRuleViolatedException
 import com.dddheroes.heroesofddd.shared.restapi.ErrorResponse
 import org.axonframework.common.configuration.ConfigurationEnhancer
 import org.axonframework.eventsourcing.eventstore.MetadataBasedTagResolver
@@ -58,10 +59,10 @@ internal class HeroesConfig {
 @RestControllerAdvice
 internal class GlobalControllerExceptionHandler {
 
-    @ExceptionHandler(Exception::class)
-    fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
+    @ExceptionHandler(DomainRuleViolatedException::class)
+    fun handleDomainRuleViolatedException(e: DomainRuleViolatedException): ResponseEntity<ErrorResponse> {
         return ResponseEntity.badRequest()
-            .body(ErrorResponse(e.message ?: "Unknown error occurred"));
+            .body(ErrorResponse(e.message ?: "Unknown error occurred"))
     }
 
 }
