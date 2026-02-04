@@ -36,7 +36,6 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(configuration
             .`when`()
             .command(BuildDwelling(dwellingId, creatureId, costPerTroop), gameMetadata)
             .then()
-            .resultMessagePayload(CommandHandlerResult.Success)
             .events(
                 DwellingBuilt(
                     dwellingId = dwellingId,

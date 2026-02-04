@@ -5,7 +5,6 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.application.CommandHandlerResult
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
-import com.dddheroes.heroesofddd.shared.application.resultOf
 import com.dddheroes.heroesofddd.shared.application.toCommandResult
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
@@ -23,6 +22,8 @@ import org.axonframework.extensions.kotlin.asCommandMessage
 import org.axonframework.extensions.kotlin.asEventMessages
 import org.axonframework.messaging.commandhandling.annotation.CommandHandler
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
+import org.axonframework.messaging.core.MessageStream
+import org.axonframework.messaging.eventhandling.EventMessage
 import org.axonframework.messaging.eventhandling.gateway.EventAppender
 import org.axonframework.modelling.annotation.InjectEntity
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -93,10 +94,11 @@ private class BuildDwellingCommandHandler {
         metadata: AxonMetadata,
         @InjectEntity(idProperty = EventTags.DWELLING_ID) eventSourced: BuildDwellingEventSourcedState,
         eventAppender: EventAppender
-    ): CommandHandlerResult = resultOf {
+    ): MessageStream<EventMessage> {
         val events = decide(command, eventSourced.state)
         eventAppender.append(events.asEventMessages(metadata))
         events.toCommandResult()
+        return MessageStream.failed(IllegalStateException("Dwelling already built"));
     }
 
 }
