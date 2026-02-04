@@ -31,6 +31,7 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(configuration
         val creatureId = CreatureId("angel")
         val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
+        println("dwellingId: $dwellingId")
         sliceUnderTest.given()
             .noPriorActivity()
             .`when`()
@@ -51,7 +52,6 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(configuration
         val creatureId = CreatureId("angel")
         val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
-        // then
         sliceUnderTest
             .given()
             .events(DwellingBuilt(dwellingId, creatureId, costPerTroop))

@@ -27,7 +27,6 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
         val dwellingId = DwellingId.random()
         val creatureId = CreatureId("angel")
 
-        // then
         sliceUnderTest
             .given()
             .noPriorActivity()
@@ -44,7 +43,6 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
         val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
         val increaseBy = Quantity(3)
 
-        // then
         sliceUnderTest
             .given()
             .event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
@@ -68,7 +66,6 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
         val creatureId = CreatureId("angel")
         val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
-        // then
         sliceUnderTest
             .given()
             .event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
