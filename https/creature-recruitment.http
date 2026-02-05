@@ -49,5 +49,5 @@ GET http://localhost:{{serverPort}}/games/{{gameId}}/dwellings/{{dwellingId}}
 Content-Type: application/json
 
 ###
-PUT http://localhost:3775/maintenance/processors/{{processorName}}/dlq-processing
+PUT http://localhost:{{serverPort}}/maintenance/event-processors/{{processorName}}/dlq-processing
 Content-Type: application/json

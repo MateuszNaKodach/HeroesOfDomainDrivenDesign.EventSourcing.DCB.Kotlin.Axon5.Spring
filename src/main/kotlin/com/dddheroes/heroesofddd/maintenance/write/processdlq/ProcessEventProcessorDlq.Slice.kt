@@ -18,7 +18,7 @@ private class ProcessEventProcessorDlqRestApi(private val configuration: Configu
         @PathVariable processorName: String,
     ): CompletableFuture<ResponseEntity<Any>> {
         val processorModule =
-            configuration.getModuleConfiguration(processorName).getOrNull()
+            configuration.getModuleConfiguration("EventProcessor[$processorName]").getOrNull()
                 ?: return CompletableFuture.completedFuture(ResponseEntity.notFound().build())
 
         val dlqProcessors = processorModule.getComponents(SequencedDeadLetterProcessor::class.java).values
