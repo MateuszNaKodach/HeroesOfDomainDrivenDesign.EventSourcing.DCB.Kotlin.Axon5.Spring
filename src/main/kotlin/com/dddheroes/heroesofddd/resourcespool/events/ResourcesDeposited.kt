@@ -1,7 +1,7 @@
 package com.dddheroes.heroesofddd.resourcespool.events
 
 import com.dddheroes.heroesofddd.shared.domain.identifiers.ResourcesPoolId
-import org.testcontainers.shaded.com.google.common.io.Resources
+import com.dddheroes.heroesofddd.shared.domain.valueobjects.Resources
 
 data class ResourcesDeposited(
     override val resourcesPoolId: ResourcesPoolId,
