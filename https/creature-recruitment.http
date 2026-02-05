@@ -4,6 +4,7 @@
 @gameId = scenario-1
 @playerId = player-1
 @dwellingId = dwelling-1
+@processorName = com.dddheroes.heroesofddd.creaturerecruitment.read.getalldwellings
 
 ### BuildDwelling
 PUT http://localhost:{{serverPort}}/games/{{gameId}}/dwellings/{{dwellingId}}
@@ -47,3 +48,6 @@ X-Player-Id: {{playerId}}
 GET http://localhost:{{serverPort}}/games/{{gameId}}/dwellings/{{dwellingId}}
 Content-Type: application/json
 
+###
+PUT http://localhost:3775/maintenance/processors/{{processorName}}/dlq-processing
+Content-Type: application/json

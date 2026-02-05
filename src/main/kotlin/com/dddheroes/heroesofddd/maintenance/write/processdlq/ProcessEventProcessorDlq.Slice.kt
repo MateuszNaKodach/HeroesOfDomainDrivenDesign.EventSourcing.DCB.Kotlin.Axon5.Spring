@@ -13,8 +13,8 @@ import kotlin.jvm.optionals.getOrNull
 @RestController
 private class ProcessEventProcessorDlqRestApi(private val configuration: Configuration) {
 
-    @PutMapping("/maintenance/processors/{processorName}/dlq-processing")
-    fun putDwellings(
+    @PutMapping("/maintenance/event-processors/{processorName}/dlq-processing")
+    fun putEventProcessorDlqProcessing(
         @PathVariable processorName: String,
     ): CompletableFuture<ResponseEntity<Any>> {
         val processorModule =
