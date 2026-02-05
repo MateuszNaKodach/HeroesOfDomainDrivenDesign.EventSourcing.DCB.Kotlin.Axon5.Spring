@@ -1,6 +1,7 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.read.getalldwellings
 
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
+import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
@@ -10,6 +11,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 import org.axonframework.extension.spring.config.ProcessorDefinition
 import org.axonframework.messaging.core.annotation.MetadataValue
+import org.axonframework.messaging.deadletter.DeadLetter
 import org.axonframework.messaging.eventhandling.annotation.EventHandler
 import org.axonframework.messaging.eventhandling.annotation.SequencingPolicy
 import org.axonframework.messaging.eventhandling.replay.annotation.ResetHandler
@@ -84,6 +86,14 @@ private class DwellingReadModelProjector(
             val updatedState = state.copy(availableCreatures = event.changedTo.raw)
             repository.save(updatedState)
         }
+    }
+
+    @EventHandler
+    fun on(event: CreatureRecruited, deadLetter: DeadLetter<*>?) {
+        if (deadLetter == null) {
+            throw IllegalStateException("Recruiting creatures is not allowed")
+        }
+        println("CREATURE RECRUITED: $event")
     }
 
     @ResetHandler
