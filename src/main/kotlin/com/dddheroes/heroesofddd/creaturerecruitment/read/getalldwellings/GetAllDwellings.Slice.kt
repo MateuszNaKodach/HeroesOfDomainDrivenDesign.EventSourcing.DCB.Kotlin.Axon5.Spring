@@ -8,6 +8,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import org.axonframework.extension.spring.config.ProcessorDefinition
 import org.axonframework.messaging.core.annotation.MetadataValue
 import org.axonframework.messaging.eventhandling.annotation.EventHandler
 import org.axonframework.messaging.eventhandling.annotation.SequencingPolicy
@@ -18,6 +19,8 @@ import org.axonframework.messaging.queryhandling.gateway.QueryGateway
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
@@ -90,6 +93,24 @@ private class DwellingReadModelProjector(
 
 }
 
+@Configuration
+private class DwellingReadModelProjectorConfig {
+
+    @Bean
+    fun dwellingReadModelProcessorDefinition(): ProcessorDefinition =
+        ProcessorDefinition.pooledStreamingProcessor("com.dddheroes.heroesofddd.creaturerecruitment.read.getalldwellings")
+            .assigningHandlers {
+                it.beanType().getPackageName() == "com.dddheroes.heroesofddd.creaturerecruitment.read.getalldwellings"
+            }
+            .withConfiguration { cfg ->
+                cfg.deadLetterQueue { dlq ->
+                    dlq.enabled()
+                }
+            }
+
+}
+
+
 @ConditionalOnProperty(prefix = "slices.creaturerecruitment", name = ["read.getalldwellings.enabled"])
 @Component
 private class DwellingReadModelQueryHandler(
@@ -102,6 +123,7 @@ private class DwellingReadModelQueryHandler(
         return GetAllDwellings.Result(readModel)
     }
 }
+
 
 @ConditionalOnProperty(prefix = "slices.creaturerecruitment", name = ["read.getalldwellings.enabled"])
 @RestController
