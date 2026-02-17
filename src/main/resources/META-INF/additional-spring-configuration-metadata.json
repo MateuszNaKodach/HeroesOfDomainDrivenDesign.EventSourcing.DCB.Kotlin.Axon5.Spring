@@ -19,6 +19,11 @@
       "name": "slices.creaturerecruitment.write.recruitcreature.enabled",
       "type": "java.lang.Boolean",
       "description": "Enable/disable the RecruitCreature vertical slice in the Creature Recruitment bounded context."
+    },
+    {
+      "name": "slices.astrologers.write.proclaimweeksymbol.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable/disable the ProclaimWeekSymbol vertical slice in the Astrologers bounded context."
     }
   ]
 }

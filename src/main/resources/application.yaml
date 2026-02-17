@@ -36,3 +36,5 @@ slices:
     enabled: true
   creaturerecruitment.read.getalldwellings:
     enabled: true
+  astrologers.write.proclaimweeksymbol:
+    enabled: true

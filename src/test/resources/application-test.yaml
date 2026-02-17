@@ -14,3 +14,5 @@ slices:
     enabled: false
   creaturerecruitment.read.getalldwellings:
     enabled: false
+  astrologers.write.proclaimweeksymbol:
+    enabled: false
