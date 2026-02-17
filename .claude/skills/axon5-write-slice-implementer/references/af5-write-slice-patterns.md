@@ -243,7 +243,8 @@ internal class ProclaimWeekSymbolWriteSliceConfig {
 
 ## 3. Explicit Registration Pattern — Multi-Tag DCB
 
-Use when `decide()` needs state from events across MULTIPLE tags/streams and you want unit tests without Spring context.
+Use when `decide()` needs state from events across MULTIPLE tags/streams. Uses explicit `@Configuration` for
+registration, enabling non-Spring Boot unit tests.
 
 ### Full Example: RecruitCreature
 
