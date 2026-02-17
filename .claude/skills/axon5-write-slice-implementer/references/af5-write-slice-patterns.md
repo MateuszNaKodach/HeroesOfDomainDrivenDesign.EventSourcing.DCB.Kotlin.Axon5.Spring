@@ -4,16 +4,21 @@ Complete reference for implementing write slices in Axon Framework 5 with Vertic
 
 ## Table of Contents
 
-1. [Simple Pattern (Single Tag)](#1-simple-pattern-single-tag)
-2. [Advanced Pattern (Multi-Tag DCB)](#2-advanced-pattern-multi-tag-dcb)
-3. [Component Reference](#3-component-reference)
-4. [Testing](#4-testing)
+1. [Spring Boot Pattern — Single Tag](#1-spring-boot-pattern--single-tag)
+2. [Explicit Registration Pattern — Single Tag](#2-explicit-registration-pattern--single-tag)
+3. [Explicit Registration Pattern — Multi-Tag DCB](#3-explicit-registration-pattern--multi-tag-dcb)
+4. [Component Reference](#4-component-reference)
+5. [Testing](#5-testing)
+
+The distinction between Spring Boot and Explicit Registration is about **registration mechanism** (auto-discovery vs
+manual `@Configuration`), not about tag cardinality. Both support single-tag and multi-tag. Multi-tag DCB with Spring
+Boot uses `@EventSourcedEntity` + `@EventCriteriaBuilder` + `@Component` (no explicit `@Configuration` needed).
 
 ---
 
-## 1. Simple Pattern (Single Tag)
+## 1. Spring Boot Pattern — Single Tag
 
-Use when the command needs events from ONE tag/stream only.
+Default choice for Spring Boot projects. Entity and handler auto-discovered by Spring.
 
 ### Full Example: BuildDwelling
 
@@ -146,19 +151,99 @@ private class BuildDwellingRestApi(private val commandGateway: CommandGateway) {
 }
 ```
 
-### Simple Pattern Characteristics
+### Spring Boot Pattern Characteristics
 
 - `@EventSourced(tagKey = EventTags.DWELLING_ID)` - all events matching this tag are replayed
 - `@Component` on handler - auto-registered by Spring
 - `@InjectEntity(idProperty = EventTags.DWELLING_ID)` - the command property named `dwellingId` is used to filter events
   by tag
 - `@ConditionalOnProperty` on BOTH entity and handler classes (and REST)
+- Tested with Spring Boot test (`@HeroesAxonSpringBootTest` + `springTestFixture`)
 
 ---
 
-## 2. Advanced Pattern (Multi-Tag DCB)
+## 2. Explicit Registration Pattern — Single Tag
 
-Use when `decide()` needs state from events across MULTIPLE tags/streams.
+Use when you want unit tests without Spring context for a single-tag slice. Same domain logic as the Spring Boot
+pattern,
+but entity and handler are registered explicitly via `@Configuration`.
+
+### Key Differences from Spring Boot Pattern
+
+```kotlin
+////////////////////////////////////////////
+////////// Application
+///////////////////////////////////////////
+
+@EventSourcedEntity // NOT @EventSourced — no tagKey here
+private class ProclaimWeekSymbolEventSourcedState private constructor(val state: State) {
+
+    @EntityCreator
+    constructor() : this(initialState)
+
+    @EventSourcingHandler
+    fun evolve(event: WeekSymbolProclaimed) = ProclaimWeekSymbolEventSourcedState(evolve(state, event))
+
+    companion object {
+        @JvmStatic
+        @EventCriteriaBuilder
+        fun resolveCriteria(astrologersId: AstrologersId) = // takes the id value object directly (not composite)
+            EventCriteria
+                .havingTags(Tag.of(EventTags.ASTROLOGERS_ID, astrologersId.raw))
+                .andBeingOneOfTypes(WeekSymbolProclaimed::class.java.getName())
+    }
+}
+
+// NO @Component — registered via Configuration below
+private class ProclaimWeekSymbolCommandHandler {
+
+    @CommandHandler
+    fun handle(
+        command: ProclaimWeekSymbol,
+        metadata: AxonMetadata,
+        @InjectEntity(idProperty = EventTags.ASTROLOGERS_ID) eventSourced: ProclaimWeekSymbolEventSourcedState,
+        eventAppender: EventAppender
+    ): CommandHandlerResult = resultOf {
+        val events = decide(command, eventSourced.state)
+        eventAppender.append(events.asEventMessages(metadata))
+        events.toCommandResult()
+    }
+}
+
+@ConditionalOnProperty(prefix = "slices.astrologers", name = ["write.proclaimweeksymbol.enabled"])
+@Configuration
+internal class ProclaimWeekSymbolWriteSliceConfig {
+
+    @Bean
+    fun proclaimWeekSymbolSliceState(): EntityModule<*, *> =
+        EventSourcedEntityModule.autodetected(
+            AstrologersId::class.java,
+            ProclaimWeekSymbolEventSourcedState::class.java
+        )
+
+    @Bean
+    fun proclaimWeekSymbolSlice(): CommandHandlingModule =
+        CommandHandlingModule.named(ProclaimWeekSymbol::class.simpleName!!)
+            .commandHandlers()
+            .annotatedCommandHandlingComponent { ProclaimWeekSymbolCommandHandler() }
+            .build()
+}
+```
+
+### Explicit Registration Pattern Characteristics (Single Tag)
+
+- `@EventSourcedEntity` (no tagKey) + `@EventCriteriaBuilder` companion with single tag
+- `@EventCriteriaBuilder` takes the **id value object directly** (e.g., `AstrologersId`), not a composite ID
+- Handler has NO `@Component` — instantiated by `CommandHandlingModule`
+- `@Configuration` class registers both `EntityModule` and `CommandHandlingModule`
+- `@ConditionalOnProperty` on `@Configuration` class and REST only (not on entity/handler)
+- Tested with non-Spring Boot unit test (`axonTestFixture` + `configSlice`)
+
+---
+
+## 3. Explicit Registration Pattern — Multi-Tag DCB
+
+Use when `decide()` needs state from events across MULTIPLE tags/streams and you want unit tests without Spring context.
 
 ### Full Example: RecruitCreature
 
@@ -370,7 +455,7 @@ private class RecruitCreatureRestApi(private val commandGateway: CommandGateway)
 }
 ```
 
-### Advanced Pattern Characteristics
+### Explicit Registration Pattern Characteristics (Multi-Tag)
 
 - Composite ID in command: `data class RecruitmentId(...)` + `val recruitmentId = ...`
 - `@EventSourcedEntity` (no tagKey)
@@ -380,10 +465,11 @@ private class RecruitCreatureRestApi(private val commandGateway: CommandGateway)
 - Handler has NO `@Component` - instantiated by `CommandHandlingModule`
 - `@InjectEntity(idProperty = "recruitmentId")` points to composite ID property
 - `@Configuration` class registers both `EntityModule` and `CommandHandlingModule`
+- Tested with non-Spring Boot unit test (`axonTestFixture` + `configSlice`)
 
 ---
 
-## 3. Component Reference
+## 4. Component Reference
 
 ### Event Publishing
 
@@ -437,9 +523,9 @@ slices:
 
 ---
 
-## 4. Testing
+## 5. Testing
 
-### Unit Test (no Spring context, advanced pattern)
+### Non-Spring Boot Test (Explicit Registration pattern)
 
 ```kotlin
 internal class RecruitCreatureUnitTest {
@@ -479,7 +565,7 @@ internal class RecruitCreatureUnitTest {
 }
 ```
 
-### Spring Integration Test (simple pattern)
+### Spring Boot Test (Spring Boot pattern)
 
 ```kotlin
 @TestPropertySource(properties = ["slices.creaturerecruitment.write.builddwelling.enabled=true"])

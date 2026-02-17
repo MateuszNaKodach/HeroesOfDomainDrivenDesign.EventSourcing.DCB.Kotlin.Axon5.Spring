@@ -62,18 +62,25 @@ See [references/af4-input-mapping.md](references/af4-input-mapping.md) for conce
 
 ## Step 2: Choose the AF5 Pattern
 
-**Simple (single tag)** - command needs events from ONE tag/stream:
+**Spring Boot** — entity and handler auto-discovered by Spring:
 
-- `@EventSourced(tagKey = "tagName")` on entity
+- `@EventSourced(tagKey = "tagName")` on entity (single tag) or `@EventSourcedEntity` + `@EventCriteriaBuilder` (
+  multi-tag)
 - `@Component` on handler class
 - Auto-registered by Spring
+- Tested with Spring Boot test (`@HeroesAxonSpringBootTest`)
+- **Default choice** when the project uses Spring Boot
 
-**Advanced (multi-tag / DCB)** - command needs events from MULTIPLE tags/streams:
+**Explicit Registration** — entity and handler registered manually via `@Configuration`:
 
-- `@EventSourcedEntity` on entity (no tagKey)
-- `@EventCriteriaBuilder` companion method on entity
+- `@EventSourcedEntity` on entity
+- `@EventCriteriaBuilder` companion method on entity (single-tag: takes id value object; multi-tag: takes composite ID)
 - `@Configuration` class with `EntityModule` + `CommandHandlingModule` beans
 - Handler class is NOT `@Component`
+- Tested with non-Spring Boot unit test (`axonTestFixture` + `configSlice`)
+- Use when: user explicitly asks for unit tests without Spring context
+
+Both patterns support single-tag and multi-tag (DCB). The difference is registration mechanism, not tag cardinality.
 
 See [references/af5-write-slice-patterns.md](references/af5-write-slice-patterns.md) for complete patterns.
 
@@ -136,18 +143,30 @@ Check target project's `events/` package. If events don't exist, create them fol
 ## Step 5: Add Feature Flag
 
 Add `@ConditionalOnProperty(prefix = "slices.{context}", name = ["write.{feature}.enabled"])` to entity,
-handler/@config, and REST classes. Add property to `application.yaml`.
+handler/@config, and REST classes. Update ALL of these files:
+
+- `application.yaml` — set `enabled: true`
+- `application-test.yaml` — set `enabled: false` (slices disabled by default in tests; individual tests opt-in via
+  `@TestPropertySource`)
+- `META-INF/additional-spring-configuration-metadata.json` — add property entry with name, type (`java.lang.Boolean`),
+  and description
 
 ## Step 6: Implement Tests
 
-Follow project test conventions. Cover:
+Two test approaches exist (see [references/af5-write-slice-patterns.md](references/af5-write-slice-patterns.md) "
+Testing" section):
+
+- **Spring Boot test** — uses `@HeroesAxonSpringBootTest` + `springTestFixture(configuration)`. Works with the Spring
+  Boot pattern (`@EventSourced` + `@Component`). Requires `@TestPropertySource` to enable the slice.
+- **Non-Spring Boot test** — uses `axonTestFixture(configSlice { ... })`. Works with the Explicit Registration pattern (
+  `@EventSourcedEntity` + `@Configuration`). No Spring context needed.
+
+Cover these scenarios:
 
 - **Happy path**: no prior state, command produces expected events
 - **Idempotency**: duplicate command produces no events
 - **Rule violations**: invalid state returns `CommandHandlerResult.Failure`
 - **State transitions**: prior events change behavior
-
-See [references/af5-write-slice-patterns.md](references/af5-write-slice-patterns.md) "Testing" section.
 
 ## References
 
