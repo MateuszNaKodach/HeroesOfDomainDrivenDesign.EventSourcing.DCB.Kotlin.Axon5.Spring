@@ -104,3 +104,63 @@ fun `given not built dwelling, when build, then built`() {
 - State classes are `internal`, commands are `public`
 - REST endpoints follow: `games/{gameId}/resource/{resourceId}` pattern
 - Player ID passed via `X-Player-ID` header
+
+## Commit Conventions
+
+Commits follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) combined with
+[Gitmoji](https://gitmoji.dev/). Always use the **actual Unicode emoji** (e.g. `✨`), never the shortcode (e.g.
+`:sparkles:`).
+
+### Format
+
+```
+<emoji> <type>(optional-scope): <description>
+```
+
+Use backticks around class/entity names in descriptions (e.g. `` `BuildDwelling` ``).
+
+### Event Modeling Slice Commits
+
+When implementing a slice from Event Modeling, use `✨ feat:` with the bounded context name, slice type, and flow:
+
+```
+✨ feat: <BoundedContext> | write slice: <CommandName> -> <EventName(s)>
+✨ feat: <BoundedContext> | read slice: (<EventName(s)>) -> <ReadModelName>
+✨ feat: <BoundedContext> | automation: <EventName> -> <CommandName>
+✨ feat: <BoundedContext> | write slices: <CommandName1> and <CommandName2>
+```
+
+Examples:
+
+```
+✨ feat: Creature Recruitment | write slice: BuildDwelling -> `DwellingBuilt`
+✨ feat: Creature Recruitment | write slice: RecruitCreature -> (`CreatureRecruited`, `AvailableCreaturesChanged`)
+✨ feat: Creature Recruitment | read slice: (`CreatureRecruited`, `AvailableCreaturesChanged`) -> `GetAllDwellings`
+✨ feat: Creature Recruitment | automation: `CreatureRecruited` -> `AddCreatureToArmy`
+✨ feat: Astrologers | write slice: `ProclaimWeekSymbol` -> `WeekSymbolProclaimed`
+✨ feat: Calendar | write slices: `StartDay` and `FinishDay`
+```
+
+### Emoji-Type Mapping
+
+| Emoji | Type                              | When to use                                           |
+|-------|-----------------------------------|-------------------------------------------------------|
+| ✨     | `feat`                            | New feature or slice implementation                   |
+| 🐛    | `fix`                             | Bug fix                                               |
+| ♻️    | `refactor`                        | Code refactoring (no behavior change)                 |
+| 🏗️   | `refactor(architecture)`          | Architectural restructuring                           |
+| ✅     | `test`                            | Adding or updating tests                              |
+| 🧪    | `chore(tests)`                    | Test infrastructure/configuration                     |
+| 📦    | `build(deps)`                     | Dependency additions or upgrades                      |
+| ⬆️    | `deps`                            | Dependency version upgrades                           |
+| 🐳    | `chore(docker)`                   | Docker and container configuration                    |
+| 👷    | `ci`                              | CI/CD pipeline changes                                |
+| 📝    | `docs`                            | Documentation                                         |
+| 🔧    | `config(scope)` or `chore(scope)` | Configuration changes                                 |
+| 🎉    | `chore`                           | Project initialization                                |
+| 🔥    | `remove`                          | Removing code or files                                |
+| 🤖    | `ai-agent(scope)`                 | AI agent configuration (e.g. `ai-agent(claude-code)`) |
+| 🧑‍💻 | `chore(dx)`                       | Developer experience improvements                     |
+| 📸    | `chore`                           | Snapshotting configuration                            |
+| 🪲    | `chore(debugging)`                | Debugging helpers (log levels, etc.)                  |
+| 🚀    | `feat(scripts)`                   | Deployment or utility scripts                         |
