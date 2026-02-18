@@ -143,24 +143,38 @@ Examples:
 
 ### Emoji-Type Mapping
 
-| Emoji | Type                              | When to use                                           |
-|-------|-----------------------------------|-------------------------------------------------------|
-| ✨     | `feat`                            | New feature or slice implementation                   |
-| 🐛    | `fix`                             | Bug fix                                               |
-| ♻️    | `refactor`                        | Code refactoring (no behavior change)                 |
-| 🏗️   | `refactor(architecture)`          | Architectural restructuring                           |
-| ✅     | `test`                            | Adding or updating tests                              |
-| 🧪    | `chore(tests)`                    | Test infrastructure/configuration                     |
-| 📦    | `build(deps)`                     | Dependency additions or upgrades                      |
-| ⬆️    | `deps`                            | Dependency version upgrades                           |
-| 🐳    | `chore(docker)`                   | Docker and container configuration                    |
-| 👷    | `ci`                              | CI/CD pipeline changes                                |
-| 📝    | `docs`                            | Documentation                                         |
-| 🔧    | `config(scope)` or `chore(scope)` | Configuration changes                                 |
-| 🎉    | `chore`                           | Project initialization                                |
-| 🔥    | `remove`                          | Removing code or files                                |
-| 🤖    | `ai-agent(scope)`                 | AI agent configuration (e.g. `ai-agent(claude-code)`) |
-| 🧑‍💻 | `chore(dx)`                       | Developer experience improvements                     |
-| 📸    | `chore`                           | Snapshotting configuration                            |
-| 🪲    | `chore(debugging)`                | Debugging helpers (log levels, etc.)                  |
-| 🚀    | `feat(scripts)`                   | Deployment or utility scripts                         |
+| Emoji | Type                              | When to use                                         |
+|-------|-----------------------------------|-----------------------------------------------------|
+| ✨     | `feat`                            | New feature or slice implementation                 |
+| 🐛    | `fix`                             | Bug fix                                             |
+| ♻️    | `refactor`                        | Code refactoring (no behavior change)               |
+| 🏗️   | `refactor(architecture)`          | Architectural restructuring                         |
+| ✅     | `test`                            | Adding or updating tests                            |
+| 🧪    | `chore(tests)`                    | Test infrastructure/configuration                   |
+| 📦    | `build(deps)`                     | Dependency additions or upgrades                    |
+| ⬆️    | `deps`                            | Dependency version upgrades                         |
+| 🐳    | `chore(docker)`                   | Docker and container configuration                  |
+| 👷    | `ci`                              | CI/CD pipeline changes                              |
+| 📝    | `docs`                            | Documentation                                       |
+| 🔧    | `config(scope)` or `chore(scope)` | Configuration changes                               |
+| 🎉    | `chore`                           | Project initialization                              |
+| 🔥    | `remove`                          | Removing code or files                              |
+| 🤖    | `ai-agent(scope)`                 | AI coding agent config (skills, CLAUDE.md, prompts) |
+| ✨     | `feat(mcp)`                       | MCP server features (tools, resources)              |
+| 🧑‍💻 | `chore(dx)`                       | Developer experience improvements                   |
+| 📸    | `chore`                           | Snapshotting configuration                          |
+| 🪲    | `chore(debugging)`                | Debugging helpers (log levels, etc.)                |
+| 🚀    | `feat(scripts)`                   | Deployment or utility scripts                       |
+
+AI agent vs AI feature — examples:
+
+```
+# ai-agent = AI coding agents that help develop the project (Claude Code, skills, prompts)
+🤖 ai-agent(claude-code): init with `CLAUDE.md`
+🤖 ai-agent(skills): update AF5 slice documentation for Spring Boot and explicit registration patterns
+🤖 ai-agent(CLAUDE.md): add commit conventions section
+
+# feat(mcp) = AI as a product feature in the app (MCP server, generative AI endpoints)
+✨ feat(mcp): add MCP server
+✨ feat(mcp): `BuildDwelling` write slice | add MCP server tool
+```
