@@ -1,5 +1,5 @@
 ---
-name: axon5-write-slice-implementer
+name: axon5-write-slice-implementation
 description: >
   Implement Event Sourcing write slices using Axon Framework 5, Vertical Slice Architecture, and
   Event Modeling patterns. A write slice is: Command to decide to Events to evolve to State.
@@ -12,7 +12,7 @@ description: >
   Understands AF4 aggregate-based input as one possible source format.
 ---
 
-# Axon Framework 5 Write Slice Implementer
+# Axon Framework 5 Write Slice Implementation
 
 ## Step 0: Discover Target Project Conventions
 
