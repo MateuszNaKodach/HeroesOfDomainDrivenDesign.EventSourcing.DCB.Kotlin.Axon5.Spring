@@ -1,7 +1,11 @@
 package org.axonframework.extension.spring.test
 
+import org.axonframework.common.configuration.AxonConfiguration
+import org.axonframework.test.fixture.AxonTestFixture
 import org.axonframework.test.fixture.MessagesRecordingConfigurationEnhancer
+import org.axonframework.test.fixture.springTestFixture
 import org.junit.jupiter.api.Tag
+import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.UseMainMethod
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment
@@ -16,6 +20,15 @@ class AxonTestConfiguration {
 
     @Bean
     fun recordingEnhancer() = MessagesRecordingConfigurationEnhancer()
+
+    @Bean
+    fun axonTestFixture(
+        configuration: AxonConfiguration,
+        customization: ObjectProvider<AxonTestFixture.Customization>
+    ): AxonTestFixture = springTestFixture(
+        configuration,
+        customization.getIfAvailable { AxonTestFixture.Customization() }
+    )
 }
 
 @Target(AnnotationTarget.CLASS)
