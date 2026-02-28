@@ -41,7 +41,7 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(
                     creatureId = creatureId,
                     costPerTroop = costPerTroop
                 )
-            )
+            ).eventsMatch { it.all { e -> e.metadata().contains("gameId") } }
     }
 
     @Test
