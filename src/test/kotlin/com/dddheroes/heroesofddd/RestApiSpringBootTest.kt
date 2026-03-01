@@ -11,7 +11,7 @@ import org.axonframework.messaging.core.Metadata
 import org.axonframework.messaging.eventhandling.GenericEventMessage
 import org.axonframework.messaging.queryhandling.gateway.QueryGateway
 import org.junit.jupiter.api.BeforeEach
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.*
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.bean.override.mockito.MockitoBean
@@ -41,17 +41,34 @@ abstract class RestApiSpringBootTest {
         currentTimeIs(Instant.now())
     }
 
-    protected fun assumeCommandSuccess() {
-        val result = commandResultOf(CommandHandlerResult.Success)
-        Mockito.doReturn(result)
-            .`when`(commandGateway).send(any(), any(Metadata::class.java))
+    // ---- Command Success ----
+
+    protected fun <T : Any> assumeCommandSuccess(command: T) {
+        stubCommandGateway(command, CommandHandlerResult.Success)
     }
 
-    protected fun assumeCommandFailure(message: String) {
-        val result = commandResultOf(CommandHandlerResult.Failure(message))
-        Mockito.doReturn(result)
-            .`when`(commandGateway).send(any(), any(Metadata::class.java))
+    final inline fun <reified T : Any> assumeCommandSuccess() {
+        stubCommandGatewayByType<T>(CommandHandlerResult.Success)
     }
+
+    // ---- Command Failure ----
+
+    protected fun <T : Any> assumeCommandFailure(command: T, message: String = "Simulated failure") {
+        stubCommandGateway(command, CommandHandlerResult.Failure(message))
+    }
+
+    final inline fun <reified T : Any> assumeCommandFailure(message: String = "Simulated failure") {
+        stubCommandGatewayByType<T>(CommandHandlerResult.Failure(message))
+    }
+
+    // ---- Query ----
+
+    protected inline fun <reified R, reified Q : Any> assumeQueryReturns(query: Q, result: R) {
+        Mockito.doReturn(CompletableFuture.completedFuture(result))
+            .`when`(queryGateway).query(eq(query), eq(R::class.java))
+    }
+
+    // ---- Clock ----
 
     protected fun currentTimeIs(instant: Instant): Instant {
         Mockito.`when`(clock.instant()).thenReturn(instant)
@@ -61,7 +78,52 @@ abstract class RestApiSpringBootTest {
 
     protected fun currentTime(): Instant = clock.instant()
 
-    private fun commandResultOf(payload: CommandHandlerResult): CommandResult {
+    // ---- Internals ----
+
+    /**
+     * AF5 [CommandGateway] has these invocation styles:
+     * - `send(command, metadata)` → [CommandResult] (async with metadata — most common in controllers)
+     * - `send(command)` → [CommandResult] (async without metadata)
+     * - `sendAndWait(command)` → `Any?` (sync)
+     * - `sendAndWait(command, resultType)` → `R?` (sync typed)
+     *
+     * All are stubbed so tests work regardless of which style the controller uses.
+     */
+    private fun <T : Any> stubCommandGateway(command: T, payload: CommandHandlerResult) {
+        val result = commandResultOf(payload)
+        // send(command, metadata) — async with metadata
+        Mockito.doReturn(result)
+            .`when`(commandGateway).send(eq(command), any(Metadata::class.java))
+        // send(command) — async without metadata
+        Mockito.doReturn(result)
+            .`when`(commandGateway).send(eq(command))
+        // sendAndWait(command) — sync
+        Mockito.doReturn(payload)
+            .`when`(commandGateway).sendAndWait(eq(command))
+        // sendAndWait(command, resultType) — sync typed
+        Mockito.doReturn(payload)
+            .`when`(commandGateway).sendAndWait(eq(command), eq(CommandHandlerResult::class.java))
+    }
+
+    @PublishedApi
+    internal inline fun <reified T : Any> stubCommandGatewayByType(payload: CommandHandlerResult) {
+        val result = commandResultOf(payload)
+        // send(command, metadata) — async with metadata
+        Mockito.doReturn(result)
+            .`when`(commandGateway).send(argThat { it is T }, any(Metadata::class.java))
+        // send(command) — async without metadata
+        Mockito.doReturn(result)
+            .`when`(commandGateway).send(argThat<Any> { it is T })
+        // sendAndWait(command) — sync
+        Mockito.doReturn(payload)
+            .`when`(commandGateway).sendAndWait(argThat { it is T })
+        // sendAndWait(command, resultType) — sync typed
+        Mockito.doReturn(payload)
+            .`when`(commandGateway).sendAndWait(argThat { it is T }, eq(CommandHandlerResult::class.java))
+    }
+
+    @PublishedApi
+    internal fun commandResultOf(payload: CommandHandlerResult): CommandResult {
         val message = GenericCommandResultMessage(
             MessageType(CommandHandlerResult::class.java), payload
         )

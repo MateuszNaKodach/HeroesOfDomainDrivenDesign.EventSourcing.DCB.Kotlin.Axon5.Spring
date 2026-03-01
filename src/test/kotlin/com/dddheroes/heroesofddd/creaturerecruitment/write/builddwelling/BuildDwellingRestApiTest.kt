@@ -27,7 +27,7 @@ internal class BuildDwellingRestApiTest : RestApiSpringBootTest() {
 
     @Test
     fun `command success - returns 204 No Content`() {
-        assumeCommandSuccess()
+        assumeCommandSuccess<BuildDwelling>()
 
         Given {
             pathParam("gameId", gameId.raw)
@@ -51,7 +51,7 @@ internal class BuildDwellingRestApiTest : RestApiSpringBootTest() {
 
     @Test
     fun `command failure - returns 400 Bad Request`() {
-        assumeCommandFailure("Dwelling already built")
+        assumeCommandFailure<BuildDwelling>("Dwelling already built")
 
         Given {
             pathParam("gameId", gameId.raw)
