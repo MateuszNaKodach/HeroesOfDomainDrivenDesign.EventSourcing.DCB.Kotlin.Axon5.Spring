@@ -18,10 +18,7 @@ import org.springframework.test.context.TestPropertySource
 
 @AxonWebMvcTest
 @TestPropertySource(properties = ["slices.creaturerecruitment.write.builddwelling.enabled=true"])
-internal class BuildDwellingRestApiTest {
-
-    @Autowired
-    lateinit var axonMockMvc: AxonMockMvc
+internal class BuildDwellingRestApiTest @Autowired constructor(val axonMockMvc: AxonMockMvc) {
 
     private val gameId = GameId.random()
     private val playerId = PlayerId.random()
