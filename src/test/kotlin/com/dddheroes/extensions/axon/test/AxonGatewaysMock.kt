@@ -242,7 +242,7 @@ class AxonGatewaysMockSetupListener : TestExecutionListener {
  * Can be used with any test annotation (`@WebMvcTest`, `@SpringBootTest`, etc.):
  *
  * ```kotlin
- * @WithAxonGatewaysMock
+ * @AxonGatewaysMockTest
  * @SpringBootTest
  * class MyTest @Autowired constructor(val gateways: AxonGatewaysMock) { ... }
  * ```
@@ -261,4 +261,4 @@ class AxonGatewaysMockSetupListener : TestExecutionListener {
     listeners = [AxonGatewaysMockSetupListener::class],
     mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
 )
-annotation class WithAxonGatewaysMock
+annotation class AxonGatewaysMockTest

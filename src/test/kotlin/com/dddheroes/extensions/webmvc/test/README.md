@@ -2,7 +2,7 @@
 
 Composable test annotations for Axon Framework 5 + Spring Boot. Two independent concerns:
 
-1. **Gateway mocking** (`@WithAxonGatewaysMock`) — stub `CommandGateway`, `QueryGateway`, `Clock`
+1. **Gateway mocking** (`@AxonGatewaysMockTest`) — stub `CommandGateway`, `QueryGateway`, `Clock`
 2. **RestAssured MockMvc** (`@RestAssuredMockMvcTest`) — `@WebMvcTest` + automatic RestAssured setup
 
 Each can be used independently or together.
@@ -11,22 +11,19 @@ Each can be used independently or together.
 
 ```
 com.dddheroes.extensions.axon.test            ← generic gateway mocking
-└── AxonGatewaysMock.kt                        class + @WithAxonGatewaysMock + config + listener
+└── AxonGatewaysMock.kt                        class + @AxonGatewaysMockTest + config + listener
 
 com.dddheroes.extensions.webmvc.test          ← RestAssured + @WebMvcTest
 └── RestAssuredMockMvcTest.kt                  @RestAssuredMockMvcTest + listener
-
-com.dddheroes.heroesofddd                     ← project-specific
-└── HeroesAxonGatewaysMock.kt                  decorator class + @WithHeroesAxonGatewaysMock + config
 ```
 
-## `@WithAxonGatewaysMock`
+## `@AxonGatewaysMockTest`
 
 Provides mocked `CommandGateway`, `QueryGateway`, and `Clock` via `@MockitoBean`, plus an
 `AxonGatewaysMock` bean for stubbing them. Works with any test annotation.
 
 ```kotlin
-@WithAxonGatewaysMock
+@AxonGatewaysMockTest
 @SpringBootTest
 class SomeIntegrationTest @Autowired constructor(val gateways: AxonGatewaysMock) {
 
@@ -82,7 +79,7 @@ test. No `@BeforeEach` boilerplate needed. Forwards all `@WebMvcTest` attributes
 
 ```kotlin
 @RestAssuredMockMvcTest
-@WithAxonGatewaysMock
+@AxonGatewaysMockTest
 class MyRestApiTest @Autowired constructor(val gateways: AxonGatewaysMock) {
 
     @Test
@@ -93,42 +90,31 @@ class MyRestApiTest @Autowired constructor(val gateways: AxonGatewaysMock) {
 }
 ```
 
-## `@WithHeroesAxonGatewaysMock` (project-specific)
-
-Extends `@WithAxonGatewaysMock` with `HeroesAxonGatewaysMock` — a decorator that adds
-`CommandHandlerResult`-based shortcuts (`assumeCommandSuccess`, `assumeCommandFailure`).
+## Full example
 
 ```kotlin
 @RestAssuredMockMvcTest
-@WithHeroesAxonGatewaysMock
+@AxonGatewaysMockTest
 @TestPropertySource(properties = ["slices.creaturerecruitment.write.builddwelling.enabled=true"])
-internal class BuildDwellingRestApiTest @Autowired constructor(val gateways: HeroesAxonGatewaysMock) {
+internal class BuildDwellingRestApiTest @Autowired constructor(val gateways: AxonGatewaysMock) {
 
     @Test
     fun `command success - returns 204 No Content`() {
-        gateways.assumeCommandSuccess<BuildDwelling>()
+        gateways.assumeCommandReturns<BuildDwelling>(Success)
         Given { ... } When { async().put("/games/{gameId}/dwellings/{dwellingId}") } Then { statusCode(204) }
     }
 
     @Test
     fun `command failure - returns 400 Bad Request`() {
-        gateways.assumeCommandFailure<BuildDwelling>("Dwelling already built")
+        gateways.assumeCommandReturns<BuildDwelling>(Failure("Dwelling already built"))
         Given { ... } When { async().put("/games/{gameId}/dwellings/{dwellingId}") } Then { statusCode(400) }
     }
 }
 ```
-
-### `assumeCommandSuccess` vs `assumeCommandFailure` vs `assumeCommandException`
-
-| Method                   | What happens                                                 |
-|--------------------------|--------------------------------------------------------------|
-| `assumeCommandSuccess()` | Returns successful future with `CommandHandlerResult.Success` payload |
-| `assumeCommandFailure()` | Returns successful future with `CommandHandlerResult.Failure` payload |
-| `assumeCommandException()` | Returns **failed** future / throws exception                |
 
 ## Design principles
 
 - **Composition over inheritance** — annotations are composable, no base test classes
 - **Separation of concerns** — gateway mocking is independent of MockMvc/RestAssured
 - **No `@BeforeEach` boilerplate** — `TestExecutionListener`s handle setup automatically
-- **Generic + project-specific split** — `AxonGatewaysMock` knows nothing about `CommandHandlerResult`
+- **Generic payload** — `assumeCommandReturns` accepts any result type, no framework-specific wrappers

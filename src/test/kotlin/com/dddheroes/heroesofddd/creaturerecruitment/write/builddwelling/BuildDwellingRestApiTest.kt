@@ -1,8 +1,10 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling
 
+import com.dddheroes.extensions.axon.test.AxonGatewaysMock
+import com.dddheroes.extensions.axon.test.AxonGatewaysMockTest
 import com.dddheroes.extensions.webmvc.test.RestAssuredMockMvcTest
-import com.dddheroes.heroesofddd.HeroesAxonGatewaysMock
-import com.dddheroes.heroesofddd.WithHeroesAxonGatewaysMock
+import com.dddheroes.heroesofddd.shared.application.CommandHandlerResult.Failure
+import com.dddheroes.heroesofddd.shared.application.CommandHandlerResult.Success
 import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.PlayerId
@@ -18,9 +20,9 @@ import org.springframework.http.HttpStatus
 import org.springframework.test.context.TestPropertySource
 
 @RestAssuredMockMvcTest
-@WithHeroesAxonGatewaysMock
+@AxonGatewaysMockTest
 @TestPropertySource(properties = ["slices.creaturerecruitment.write.builddwelling.enabled=true"])
-internal class BuildDwellingRestApiTest @Autowired constructor(val gateways: HeroesAxonGatewaysMock) {
+internal class BuildDwellingRestApiTest @Autowired constructor(val gateways: AxonGatewaysMock) {
 
     private val gameId = GameId.random()
     private val playerId = PlayerId.random()
@@ -30,7 +32,7 @@ internal class BuildDwellingRestApiTest @Autowired constructor(val gateways: Her
 
     @Test
     fun `command success - returns 204 No Content`() {
-        gateways.assumeCommandSuccess<BuildDwelling>()
+        gateways.assumeCommandReturns<BuildDwelling>(Success)
 
         Given {
             pathParam("gameId", gameId.raw)
@@ -54,7 +56,7 @@ internal class BuildDwellingRestApiTest @Autowired constructor(val gateways: Her
 
     @Test
     fun `command failure - returns 400 Bad Request`() {
-        gateways.assumeCommandFailure<BuildDwelling>("Dwelling already built")
+        gateways.assumeCommandReturns<BuildDwelling>(Failure("Dwelling already built"))
 
         Given {
             pathParam("gameId", gameId.raw)
