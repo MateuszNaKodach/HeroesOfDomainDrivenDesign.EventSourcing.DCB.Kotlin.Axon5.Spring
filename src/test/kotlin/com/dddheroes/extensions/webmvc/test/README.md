@@ -1,170 +1,134 @@
-# @AxonWebMvcTest
+# Test Extensions
 
-Composition-based test infrastructure for Axon Framework 5 REST API controller tests.
+Composable test annotations for Axon Framework 5 + Spring Boot. Two independent concerns:
 
-## Quick Start
+1. **Gateway mocking** (`@WithAxonGatewaysMock`) — stub `CommandGateway`, `QueryGateway`, `Clock`
+2. **RestAssured MockMvc** (`@RestAssuredMockMvcTest`) — `@WebMvcTest` + automatic RestAssured setup
+
+Each can be used independently or together.
+
+## Package structure
+
+```
+com.dddheroes.extensions.axon.test            ← generic gateway mocking
+└── AxonGatewaysMock.kt                        class + @WithAxonGatewaysMock + config + listener
+
+com.dddheroes.extensions.webmvc.test          ← RestAssured + @WebMvcTest
+└── RestAssuredMockMvcTest.kt                  @RestAssuredMockMvcTest + listener
+
+com.dddheroes.heroesofddd                     ← project-specific
+└── HeroesAxonGatewaysMock.kt                  decorator class + @WithHeroesAxonGatewaysMock + config
+```
+
+## `@WithAxonGatewaysMock`
+
+Provides mocked `CommandGateway`, `QueryGateway`, and `Clock` via `@MockitoBean`, plus an
+`AxonGatewaysMock` bean for stubbing them. Works with any test annotation.
 
 ```kotlin
-@AxonWebMvcTest
-@TestPropertySource(properties = ["slices.myslice.write.mycommand.enabled=true"])
-class MyControllerRestApiTest {
-
-    @Autowired
-    lateinit var axonMockMvc: AxonMockMvc
+@WithAxonGatewaysMock
+@SpringBootTest
+class SomeIntegrationTest @Autowired constructor(val gateways: AxonGatewaysMock) {
 
     @Test
-    fun `command success - returns 204 No Content`() {
-        axonMockMvc.assumeCommandSuccess<MyCommand>()
-
-        Given {
-            pathParam("id", "123")
-            contentType(ContentType.JSON)
-            body("""{"field": "value"}""")
-        } When {
-            async().put("/my-resource/{id}")
-        } Then {
-            statusCode(HttpStatus.NO_CONTENT.value())
-        }
+    fun `stub command`() {
+        gateways.assumeCommandReturns<MyCommand>(MyResult("ok"))
+        // ...
     }
 }
 ```
 
-## What `@AxonWebMvcTest` Provides
-
-A single annotation that replaces `@WebMvcTest` and sets up everything needed for Axon REST API
-tests:
-
-| Bean                | Source            | Purpose                                   |
-|---------------------|-------------------|-------------------------------------------|
-| `MockMvc`           | `@WebMvcTest`     | Spring MVC test support                   |
-| `CommandGateway`    | `@MockitoBean`    | Mocked — stubbed via `AxonMockMvc`        |
-| `QueryGateway`      | `@MockitoBean`    | Mocked — stubbed via `AxonMockMvc`        |
-| `Clock`             | `@MockitoBean`    | Mocked — controlled via `AxonMockMvc`     |
-| `AxonMockMvc`       | `@TestConfiguration` | Test helper with all stubbing methods  |
-
-All mocks are automatically reset after each test by Spring's `MockitoResetTestExecutionListener`.
-RestAssured and clock are re-configured before each test by `AxonMockMvcSetupListener`.
-
-## `AxonMockMvc` API
-
-### Command Stubbing
-
-#### Generic — any result type
+### Command stubbing
 
 ```kotlin
-// By type — matches ANY command of this type
-axonMockMvc.assumeCommandReturns<BuildDwelling>(MyResult("ok"))
+// By type — matches any command of that type
+gateways.assumeCommandReturns<BuildDwelling>(MyResult("ok"))
 
-// By instance — matches this specific command (eq() matcher)
-axonMockMvc.assumeCommandReturns(specificCommand, MyResult("ok"))
+// By instance — matches the specific command
+gateways.assumeCommandReturns(specificCommand, MyResult("ok"))
 ```
 
-#### Exception — failed future / thrown exception
+Each stub covers all AF5 `CommandGateway` invocation styles:
+`send(command, metadata)`, `send(command)`, `sendAndWait(command)`, `sendAndWait(command, resultType)`.
 
-Unlike `assumeCommandFailure` (which returns a **successful** future carrying a failure payload),
-`assumeCommandException` makes `send()` return a **failed** `CompletableFuture` and `sendAndWait()`
-throw the exception directly:
+### Command exception (failed future)
 
 ```kotlin
-// By type — matches ANY command of this type
-axonMockMvc.assumeCommandException<BuildDwelling>(IllegalStateException("aggregate not found"))
-
-// By instance — matches this specific command (eq() matcher)
-axonMockMvc.assumeCommandException(specificCommand, IllegalStateException("aggregate not found"))
+gateways.assumeCommandException<BuildDwelling>(IllegalStateException("boom"))
+gateways.assumeCommandException(specificCommand, IllegalStateException("boom"))
 ```
 
-| Method | `send()` returns | `sendAndWait()` does |
-|---|---|---|
-| `assumeCommandFailure` | Completed future with `Failure` payload | Returns `Failure` payload |
-| `assumeCommandException` | Failed future with exception | Throws the exception |
+Makes `send()` return a failed `CompletableFuture` and `sendAndWait()` throw the exception.
 
-#### Convenience — `CommandHandlerResult` shortcuts
+### Query stubbing
 
 ```kotlin
-// By type — matches ANY command of this type
-axonMockMvc.assumeCommandSuccess<BuildDwelling>()
-axonMockMvc.assumeCommandFailure<BuildDwelling>("Already built")
-
-// By instance — matches this specific command (eq() matcher)
-val command = BuildDwelling(dwellingId, creatureId, cost)
-axonMockMvc.assumeCommandSuccess(command)
-axonMockMvc.assumeCommandFailure(command, "Already built")
+gateways.assumeQueryReturns(GetDwellingById(id), DwellingView(...))
 ```
 
-The failure message defaults to `"Simulated failure"` if omitted.
-
-Each stub covers all AF5 `CommandGateway` dispatch methods:
-
-- `send(command, metadata)` — async with metadata (most common in controllers)
-- `send(command)` — async without metadata
-- `sendAndWait(command)` — synchronous
-- `sendAndWait(command, resultType)` — synchronous typed
-
-### Query Stubbing
+### Clock control
 
 ```kotlin
-axonMockMvc.assumeQueryReturns(
-    GetDwellingById(dwellingId),
-    DwellingView(dwellingId, creatureId, availableCreatures = 5)
-)
+val now = gateways.currentTimeIs(Instant.parse("2024-01-15T10:00:00Z"))
+val current = gateways.currentTime()
 ```
 
-### Clock Control
+Clock is automatically reset to `Instant.now()` before each test.
 
-A default time (`Instant.now()`) is set before each test. Override it for deterministic tests:
+## `@RestAssuredMockMvcTest`
 
-```kotlin
-val fixedTime = Instant.parse("2024-01-15T10:00:00Z")
-axonMockMvc.currentTimeIs(fixedTime)
-
-// Read back the current mocked time
-val now = axonMockMvc.currentTime()
-```
-
-This sets both the Mockito `Clock` mock and `GenericEventMessage.clock`.
-
-## Async Controllers
-
-Controllers that return `CompletableFuture<ResponseEntity<*>>` (the standard AF5 pattern with
-`commandGateway.send(...).resultAs(...).toResponseEntity()`) require `async()` dispatch in
-RestAssured:
+Combines `@WebMvcTest` with automatic `RestAssuredMockMvc.mockMvc(mockMvc)` setup before each
+test. No `@BeforeEach` boilerplate needed. Forwards all `@WebMvcTest` attributes.
 
 ```kotlin
-} When {
-    async().put("/my-resource/{id}")   // not just put(...)
-} Then {
-    statusCode(HttpStatus.NO_CONTENT.value())
+@RestAssuredMockMvcTest
+@WithAxonGatewaysMock
+class MyRestApiTest @Autowired constructor(val gateways: AxonGatewaysMock) {
+
+    @Test
+    fun `returns 200`() {
+        gateways.assumeCommandReturns<MyCommand>(MyResult("ok"))
+        Given { ... } When { get("/endpoint") } Then { statusCode(200) }
+    }
 }
 ```
 
-## Forwarded `@WebMvcTest` Attributes
+## `@WithHeroesAxonGatewaysMock` (project-specific)
 
-All key `@WebMvcTest` attributes are available on `@AxonWebMvcTest`:
-
-```kotlin
-@AxonWebMvcTest(
-    controllers = [MyController::class],         // limit to specific controllers
-    properties = ["my.property=value"],           // test properties
-    useDefaultFilters = false,                    // disable component scan filters
-    excludeAutoConfiguration = [SomeConfig::class] // exclude auto-configurations
-)
-```
-
-For conditional slice properties, `@TestPropertySource` is recommended (consistent with the
-project's slice architecture):
+Extends `@WithAxonGatewaysMock` with `HeroesAxonGatewaysMock` — a decorator that adds
+`CommandHandlerResult`-based shortcuts (`assumeCommandSuccess`, `assumeCommandFailure`).
 
 ```kotlin
-@AxonWebMvcTest
+@RestAssuredMockMvcTest
+@WithHeroesAxonGatewaysMock
 @TestPropertySource(properties = ["slices.creaturerecruitment.write.builddwelling.enabled=true"])
+internal class BuildDwellingRestApiTest @Autowired constructor(val gateways: HeroesAxonGatewaysMock) {
+
+    @Test
+    fun `command success - returns 204 No Content`() {
+        gateways.assumeCommandSuccess<BuildDwelling>()
+        Given { ... } When { async().put("/games/{gameId}/dwellings/{dwellingId}") } Then { statusCode(204) }
+    }
+
+    @Test
+    fun `command failure - returns 400 Bad Request`() {
+        gateways.assumeCommandFailure<BuildDwelling>("Dwelling already built")
+        Given { ... } When { async().put("/games/{gameId}/dwellings/{dwellingId}") } Then { statusCode(400) }
+    }
+}
 ```
 
-## Design
+### `assumeCommandSuccess` vs `assumeCommandFailure` vs `assumeCommandException`
 
-```
-@AxonWebMvcTest (annotation)
-├── @WebMvcTest                          — Spring MVC test slice
-├── @MockitoBeans                        — mocks for CommandGateway, QueryGateway, Clock
-├── @Import(AxonMockMvcConfiguration)    — registers AxonMockMvc bean
-└── @TestExecutionListeners
-    └── AxonMockMvcSetupListener         — calls AxonMockMvc.setUp() before each test
-```
+| Method                   | What happens                                                 |
+|--------------------------|--------------------------------------------------------------|
+| `assumeCommandSuccess()` | Returns successful future with `CommandHandlerResult.Success` payload |
+| `assumeCommandFailure()` | Returns successful future with `CommandHandlerResult.Failure` payload |
+| `assumeCommandException()` | Returns **failed** future / throws exception                |
+
+## Design principles
+
+- **Composition over inheritance** — annotations are composable, no base test classes
+- **Separation of concerns** — gateway mocking is independent of MockMvc/RestAssured
+- **No `@BeforeEach` boilerplate** — `TestExecutionListener`s handle setup automatically
+- **Generic + project-specific split** — `AxonGatewaysMock` knows nothing about `CommandHandlerResult`

@@ -1,7 +1,8 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling
 
-import com.dddheroes.heroesofddd.HeroesAxonMockMvc
-import com.dddheroes.heroesofddd.HeroesAxonWebMvcTest
+import com.dddheroes.extensions.webmvc.test.RestAssuredMockMvcTest
+import com.dddheroes.heroesofddd.HeroesAxonGatewaysMock
+import com.dddheroes.heroesofddd.WithHeroesAxonGatewaysMock
 import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.PlayerId
@@ -16,9 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.TestPropertySource
 
-@HeroesAxonWebMvcTest
+@RestAssuredMockMvcTest
+@WithHeroesAxonGatewaysMock
 @TestPropertySource(properties = ["slices.creaturerecruitment.write.builddwelling.enabled=true"])
-internal class BuildDwellingRestApiTest @Autowired constructor(val axonMockMvc: HeroesAxonMockMvc) {
+internal class BuildDwellingRestApiTest @Autowired constructor(val gateways: HeroesAxonGatewaysMock) {
 
     private val gameId = GameId.random()
     private val playerId = PlayerId.random()
@@ -28,7 +30,7 @@ internal class BuildDwellingRestApiTest @Autowired constructor(val axonMockMvc: 
 
     @Test
     fun `command success - returns 204 No Content`() {
-        axonMockMvc.assumeCommandSuccess<BuildDwelling>()
+        gateways.assumeCommandSuccess<BuildDwelling>()
 
         Given {
             pathParam("gameId", gameId.raw)
@@ -52,7 +54,7 @@ internal class BuildDwellingRestApiTest @Autowired constructor(val axonMockMvc: 
 
     @Test
     fun `command failure - returns 400 Bad Request`() {
-        axonMockMvc.assumeCommandFailure<BuildDwelling>("Dwelling already built")
+        gateways.assumeCommandFailure<BuildDwelling>("Dwelling already built")
 
         Given {
             pathParam("gameId", gameId.raw)

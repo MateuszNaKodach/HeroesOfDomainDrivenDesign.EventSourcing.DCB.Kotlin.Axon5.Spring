@@ -1,6 +1,5 @@
-package com.dddheroes.extensions.webmvc.test
+package com.dddheroes.extensions.axon.test
 
-import io.restassured.module.mockmvc.RestAssuredMockMvc
 import org.axonframework.messaging.commandhandling.GenericCommandResultMessage
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
 import org.axonframework.messaging.commandhandling.gateway.CommandResult
@@ -11,33 +10,40 @@ import org.axonframework.messaging.eventhandling.GenericEventMessage
 import org.axonframework.messaging.queryhandling.gateway.QueryGateway
 import org.mockito.ArgumentMatchers.*
 import org.mockito.Mockito
-import org.springframework.test.web.servlet.MockMvc
+import org.springframework.beans.factory.getBean
+import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Import
+import org.springframework.test.context.TestContext
+import org.springframework.test.context.TestExecutionListener
+import org.springframework.test.context.TestExecutionListeners
+import org.springframework.test.context.bean.override.mockito.MockitoBean
+import org.springframework.test.context.bean.override.mockito.MockitoBeans
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
 import java.util.concurrent.CompletableFuture
 
 /**
- * Test helper for Axon Framework 5 REST API tests.
+ * Generic test helper for stubbing Axon Framework 5 [CommandGateway], [QueryGateway], and [Clock].
  *
- * Provides methods to stub [CommandGateway], [QueryGateway], and [Clock] mocks
- * without requiring test class inheritance. Injected as a Spring bean via
- * [@AxonWebMvcTest][AxonWebMvcTest].
+ * Independent of MockMvc — usable with any test type (`@WebMvcTest`, `@SpringBootTest`, etc.).
+ * Injected as a Spring bean via the [@AxonGatewaysMock][AxonGatewaysMock] annotation.
  *
  * ## Command stubbing
  *
  * ### Result — any payload type
  *
  * ```kotlin
- * axonMockMvc.assumeCommandReturns<BuildDwelling>(MyResult("ok"))
- * axonMockMvc.assumeCommandReturns(specificCommand, MyResult("ok"))
+ * gateways.assumeCommandReturns<BuildDwelling>(MyResult("ok"))
+ * gateways.assumeCommandReturns(specificCommand, MyResult("ok"))
  * ```
  *
  * ### Exception — failed future / thrown exception
  *
  * ```kotlin
- * axonMockMvc.assumeCommandException<BuildDwelling>(IllegalStateException("boom"))
- * axonMockMvc.assumeCommandException(specificCommand, IllegalStateException("boom"))
+ * gateways.assumeCommandException<BuildDwelling>(IllegalStateException("boom"))
+ * gateways.assumeCommandException(specificCommand, IllegalStateException("boom"))
  * ```
  *
  * Each stub covers all AF5 [CommandGateway] invocation styles:
@@ -47,32 +53,28 @@ import java.util.concurrent.CompletableFuture
  * ## Query stubbing
  *
  * ```kotlin
- * axonMockMvc.assumeQueryReturns(GetDwellingById(id), DwellingView(...))
+ * gateways.assumeQueryReturns(GetDwellingById(id), DwellingView(...))
  * ```
  *
  * ## Clock control
  *
  * ```kotlin
- * val now = axonMockMvc.currentTimeIs(Instant.parse("2024-01-15T10:00:00Z"))
- * val current = axonMockMvc.currentTime()
+ * val now = gateways.currentTimeIs(Instant.parse("2024-01-15T10:00:00Z"))
+ * val current = gateways.currentTime()
  * ```
- *
- * @see AxonWebMvcTest
  */
-class AxonMockMvc(
-    private val mockMvc: MockMvc,
+class AxonGatewaysMock(
     @PublishedApi internal val commandGateway: CommandGateway,
     @PublishedApi internal val queryGateway: QueryGateway,
     private val clock: Clock
 ) {
 
     /**
-     * Configures [RestAssuredMockMvc] with the current [MockMvc] and sets [Clock] to `Instant.now()`.
+     * Resets the [Clock] mock to `Instant.now()`.
      *
-     * Called automatically before each test by [AxonMockMvcSetupListener].
+     * Called automatically before each test by [AxonGatewaysMockSetupListener].
      */
-    fun setUp() {
-        RestAssuredMockMvc.mockMvc(mockMvc)
+    fun resetClock() {
         currentTimeIs(Instant.now())
     }
 
@@ -212,3 +214,51 @@ class AxonMockMvc(
         return FutureCommandResult(CompletableFuture.completedFuture(message))
     }
 }
+
+/** Assembles [AxonGatewaysMock] bean from the mocked gateways and [Clock]. */
+@TestConfiguration
+class AxonGatewaysMockConfiguration {
+
+    @Bean
+    fun axonGatewaysMock(
+        commandGateway: CommandGateway,
+        queryGateway: QueryGateway,
+        clock: Clock
+    ) = AxonGatewaysMock(commandGateway, queryGateway, clock)
+}
+
+/** Resets the [Clock] mock before each test (after Spring's mock reset). */
+class AxonGatewaysMockSetupListener : TestExecutionListener {
+
+    override fun beforeTestMethod(testContext: TestContext) {
+        testContext.applicationContext.getBean<AxonGatewaysMock>().resetClock()
+    }
+}
+
+/**
+ * Composable annotation that provides mocked [CommandGateway], [QueryGateway], and [Clock],
+ * plus an [AxonGatewaysMock] bean for stubbing them.
+ *
+ * Can be used with any test annotation (`@WebMvcTest`, `@SpringBootTest`, etc.):
+ *
+ * ```kotlin
+ * @WithAxonGatewaysMock
+ * @SpringBootTest
+ * class MyTest @Autowired constructor(val gateways: AxonGatewaysMock) { ... }
+ * ```
+ *
+ * @see AxonGatewaysMock
+ */
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+@MockitoBeans(
+    MockitoBean(types = [CommandGateway::class]),
+    MockitoBean(types = [QueryGateway::class]),
+    MockitoBean(types = [Clock::class])
+)
+@Import(AxonGatewaysMockConfiguration::class)
+@TestExecutionListeners(
+    listeners = [AxonGatewaysMockSetupListener::class],
+    mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
+)
+annotation class WithAxonGatewaysMock
