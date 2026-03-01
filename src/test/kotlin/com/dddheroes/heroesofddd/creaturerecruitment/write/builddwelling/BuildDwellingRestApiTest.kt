@@ -1,7 +1,7 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling
 
-import com.dddheroes.extensions.webmvc.test.AxonMockMvc
-import com.dddheroes.extensions.webmvc.test.AxonWebMvcTest
+import com.dddheroes.heroesofddd.HeroesAxonMockMvc
+import com.dddheroes.heroesofddd.HeroesAxonWebMvcTest
 import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.PlayerId
@@ -16,9 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.TestPropertySource
 
-@AxonWebMvcTest
+@HeroesAxonWebMvcTest
 @TestPropertySource(properties = ["slices.creaturerecruitment.write.builddwelling.enabled=true"])
-internal class BuildDwellingRestApiTest @Autowired constructor(val axonMockMvc: AxonMockMvc) {
+internal class BuildDwellingRestApiTest @Autowired constructor(val axonMockMvc: HeroesAxonMockMvc) {
 
     private val gameId = GameId.random()
     private val playerId = PlayerId.random()

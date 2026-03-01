@@ -1,6 +1,5 @@
 package com.dddheroes.extensions.webmvc.test
 
-import com.dddheroes.heroesofddd.shared.application.CommandHandlerResult
 import io.restassured.module.mockmvc.RestAssuredMockMvc
 import org.axonframework.messaging.commandhandling.GenericCommandResultMessage
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
@@ -27,7 +26,7 @@ import java.util.concurrent.CompletableFuture
  *
  * ## Command stubbing
  *
- * ### Generic — any result type
+ * ### Result — any payload type
  *
  * ```kotlin
  * axonMockMvc.assumeCommandReturns<BuildDwelling>(MyResult("ok"))
@@ -39,22 +38,6 @@ import java.util.concurrent.CompletableFuture
  * ```kotlin
  * axonMockMvc.assumeCommandException<BuildDwelling>(IllegalStateException("boom"))
  * axonMockMvc.assumeCommandException(specificCommand, IllegalStateException("boom"))
- * ```
- *
- * Unlike [assumeCommandFailure] (successful future with failure payload), this makes
- * `send()` return a failed `CompletableFuture` and `sendAndWait()` throw the exception.
- *
- * ### Convenience — [CommandHandlerResult] shortcuts
- *
- * ```kotlin
- * // Match any command of type BuildDwelling
- * axonMockMvc.assumeCommandSuccess<BuildDwelling>()
- * axonMockMvc.assumeCommandFailure<BuildDwelling>("Already built")
- *
- * // Match a specific command instance (uses eq() matcher)
- * val command = BuildDwelling(dwellingId, creatureId, cost)
- * axonMockMvc.assumeCommandSuccess(command)
- * axonMockMvc.assumeCommandFailure(command, "Already built")
  * ```
  *
  * Each stub covers all AF5 [CommandGateway] invocation styles:
@@ -110,8 +93,7 @@ class AxonMockMvc(
     /**
      * Stubs the [CommandGateway] to fail with [exception] for the given [command] instance.
      *
-     * Unlike [assumeCommandFailure] (which returns a successful future carrying a failure payload),
-     * this makes `send()` return a failed [CompletableFuture] and `sendAndWait()` throw the exception.
+     * Makes `send()` return a failed [CompletableFuture] and `sendAndWait()` throw the exception.
      */
     fun <C : Any> assumeCommandException(command: C, exception: Exception) {
         stubCommandGatewayException(command, exception)
@@ -120,35 +102,10 @@ class AxonMockMvc(
     /**
      * Stubs the [CommandGateway] to fail with [exception] for any command of type [C].
      *
-     * Unlike [assumeCommandFailure] (which returns a successful future carrying a failure payload),
-     * this makes `send()` return a failed [CompletableFuture] and `sendAndWait()` throw the exception.
+     * Makes `send()` return a failed [CompletableFuture] and `sendAndWait()` throw the exception.
      */
     inline fun <reified C : Any> assumeCommandException(exception: Exception) {
         stubCommandGatewayExceptionByType<C>(exception)
-    }
-
-    // ---- Command Success ----
-
-    /** Stubs the [CommandGateway] to return [CommandHandlerResult.Success] for the given [command] instance. */
-    fun <T : Any> assumeCommandSuccess(command: T) {
-        stubCommandGateway(command, CommandHandlerResult.Success)
-    }
-
-    /** Stubs the [CommandGateway] to return [CommandHandlerResult.Success] for any command of type [T]. */
-    inline fun <reified T : Any> assumeCommandSuccess() {
-        stubCommandGatewayByType<T>(CommandHandlerResult.Success)
-    }
-
-    // ---- Command Failure ----
-
-    /** Stubs the [CommandGateway] to return [CommandHandlerResult.Failure] for the given [command] instance. */
-    fun <T : Any> assumeCommandFailure(command: T, message: String = "Simulated failure") {
-        stubCommandGateway(command, CommandHandlerResult.Failure(message))
-    }
-
-    /** Stubs the [CommandGateway] to return [CommandHandlerResult.Failure] for any command of type [T]. */
-    inline fun <reified T : Any> assumeCommandFailure(message: String = "Simulated failure") {
-        stubCommandGatewayByType<T>(CommandHandlerResult.Failure(message))
     }
 
     // ---- Query ----

@@ -68,8 +68,8 @@ class AxonMockMvcSetupListener : TestExecutionListener {
  *     lateinit var axonMockMvc: AxonMockMvc
  *
  *     @Test
- *     fun `command success`() {
- *         axonMockMvc.assumeCommandSuccess<MyCommand>()
+ *     fun `command returns result`() {
+ *         axonMockMvc.assumeCommandReturns<MyCommand>(MyResult("ok"))
  *         // RestAssured Given/When/Then ...
  *     }
  * }
