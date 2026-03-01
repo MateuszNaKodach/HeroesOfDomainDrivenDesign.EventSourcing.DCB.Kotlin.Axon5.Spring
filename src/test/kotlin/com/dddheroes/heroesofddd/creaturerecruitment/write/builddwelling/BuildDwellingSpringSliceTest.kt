@@ -3,6 +3,7 @@ package com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling
 import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.application.CommandHandlerResult
+import com.dddheroes.heroesofddd.shared.application.gameMetadata
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
@@ -41,7 +42,8 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(
                     creatureId = creatureId,
                     costPerTroop = costPerTroop
                 )
-            ).eventsMatch { it.all { e -> e.metadata().contains("gameId") } }
+            )
+            .eventsMatch { it.all { e -> e.gameMetadata == gameMetadata } }
     }
 
     @Test

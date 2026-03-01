@@ -18,6 +18,8 @@ import com.dddheroes.heroesofddd.shared.restapi.toResponseEntity
 import org.axonframework.eventsourcing.annotation.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.extension.spring.stereotype.EventSourced
+import org.axonframework.extensions.kotlin.AxonMetadata
+import org.axonframework.extensions.kotlin.asEventMessages
 import org.axonframework.messaging.commandhandling.annotation.CommandHandler
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
 import org.axonframework.messaging.eventhandling.gateway.EventAppender
@@ -87,11 +89,12 @@ private class BuildDwellingCommandHandler {
     @CommandHandler
     fun handle(
         command: BuildDwelling,
+        metadata: AxonMetadata,
         @InjectEntity(idProperty = EventTags.DWELLING_ID) eventSourced: BuildDwellingEventSourcedState,
         eventAppender: EventAppender
     ): CommandHandlerResult = resultOf {
         val events = decide(command, eventSourced.state)
-        eventAppender.append(events)
+        eventAppender.append(events.asEventMessages(metadata))
         events.toCommandResult()
     }
 
