@@ -1,6 +1,6 @@
 package com.dddheroes.heroesofddd
 
-import org.axonframework.extension.spring.test.AxonSpringBootTest
+import org.axonframework.extensions.spring.test.AxonSpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.UseMainMethod
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment
 import org.springframework.context.annotation.Import

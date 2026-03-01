@@ -1,4 +1,4 @@
-package org.axonframework.extension.spring.test
+package org.axonframework.extensions.spring.test
 
 import org.axonframework.common.configuration.AxonConfiguration
 import org.axonframework.test.fixture.AxonTestFixture
