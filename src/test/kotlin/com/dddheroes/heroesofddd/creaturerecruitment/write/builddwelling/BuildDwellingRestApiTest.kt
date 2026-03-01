@@ -1,6 +1,7 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling
 
-import com.dddheroes.heroesofddd.RestApiSpringBootTest
+import com.dddheroes.extensions.webmvc.test.AxonMockMvc
+import com.dddheroes.extensions.webmvc.test.AxonWebMvcTest
 import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.PlayerId
@@ -11,13 +12,16 @@ import io.restassured.module.mockmvc.kotlin.extensions.Then
 import io.restassured.module.mockmvc.kotlin.extensions.When
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.Test
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.TestPropertySource
 
-@WebMvcTest
+@AxonWebMvcTest
 @TestPropertySource(properties = ["slices.creaturerecruitment.write.builddwelling.enabled=true"])
-internal class BuildDwellingRestApiTest : RestApiSpringBootTest() {
+internal class BuildDwellingRestApiTest {
+
+    @Autowired
+    lateinit var axonMockMvc: AxonMockMvc
 
     private val gameId = GameId.random()
     private val playerId = PlayerId.random()
@@ -27,7 +31,7 @@ internal class BuildDwellingRestApiTest : RestApiSpringBootTest() {
 
     @Test
     fun `command success - returns 204 No Content`() {
-        assumeCommandSuccess<BuildDwelling>()
+        axonMockMvc.assumeCommandSuccess<BuildDwelling>()
 
         Given {
             pathParam("gameId", gameId.raw)
@@ -51,7 +55,7 @@ internal class BuildDwellingRestApiTest : RestApiSpringBootTest() {
 
     @Test
     fun `command failure - returns 400 Bad Request`() {
-        assumeCommandFailure<BuildDwelling>("Dwelling already built")
+        axonMockMvc.assumeCommandFailure<BuildDwelling>("Dwelling already built")
 
         Given {
             pathParam("gameId", gameId.raw)
