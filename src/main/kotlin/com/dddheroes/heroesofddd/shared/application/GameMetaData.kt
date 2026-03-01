@@ -3,6 +3,7 @@ package com.dddheroes.heroesofddd.shared.application
 import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.PlayerId
 import org.axonframework.extensions.kotlin.AxonMetadata
+import org.axonframework.extensions.kotlin.metadata
 
 object GameMetadata {
     const val GAME_ID_KEY: String = "gameId"
@@ -17,3 +18,10 @@ object GameMetadata {
             .and(PLAYER_ID_KEY, playerId.raw)
     }
 }
+
+val org.axonframework.messaging.core.Message.gameMetadata: AxonMetadata
+    get() = GameMetadata.with(
+        GameId(this.metadata[GameMetadata.GAME_ID_KEY]!!),
+        PlayerId(this.metadata[GameMetadata.PLAYER_ID_KEY] ?: PlayerId.unknown().raw)
+    )
+
