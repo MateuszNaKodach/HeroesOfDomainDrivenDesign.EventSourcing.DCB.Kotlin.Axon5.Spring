@@ -114,6 +114,9 @@ files. The source is available at:
 - REST endpoints follow: `games/{gameId}/resource/{resourceId}` pattern
 - Player ID passed via `X-Player-ID` header
 
+### Spring
+- Prefer constructor injection over field injection, even in tests.
+
 ## Commit Conventions
 
 Commits follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) combined with
