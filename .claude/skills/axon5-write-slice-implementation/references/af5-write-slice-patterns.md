@@ -41,7 +41,6 @@ import org.axonframework.eventsourcing.annotation.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.extension.spring.stereotype.EventSourced
 import org.axonframework.extensions.kotlin.AxonMetadata
-import org.axonframework.extensions.kotlin.asCommandMessage
 import org.axonframework.extensions.kotlin.asEventMessages
 import org.axonframework.messaging.commandhandling.annotation.CommandHandler
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
@@ -143,8 +142,8 @@ private class BuildDwellingRestApi(private val commandGateway: CommandGateway) {
             Resources.of(requestBody.costPerTroop)
         )
         val metadata = GameMetadata.with(GameId(gameId), PlayerId(playerId))
-        val message = command.asCommandMessage(metadata)
-        return commandGateway.send(message)
+
+        return commandGateway.send(command, metadata)
             .resultAs(CommandHandlerResult::class.java)
             .toResponseEntity()
     }
@@ -449,7 +448,7 @@ private class RecruitCreatureRestApi(private val commandGateway: CommandGateway)
             expectedCost = Resources.of(requestBody.expectedCost)
         )
         val metadata = GameMetadata.with(GameId(gameId), PlayerId(playerId))
-        return commandGateway.send(command.asCommandMessage(metadata))
+        return commandGateway.send(command, metadata)
             .resultAs(CommandHandlerResult::class.java)
             .toResponseEntity()
     }

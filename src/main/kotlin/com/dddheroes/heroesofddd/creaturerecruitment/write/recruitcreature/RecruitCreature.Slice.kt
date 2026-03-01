@@ -23,7 +23,6 @@ import org.axonframework.eventsourcing.annotation.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.eventsourcing.configuration.EventSourcedEntityModule
 import org.axonframework.extensions.kotlin.AxonMetadata
-import org.axonframework.extensions.kotlin.asCommandMessage
 import org.axonframework.extensions.kotlin.asEventMessages
 import org.axonframework.messaging.commandhandling.annotation.CommandHandler
 import org.axonframework.messaging.commandhandling.configuration.CommandHandlingModule
@@ -263,9 +262,8 @@ private class RecruitCreatureRestApi(private val commandGateway: CommandGateway)
         val gameId = GameId(gameId)
         val playerId = PlayerId(playerId)
         val metadata = GameMetadata.with(gameId, playerId)
-        val message = command.asCommandMessage(metadata)
 
-        return commandGateway.send(message)
+        return commandGateway.send(command, metadata)
             .resultAs(CommandHandlerResult::class.java)
             .toResponseEntity()
     }

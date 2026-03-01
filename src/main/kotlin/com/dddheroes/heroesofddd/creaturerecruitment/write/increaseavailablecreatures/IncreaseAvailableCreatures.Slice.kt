@@ -19,7 +19,6 @@ import org.axonframework.eventsourcing.annotation.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.extension.spring.stereotype.EventSourced
 import org.axonframework.extensions.kotlin.AxonMetadata
-import org.axonframework.extensions.kotlin.asCommandMessage
 import org.axonframework.extensions.kotlin.asEventMessage
 import org.axonframework.messaging.commandhandling.annotation.CommandHandler
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
@@ -149,9 +148,8 @@ private class IncreaseAvailableCreaturesRestApi(private val commandGateway: Comm
         val gameId = GameId(gameId)
         val playerId = PlayerId(playerId)
         val metadata = GameMetadata.with(gameId, playerId)
-        val message = command.asCommandMessage(metadata)
 
-        return commandGateway.send(message)
+        return commandGateway.send(command, metadata)
             .resultAs(CommandHandlerResult::class.java)
             .toResponseEntity()
     }
