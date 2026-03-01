@@ -10,9 +10,7 @@ import org.axonframework.messaging.core.MessageType
 import org.axonframework.messaging.core.Metadata
 import org.axonframework.messaging.eventhandling.GenericEventMessage
 import org.axonframework.messaging.queryhandling.gateway.QueryGateway
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchers.argThat
-import org.mockito.ArgumentMatchers.eq
+import org.mockito.ArgumentMatchers.*
 import org.mockito.Mockito
 import org.springframework.test.web.servlet.MockMvc
 import java.time.Clock
@@ -29,7 +27,24 @@ import java.util.concurrent.CompletableFuture
  *
  * ## Command stubbing
  *
- * Two styles — by command type (reified) or by exact command instance:
+ * ### Generic — any result type
+ *
+ * ```kotlin
+ * axonMockMvc.assumeCommandReturns<BuildDwelling>(MyResult("ok"))
+ * axonMockMvc.assumeCommandReturns(specificCommand, MyResult("ok"))
+ * ```
+ *
+ * ### Exception — failed future / thrown exception
+ *
+ * ```kotlin
+ * axonMockMvc.assumeCommandException<BuildDwelling>(IllegalStateException("boom"))
+ * axonMockMvc.assumeCommandException(specificCommand, IllegalStateException("boom"))
+ * ```
+ *
+ * Unlike [assumeCommandFailure] (successful future with failure payload), this makes
+ * `send()` return a failed `CompletableFuture` and `sendAndWait()` throw the exception.
+ *
+ * ### Convenience — [CommandHandlerResult] shortcuts
  *
  * ```kotlin
  * // Match any command of type BuildDwelling
@@ -76,6 +91,40 @@ class AxonMockMvc(
     fun setUp() {
         RestAssuredMockMvc.mockMvc(mockMvc)
         currentTimeIs(Instant.now())
+    }
+
+    // ---- Generic Command Stubbing ----
+
+    /** Stubs the [CommandGateway] to return [result] for the given [command] instance. Works with any result type. */
+    fun <C : Any> assumeCommandReturns(command: C, result: Any) {
+        stubCommandGateway(command, result)
+    }
+
+    /** Stubs the [CommandGateway] to return [result] for any command of type [C]. Works with any result type. */
+    inline fun <reified C : Any> assumeCommandReturns(result: Any) {
+        stubCommandGatewayByType<C>(result)
+    }
+
+    // ---- Command Exception ----
+
+    /**
+     * Stubs the [CommandGateway] to fail with [exception] for the given [command] instance.
+     *
+     * Unlike [assumeCommandFailure] (which returns a successful future carrying a failure payload),
+     * this makes `send()` return a failed [CompletableFuture] and `sendAndWait()` throw the exception.
+     */
+    fun <C : Any> assumeCommandException(command: C, exception: Exception) {
+        stubCommandGatewayException(command, exception)
+    }
+
+    /**
+     * Stubs the [CommandGateway] to fail with [exception] for any command of type [C].
+     *
+     * Unlike [assumeCommandFailure] (which returns a successful future carrying a failure payload),
+     * this makes `send()` return a failed [CompletableFuture] and `sendAndWait()` throw the exception.
+     */
+    inline fun <reified C : Any> assumeCommandException(exception: Exception) {
+        stubCommandGatewayExceptionByType<C>(exception)
     }
 
     // ---- Command Success ----
@@ -138,7 +187,7 @@ class AxonMockMvc(
      * - `sendAndWait(command, resultType)` -> `R?` (sync typed)
      */
     @PublishedApi
-    internal fun <T : Any> stubCommandGateway(command: T, payload: CommandHandlerResult) {
+    internal fun <C : Any> stubCommandGateway(command: C, payload: Any) {
         val result = commandResultOf(payload)
         Mockito.doReturn(result)
             .`when`(commandGateway).send(eq(command), any(Metadata::class.java))
@@ -147,12 +196,12 @@ class AxonMockMvc(
         Mockito.doReturn(payload)
             .`when`(commandGateway).sendAndWait(eq(command))
         Mockito.doReturn(payload)
-            .`when`(commandGateway).sendAndWait(eq(command), eq(CommandHandlerResult::class.java))
+            .`when`(commandGateway).sendAndWait(eq(command), any(Class::class.java))
     }
 
     /** Stubs all [CommandGateway] invocation styles for any command matching type [T]. */
     @PublishedApi
-    internal inline fun <reified T : Any> stubCommandGatewayByType(payload: CommandHandlerResult) {
+    internal inline fun <reified T : Any> stubCommandGatewayByType(payload: Any) {
         val result = commandResultOf(payload)
         Mockito.doReturn(result)
             .`when`(commandGateway).send(argThat { it is T }, any(Metadata::class.java))
@@ -161,14 +210,47 @@ class AxonMockMvc(
         Mockito.doReturn(payload)
             .`when`(commandGateway).sendAndWait(argThat { it is T })
         Mockito.doReturn(payload)
-            .`when`(commandGateway).sendAndWait(argThat { it is T }, eq(CommandHandlerResult::class.java))
+            .`when`(commandGateway).sendAndWait(argThat { it is T }, any(Class::class.java))
     }
 
-    /** Wraps a [CommandHandlerResult] payload in a completed [FutureCommandResult]. */
+    /** Stubs all [CommandGateway] invocation styles to fail with [exception] for a specific command instance. */
     @PublishedApi
-    internal fun commandResultOf(payload: CommandHandlerResult): CommandResult {
+    internal fun <C : Any> stubCommandGatewayException(command: C, exception: Exception) {
+        val failedResult = failedCommandResult(exception)
+        Mockito.doReturn(failedResult)
+            .`when`(commandGateway).send(eq(command), any(Metadata::class.java))
+        Mockito.doReturn(failedResult)
+            .`when`(commandGateway).send(eq(command))
+        Mockito.doThrow(exception)
+            .`when`(commandGateway).sendAndWait(eq(command))
+        Mockito.doThrow(exception)
+            .`when`(commandGateway).sendAndWait(eq(command), any(Class::class.java))
+    }
+
+    /** Stubs all [CommandGateway] invocation styles to fail with [exception] for any command matching type [T]. */
+    @PublishedApi
+    internal inline fun <reified T : Any> stubCommandGatewayExceptionByType(exception: Exception) {
+        val failedResult = failedCommandResult(exception)
+        Mockito.doReturn(failedResult)
+            .`when`(commandGateway).send(argThat { it is T }, any(Metadata::class.java))
+        Mockito.doReturn(failedResult)
+            .`when`(commandGateway).send(argThat<Any> { it is T })
+        Mockito.doThrow(exception)
+            .`when`(commandGateway).sendAndWait(argThat { it is T })
+        Mockito.doThrow(exception)
+            .`when`(commandGateway).sendAndWait(argThat { it is T }, any(Class::class.java))
+    }
+
+    /** Creates a [FutureCommandResult] wrapping a failed [CompletableFuture]. */
+    @PublishedApi
+    internal fun failedCommandResult(exception: Exception): CommandResult =
+        FutureCommandResult(CompletableFuture.failedFuture(exception))
+
+    /** Wraps a payload in a completed [FutureCommandResult]. Works with any result type. */
+    @PublishedApi
+    internal fun commandResultOf(payload: Any): CommandResult {
         val message = GenericCommandResultMessage(
-            MessageType(CommandHandlerResult::class.java), payload
+            MessageType(payload::class.java), payload
         )
         return FutureCommandResult(CompletableFuture.completedFuture(message))
     }

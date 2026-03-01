@@ -49,7 +49,36 @@ RestAssured and clock are re-configured before each test by `AxonMockMvcSetupLis
 
 ### Command Stubbing
 
-Two styles — by type (reified) or by exact instance:
+#### Generic — any result type
+
+```kotlin
+// By type — matches ANY command of this type
+axonMockMvc.assumeCommandReturns<BuildDwelling>(MyResult("ok"))
+
+// By instance — matches this specific command (eq() matcher)
+axonMockMvc.assumeCommandReturns(specificCommand, MyResult("ok"))
+```
+
+#### Exception — failed future / thrown exception
+
+Unlike `assumeCommandFailure` (which returns a **successful** future carrying a failure payload),
+`assumeCommandException` makes `send()` return a **failed** `CompletableFuture` and `sendAndWait()`
+throw the exception directly:
+
+```kotlin
+// By type — matches ANY command of this type
+axonMockMvc.assumeCommandException<BuildDwelling>(IllegalStateException("aggregate not found"))
+
+// By instance — matches this specific command (eq() matcher)
+axonMockMvc.assumeCommandException(specificCommand, IllegalStateException("aggregate not found"))
+```
+
+| Method | `send()` returns | `sendAndWait()` does |
+|---|---|---|
+| `assumeCommandFailure` | Completed future with `Failure` payload | Returns `Failure` payload |
+| `assumeCommandException` | Failed future with exception | Throws the exception |
+
+#### Convenience — `CommandHandlerResult` shortcuts
 
 ```kotlin
 // By type — matches ANY command of this type
