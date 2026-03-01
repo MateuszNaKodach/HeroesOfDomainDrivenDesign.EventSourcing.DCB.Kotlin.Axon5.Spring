@@ -96,6 +96,15 @@ fun `given not built dwelling, when build, then built`() {
 }
 ```
 
+## Axon Framework 5 Source Code
+
+When you need to read Axon Framework 5 source code, look for it on this machine rather than reading compiled `.class`
+files. The source is available at:
+
+```
+/Users/mateusznowak/GitRepos/AxonFramework/AxonFramework5
+```
+
 ## Key Conventions
 
 - All domain events implement `HeroesEvent` marker interface
