@@ -20,7 +20,7 @@ import java.time.Clock
 
 
 @Configuration
-internal class HeroesConfig {
+internal class AxonFrameworkConfiguration {
 
     @Bean
     fun tagResolverEnhancer(): ConfigurationEnhancer = ConfigurationEnhancer { configuration ->
