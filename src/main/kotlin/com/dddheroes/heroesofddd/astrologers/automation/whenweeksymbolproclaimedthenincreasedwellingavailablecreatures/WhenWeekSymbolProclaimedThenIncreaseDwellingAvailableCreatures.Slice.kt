@@ -13,7 +13,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Index
 import jakarta.persistence.Table
-import org.axonframework.messaging.commandhandling.gateway.CommandGateway
+import org.axonframework.messaging.commandhandling.gateway.CommandDispatcher
 import org.axonframework.messaging.core.annotation.MetadataValue
 import org.axonframework.messaging.eventhandling.annotation.EventHandler
 import org.axonframework.messaging.eventhandling.annotation.SequencingPolicy
@@ -22,6 +22,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Repository
+import java.util.concurrent.CompletableFuture
 
 @Entity
 @Table(
@@ -51,7 +52,6 @@ private interface BuiltDwellingReadModelRepository : JpaRepository<BuiltDwelling
 @Component
 @SequencingPolicy(type = MetadataSequencingPolicy::class, parameters = ["gameId"])
 private class WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreaturesProcessor(
-    private val commandGateway: CommandGateway,
     private val repository: BuiltDwellingReadModelRepository
 ) {
 
@@ -59,21 +59,27 @@ private class WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreaturesProc
     fun react(
         event: WeekSymbolProclaimed,
         @MetadataValue(GameMetadata.GAME_ID_KEY) gameId: String,
-        @MetadataValue(GameMetadata.PLAYER_ID_KEY) playerId: String
-    ) {
-        val increaseBy = event.growth
-        repository.findAllByGameIdAndCreatureId(gameId, event.weekOf.raw)
-            .forEach { dwelling -> increaseAvailableCreatures(dwelling, increaseBy, playerId) }
+        @MetadataValue(GameMetadata.PLAYER_ID_KEY) playerId: String,
+        commandDispatcher: CommandDispatcher,
+    ): CompletableFuture<Void> {
+        val futures = repository.findAllByGameIdAndCreatureId(gameId, event.weekOf.raw)
+            .map { dwelling -> increaseAvailableCreatures(dwelling, event.growth, playerId, commandDispatcher) }
+        return CompletableFuture.allOf(*futures.toTypedArray())
     }
 
-    private fun increaseAvailableCreatures(dwelling: BuiltDwellingReadModel, increaseBy: Int, playerId: String) {
+    private fun increaseAvailableCreatures(
+        dwelling: BuiltDwellingReadModel,
+        increaseBy: Int,
+        playerId: String,
+        commandDispatcher: CommandDispatcher
+    ): CompletableFuture<out Any?> {
         val command = IncreaseAvailableCreatures(
             dwellingId = DwellingId(dwelling.dwellingId),
             creatureId = CreatureId(dwelling.creatureId),
             increaseBy = Quantity(increaseBy)
         )
         val metadata = GameMetadata.with(GameId(dwelling.gameId), PlayerId(playerId))
-        commandGateway.send(command, metadata)
+        return commandDispatcher.send(command, metadata).resultMessage
     }
 
     @EventHandler

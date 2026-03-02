@@ -19,7 +19,6 @@ import org.axonframework.test.fixture.Then
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.TestPropertySource
-import java.time.Duration
 import java.util.*
 
 @TestPropertySource(
@@ -70,7 +69,7 @@ internal class WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreaturesSpr
                             IncreaseAvailableCreatures(angelDwelling2, CreatureId("angel"), Quantity(3))
                         )
                     }
-                }, Duration.ofSeconds(5))
+                })
             }
         }
     }
@@ -112,7 +111,7 @@ internal class WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreaturesSpr
                             IncreaseAvailableCreatures(angelDwelling2, CreatureId("angel"), Quantity(2))
                         )
                     }
-                }, Duration.ofSeconds(5))
+                })
             }
         }
     }
