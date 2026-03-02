@@ -2,7 +2,9 @@
 
 package org.axonframework.test.fixture
 
+import org.assertj.core.api.Assertions.assertThat
 import org.axonframework.common.configuration.Configuration
+import org.axonframework.messaging.core.Metadata
 import org.axonframework.test.fixture.AxonTestPhase.*
 import java.time.Duration
 
@@ -201,3 +203,30 @@ inline fun <reified T> Then.Command.resultMessagePayloadSatisfies(
 ) {
     this.resultMessagePayloadSatisfies(T::class.java, consumer)
 }
+
+// ── Metadata Assertions ───────────────────────────────────────
+
+/**
+ * Asserts that all published events contain the [expected] metadata entries.
+ *
+ * Uses a subset check — events may carry additional metadata beyond [expected].
+ * Provides per-event error messages with the event payload type for easy debugging.
+ *
+ * ```kotlin
+ * Then {
+ *     events(DwellingBuilt(...))
+ *     allEventsHaveMetadata(gameMetadata)
+ * }
+ * ```
+ */
+@Suppress("unused")
+fun <T : Then.MessageAssertions<T>> T.allEventsHaveMetadata(expected: Metadata): T =
+    this.eventsSatisfy { events ->
+        assertThat(events)
+            .`as`("all events should contain metadata %s", expected)
+            .allSatisfy { event ->
+                assertThat(event.metadata())
+                    .`as`("metadata of '%s' event", event.payloadType().simpleName)
+                    .containsAllEntriesOf(expected)
+            }
+    }
