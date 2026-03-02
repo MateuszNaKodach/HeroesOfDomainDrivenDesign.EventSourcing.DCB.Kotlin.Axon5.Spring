@@ -13,7 +13,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.axonframework.common.configuration.Configuration
 import org.axonframework.extensions.kotlin.AxonMetadata
 import org.axonframework.messaging.queryhandling.gateway.QueryGateway
-import org.axonframework.test.fixture.AxonTestFixture
+import org.axonframework.test.fixture.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.TestPropertySource
@@ -35,13 +35,12 @@ internal class GetAllDwellingsSpringSliceTest @Autowired constructor(
 
     @Test
     fun `given no events, when get all dwellings, then empty result`() {
-        fixture.`when`()
-            .nothing()
-            .then()
-            .expect { cfg ->
+        fixture.When { nothing() } Then {
+            expect { cfg ->
                 val result = queryAllDwellings(cfg)
                 assertThat(result.items).isEmpty()
             }
+        }
     }
 
     @Test
@@ -51,19 +50,18 @@ internal class GetAllDwellingsSpringSliceTest @Autowired constructor(
         val creatureId = CreatureId("phoenix")
         val expectedCost = phoenixCostRaw
 
-        fixture.given()
-            .event(DwellingBuilt(dwellingId1, creatureId, phoenixCost), gameMetadata)
-            .event(DwellingBuilt(dwellingId2, creatureId, phoenixCost), gameMetadata)
-            .then()
-            .await { r ->
-                r.expect { cfg ->
-                    val result = queryAllDwellings(cfg)
-                    assertThat(result.items).containsExactlyInAnyOrder(
-                        DwellingReadModel(gameId.raw, dwellingId1.raw, creatureId.raw, expectedCost, 0),
-                        DwellingReadModel(gameId.raw, dwellingId2.raw, creatureId.raw, expectedCost, 0)
-                    )
-                }
+        fixture.Given {
+            event(DwellingBuilt(dwellingId1, creatureId, phoenixCost), gameMetadata)
+            event(DwellingBuilt(dwellingId2, creatureId, phoenixCost), gameMetadata)
+        } Then {
+            awaitAndExpect { cfg ->
+                val result = queryAllDwellings(cfg)
+                assertThat(result.items).containsExactlyInAnyOrder(
+                    DwellingReadModel(gameId.raw, dwellingId1.raw, creatureId.raw, expectedCost, 0),
+                    DwellingReadModel(gameId.raw, dwellingId2.raw, creatureId.raw, expectedCost, 0)
+                )
             }
+        }
     }
 
     @Test
@@ -71,22 +69,21 @@ internal class GetAllDwellingsSpringSliceTest @Autowired constructor(
         val dwellingId = DwellingId.random()
         val creatureId = CreatureId("phoenix")
 
-        fixture.given()
-            .event(DwellingBuilt(dwellingId, creatureId, phoenixCost), gameMetadata)
-            .event(
+        fixture.Given {
+            event(DwellingBuilt(dwellingId, creatureId, phoenixCost), gameMetadata)
+            event(
                 AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 5, changedTo = Quantity(5)),
                 gameMetadata
             )
-            .then()
-            .await { r ->
-                r.expect { cfg ->
-                    val result = queryAllDwellings(cfg)
-                    val expectedCost = phoenixCostRaw
-                    assertThat(result.items).containsExactlyInAnyOrder(
-                        DwellingReadModel(gameId.raw, dwellingId.raw, creatureId.raw, expectedCost, 5)
-                    )
-                }
+        } Then {
+            awaitAndExpect { cfg ->
+                val result = queryAllDwellings(cfg)
+                val expectedCost = phoenixCostRaw
+                assertThat(result.items).containsExactlyInAnyOrder(
+                    DwellingReadModel(gameId.raw, dwellingId.raw, creatureId.raw, expectedCost, 5)
+                )
             }
+        }
     }
 
     private fun queryAllDwellings(cfg: Configuration): GetAllDwellings.Result =

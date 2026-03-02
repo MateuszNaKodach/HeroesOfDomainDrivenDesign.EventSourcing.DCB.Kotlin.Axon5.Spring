@@ -9,7 +9,7 @@ import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.Quantity
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.Resources
-import org.axonframework.test.fixture.AxonTestFixture
+import org.axonframework.test.fixture.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.TestPropertySource
@@ -25,14 +25,15 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
         val dwellingId = DwellingId.random()
         val creatureId = CreatureId("angel")
 
-        // then
-        sliceUnderTest
-            .given()
-            .noPriorActivity()
-            .`when`()
-            .command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy = Quantity(5)))
-            .then()
-            .resultMessagePayload(CommandHandlerResult.Failure("Only built dwelling can have available creatures"))
+        sliceUnderTest.Scenario {
+            Given {
+                noPriorActivity()
+            } When {
+                command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy = Quantity(5)))
+            } Then {
+                resultMessagePayload(CommandHandlerResult.Failure("Only built dwelling can have available creatures"))
+            }
+        }
     }
 
     @Test
@@ -42,22 +43,23 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
         val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
         val increaseBy = Quantity(3)
 
-        // then
-        sliceUnderTest
-            .given()
-            .event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-            .`when`()
-            .command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy))
-            .then()
-            .resultMessagePayload(CommandHandlerResult.Success)
-            .events(
-                AvailableCreaturesChanged(
-                    dwellingId,
-                    creatureId,
-                    changedBy = increaseBy.raw,
-                    changedTo = increaseBy
+        sliceUnderTest.Scenario {
+            Given {
+                event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
+            } When {
+                command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy))
+            } Then {
+                resultMessagePayload(CommandHandlerResult.Success)
+                events(
+                    AvailableCreaturesChanged(
+                        dwellingId,
+                        creatureId,
+                        changedBy = increaseBy.raw,
+                        changedTo = increaseBy
+                    )
                 )
-            )
+            }
+        }
     }
 
     @Test
@@ -66,16 +68,17 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
         val creatureId = CreatureId("angel")
         val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
-        // then
-        sliceUnderTest
-            .given()
-            .event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-            .event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)))
-            .`when`()
-            .command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy = Quantity(2)))
-            .then()
-            .resultMessagePayload(CommandHandlerResult.Success)
-            .events(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 2, changedTo = Quantity(3)))
+        sliceUnderTest.Scenario {
+            Given {
+                event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
+                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)))
+            } When {
+                command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy = Quantity(2)))
+            } Then {
+                resultMessagePayload(CommandHandlerResult.Success)
+                events(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 2, changedTo = Quantity(3)))
+            }
+        }
     }
 
 }

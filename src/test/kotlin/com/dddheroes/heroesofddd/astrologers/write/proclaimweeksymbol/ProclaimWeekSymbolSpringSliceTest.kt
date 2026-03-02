@@ -8,7 +8,7 @@ import com.dddheroes.heroesofddd.astrologers.write.WeekSymbol
 import com.dddheroes.heroesofddd.shared.application.CommandHandlerResult
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
 import org.axonframework.extensions.kotlin.AxonMetadata
-import org.axonframework.test.fixture.AxonTestFixture
+import org.axonframework.test.fixture.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.TestPropertySource
@@ -31,21 +31,24 @@ internal class ProclaimWeekSymbolSpringSliceTest @Autowired constructor(
         val week = MonthWeek(month = 1, week = 1)
         val symbol = WeekSymbol(weekOf = creatureId, growth = 3)
 
-        sliceUnderTest.given()
-            .noPriorActivity()
-            .`when`()
-            .command(ProclaimWeekSymbol(astrologersId, week, symbol), gameMetadata)
-            .then()
-            .resultMessagePayload(CommandHandlerResult.Success)
-            .events(
-                WeekSymbolProclaimed(
-                    astrologersId = astrologersId,
-                    month = 1,
-                    week = 1,
-                    weekOf = creatureId,
-                    growth = 3
+        sliceUnderTest.Scenario {
+            Given {
+                noPriorActivity()
+            } When {
+                command(ProclaimWeekSymbol(astrologersId, week, symbol), gameMetadata)
+            } Then {
+                resultMessagePayload(CommandHandlerResult.Success)
+                events(
+                    WeekSymbolProclaimed(
+                        astrologersId = astrologersId,
+                        month = 1,
+                        week = 1,
+                        weekOf = creatureId,
+                        growth = 3
+                    )
                 )
-            )
+            }
+        }
     }
 
     @Test
@@ -58,28 +61,31 @@ internal class ProclaimWeekSymbolSpringSliceTest @Autowired constructor(
             growth = 3
         )
 
-        sliceUnderTest.given()
-            .events(firstProclamation)
-            .`when`()
-            .command(
-                ProclaimWeekSymbol(
-                    astrologersId,
-                    MonthWeek(month = 1, week = 2),
-                    WeekSymbol(weekOf = creatureId, growth = 5)
-                ),
-                gameMetadata
-            )
-            .then()
-            .resultMessagePayload(CommandHandlerResult.Success)
-            .events(
-                WeekSymbolProclaimed(
-                    astrologersId = astrologersId,
-                    month = 1,
-                    week = 2,
-                    weekOf = creatureId,
-                    growth = 5
+        sliceUnderTest.Scenario {
+            Given {
+                events(firstProclamation)
+            } When {
+                command(
+                    ProclaimWeekSymbol(
+                        astrologersId,
+                        MonthWeek(month = 1, week = 2),
+                        WeekSymbol(weekOf = creatureId, growth = 5)
+                    ),
+                    gameMetadata
                 )
-            )
+            } Then {
+                resultMessagePayload(CommandHandlerResult.Success)
+                events(
+                    WeekSymbolProclaimed(
+                        astrologersId = astrologersId,
+                        month = 1,
+                        week = 2,
+                        weekOf = creatureId,
+                        growth = 5
+                    )
+                )
+            }
+        }
     }
 
     @Test
@@ -92,28 +98,31 @@ internal class ProclaimWeekSymbolSpringSliceTest @Autowired constructor(
             growth = 3
         )
 
-        sliceUnderTest.given()
-            .events(firstProclamation)
-            .`when`()
-            .command(
-                ProclaimWeekSymbol(
-                    astrologersId,
-                    MonthWeek(month = 2, week = 1),
-                    WeekSymbol(weekOf = creatureId, growth = 2)
-                ),
-                gameMetadata
-            )
-            .then()
-            .resultMessagePayload(CommandHandlerResult.Success)
-            .events(
-                WeekSymbolProclaimed(
-                    astrologersId = astrologersId,
-                    month = 2,
-                    week = 1,
-                    weekOf = creatureId,
-                    growth = 2
+        sliceUnderTest.Scenario {
+            Given {
+                events(firstProclamation)
+            } When {
+                command(
+                    ProclaimWeekSymbol(
+                        astrologersId,
+                        MonthWeek(month = 2, week = 1),
+                        WeekSymbol(weekOf = creatureId, growth = 2)
+                    ),
+                    gameMetadata
                 )
-            )
+            } Then {
+                resultMessagePayload(CommandHandlerResult.Success)
+                events(
+                    WeekSymbolProclaimed(
+                        astrologersId = astrologersId,
+                        month = 2,
+                        week = 1,
+                        weekOf = creatureId,
+                        growth = 2
+                    )
+                )
+            }
+        }
     }
 
     @Test
@@ -126,20 +135,23 @@ internal class ProclaimWeekSymbolSpringSliceTest @Autowired constructor(
             growth = 3
         )
 
-        sliceUnderTest.given()
-            .events(firstProclamation)
-            .`when`()
-            .command(
-                ProclaimWeekSymbol(
-                    astrologersId,
-                    MonthWeek(month = 1, week = 1),
-                    WeekSymbol(weekOf = CreatureId("imp"), growth = 2)
-                ),
-                gameMetadata
-            )
-            .then()
-            .resultMessagePayload(CommandHandlerResult.Failure("Only one symbol can be proclaimed per week"))
-            .noEvents()
+        sliceUnderTest.Scenario {
+            Given {
+                events(firstProclamation)
+            } When {
+                command(
+                    ProclaimWeekSymbol(
+                        astrologersId,
+                        MonthWeek(month = 1, week = 1),
+                        WeekSymbol(weekOf = CreatureId("imp"), growth = 2)
+                    ),
+                    gameMetadata
+                )
+            } Then {
+                resultMessagePayload(CommandHandlerResult.Failure("Only one symbol can be proclaimed per week"))
+                noEvents()
+            }
+        }
     }
 
     @Test
@@ -152,20 +164,23 @@ internal class ProclaimWeekSymbolSpringSliceTest @Autowired constructor(
             growth = 3
         )
 
-        sliceUnderTest.given()
-            .events(firstProclamation)
-            .`when`()
-            .command(
-                ProclaimWeekSymbol(
-                    astrologersId,
-                    MonthWeek(month = 1, week = 1),
-                    WeekSymbol(weekOf = CreatureId("imp"), growth = 2)
-                ),
-                gameMetadata
-            )
-            .then()
-            .resultMessagePayload(CommandHandlerResult.Failure("Only one symbol can be proclaimed per week"))
-            .noEvents()
+        sliceUnderTest.Scenario {
+            Given {
+                events(firstProclamation)
+            } When {
+                command(
+                    ProclaimWeekSymbol(
+                        astrologersId,
+                        MonthWeek(month = 1, week = 1),
+                        WeekSymbol(weekOf = CreatureId("imp"), growth = 2)
+                    ),
+                    gameMetadata
+                )
+            } Then {
+                resultMessagePayload(CommandHandlerResult.Failure("Only one symbol can be proclaimed per week"))
+                noEvents()
+            }
+        }
     }
 
     private val gameMetadata = AxonMetadata.with("gameId", gameId)
