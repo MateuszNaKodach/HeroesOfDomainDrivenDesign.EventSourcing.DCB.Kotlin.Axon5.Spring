@@ -78,7 +78,7 @@ Located in `com.dddheroes.heroesofddd.*`:
 
 ## Testing Patterns
 
-Unit tests use Axon Test Fixtures with Given-When-Then:
+Unit tests use Axon Test Fixtures with a Kotlin DSL (`Given { } When { } Then { }`):
 
 ```kotlin
 private val sliceUnderTest = AxonTestFixture.with(
@@ -89,12 +89,20 @@ private val sliceUnderTest = AxonTestFixture.with(
 
 @Test
 fun `given not built dwelling, when build, then built`() {
-    sliceUnderTest
-        .given().noPriorActivity()
-        .`when`().command(BuildDwelling(...))
-    .then().events(DwellingBuilt(...))
+    sliceUnderTest.Scenario {
+        Given {
+            noPriorActivity()
+        } When {
+            command(BuildDwelling(...), gameMetadata)
+        } Then {
+            resultMessagePayload(CommandHandlerResult.Success)
+            events(DwellingBuilt(...))
+        }
+    }
 }
 ```
+
+The DSL extensions are in `org.axonframework.test.fixture.AxonTestFixtureDsl.kt`.
 
 ## Axon Framework 5 Source Code
 

@@ -9,7 +9,7 @@ import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.Resources
 import org.axonframework.extensions.kotlin.AxonMetadata
-import org.axonframework.test.fixture.AxonTestFixture
+import org.axonframework.test.fixture.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.TestPropertySource
@@ -30,20 +30,23 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(
         val creatureId = CreatureId("angel")
         val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
-        sliceUnderTest.given()
-            .noPriorActivity()
-            .`when`()
-            .command(BuildDwelling(dwellingId, creatureId, costPerTroop), gameMetadata)
-            .then()
-            .resultMessagePayload(CommandHandlerResult.Success)
-            .events(
-                DwellingBuilt(
-                    dwellingId = dwellingId,
-                    creatureId = creatureId,
-                    costPerTroop = costPerTroop
+        sliceUnderTest.Scenario {
+            Given {
+                noPriorActivity()
+            } When {
+                command(BuildDwelling(dwellingId, creatureId, costPerTroop), gameMetadata)
+            } Then {
+                resultMessagePayload(CommandHandlerResult.Success)
+                events(
+                    DwellingBuilt(
+                        dwellingId = dwellingId,
+                        creatureId = creatureId,
+                        costPerTroop = costPerTroop
+                    )
                 )
-            )
-            .eventsMatch { it.all { e -> e.gameMetadata == gameMetadata } }
+                eventsMatch { it.all { e -> e.gameMetadata == gameMetadata } }
+            }
+        }
     }
 
     @Test
@@ -52,15 +55,16 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(
         val creatureId = CreatureId("angel")
         val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
-        // then
-        sliceUnderTest
-            .given()
-            .events(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-            .`when`()
-            .command(BuildDwelling(dwellingId, creatureId, costPerTroop))
-            .then()
-            .resultMessagePayload(CommandHandlerResult.Success)
-            .noEvents()
+        sliceUnderTest.Scenario {
+            Given {
+                events(DwellingBuilt(dwellingId, creatureId, costPerTroop))
+            } When {
+                command(BuildDwelling(dwellingId, creatureId, costPerTroop))
+            } Then {
+                resultMessagePayload(CommandHandlerResult.Success)
+                noEvents()
+            }
+        }
     }
 
     private val gameMetadata = AxonMetadata.with("gameId", gameId)
