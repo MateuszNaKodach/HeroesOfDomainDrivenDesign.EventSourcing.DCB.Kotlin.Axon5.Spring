@@ -24,6 +24,11 @@
       "name": "slices.astrologers.write.proclaimweeksymbol.enabled",
       "type": "java.lang.Boolean",
       "description": "Enable/disable the ProclaimWeekSymbol vertical slice in the Astrologers bounded context."
+    },
+    {
+      "name": "slices.astrologers.automation.whenweekstartedthenproclaimweeksymbol.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable/disable the WhenWeekStartedThenProclaimWeekSymbol automation slice in the Astrologers bounded context."
     }
   ]
 }

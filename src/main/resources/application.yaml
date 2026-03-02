@@ -38,3 +38,5 @@ slices:
     enabled: true
   astrologers.write.proclaimweeksymbol:
     enabled: true
+  astrologers.automation.whenweekstartedthenproclaimweeksymbol:
+    enabled: true

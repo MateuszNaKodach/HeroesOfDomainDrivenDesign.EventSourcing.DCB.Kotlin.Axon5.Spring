@@ -16,3 +16,5 @@ slices:
     enabled: false
   astrologers.write.proclaimweeksymbol:
     enabled: false
+  astrologers.automation.whenweekstartedthenproclaimweeksymbol:
+    enabled: false
