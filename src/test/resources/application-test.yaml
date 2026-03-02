@@ -18,3 +18,5 @@ slices:
     enabled: false
   astrologers.automation.whenweekstartedthenproclaimweeksymbol:
     enabled: false
+  astrologers.automation.whenweeksymbolproclaimedthenincreasedwellingavailablecreatures:
+    enabled: false
