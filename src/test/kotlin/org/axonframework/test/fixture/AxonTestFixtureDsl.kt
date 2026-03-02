@@ -120,6 +120,70 @@ infix fun <T> Given.When(block: When.() -> T): T =
 infix fun Given.Then(block: Then.Nothing.() -> Unit): Then.Nothing =
     this.then().apply(block)
 
+// ── And (chain a new scenario) ───────────────────────────────
+
+/**
+ * Returns to the setup phase to chain a new test scenario, wrapping [Then.Message.and].
+ *
+ * The same configuration from the original fixture is reused, so all components
+ * and previously committed events are shared among invocations.
+ *
+ * ```kotlin
+ * sliceUnderTest.Scenario {
+ *     Given {
+ *         event(AccountCreatedEvent("account-1"))
+ *     } When {
+ *         command(WithdrawMoney("account-1", 50.00))
+ *     } Then {
+ *         success()
+ *         events(MoneyWithdrawnEvent("account-1", 50.00))
+ *     } And {
+ *         Given {
+ *             event(AccountCreatedEvent("account-2"))
+ *         } When {
+ *             command(WithdrawMoney("account-2", 30.00))
+ *         } Then {
+ *             success()
+ *         }
+ *     }
+ * }
+ * ```
+ */
+infix fun Then.Command.And(block: Setup.() -> Unit): Setup =
+    this.and().apply(block)
+
+/**
+ * Returns to the setup phase to chain a new scenario after an event Then phase.
+ */
+@Suppress("unused")
+infix fun Then.Event.And(block: Setup.() -> Unit): Setup =
+    this.and().apply(block)
+
+/**
+ * Returns to the setup phase to chain a new scenario after a no-op Then phase.
+ */
+@Suppress("unused")
+infix fun Then.Nothing.And(block: Setup.() -> Unit): Setup =
+    this.and().apply(block)
+
+// ── Setup Entry Points (for And chaining) ────────────────────
+
+/**
+ * Enters the Given phase from a [Setup] returned by [Then.Message.and].
+ *
+ * This mirrors [AxonTestFixture.Given] but works on any [Setup] instance,
+ * enabling `And { Given { ... } When { ... } Then { ... } }` chaining.
+ */
+fun Setup.Given(block: Given.() -> Unit): Given =
+    this.given().apply(block)
+
+/**
+ * Enters the When phase directly from a [Setup], skipping Given.
+ */
+@Suppress("unused")
+fun <T> Setup.When(block: When.() -> T): T =
+    this.`when`().block()
+
 // ── When.X → Then (type-specific) ────────────────────────────
 
 /**
