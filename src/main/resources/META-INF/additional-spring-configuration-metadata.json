@@ -34,6 +34,11 @@
       "name": "slices.astrologers.automation.whenweeksymbolproclaimedthenincreasedwellingavailablecreatures.enabled",
       "type": "java.lang.Boolean",
       "description": "Enable/disable the WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreatures automation slice in the Astrologers bounded context."
+    },
+    {
+      "name": "slices.calendar.write.startday.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable/disable the StartDay write slice in the Calendar bounded context."
     }
   ]
 }

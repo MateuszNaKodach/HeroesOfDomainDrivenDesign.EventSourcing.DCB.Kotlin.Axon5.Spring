@@ -32,11 +32,11 @@ private class WhenWeekStartedThenProclaimWeekSymbolProcessor(
         @MetadataValue(GameMetadata.PLAYER_ID_KEY) playerId: String,
         commandDispatcher: CommandDispatcher,
     ): CompletableFuture<out Any> {
-        if (event.day == FIRST_DAY_OF_THE_WEEK) {
-            val weekSymbol = weekSymbolCalculator(MonthWeek(event.month, event.week))
+        if (event.day.raw == FIRST_DAY_OF_THE_WEEK) {
+            val weekSymbol = weekSymbolCalculator(MonthWeek(event.month.raw, event.week.raw))
             val command = ProclaimWeekSymbol(
                 astrologersId = AstrologersId(event.calendarId.raw),
-                week = MonthWeek(event.month, event.week),
+                week = MonthWeek(event.month.raw, event.week.raw),
                 symbol = weekSymbol
             )
             val metadata = GameMetadata.with(GameId(gameId), PlayerId(playerId))

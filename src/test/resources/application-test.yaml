@@ -20,3 +20,5 @@ slices:
     enabled: false
   astrologers.automation.whenweeksymbolproclaimedthenincreasedwellingavailablecreatures:
     enabled: false
+  calendar.write.startday:
+    enabled: false

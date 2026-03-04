@@ -7,6 +7,9 @@ import com.dddheroes.heroesofddd.astrologers.write.WeekSymbol
 import com.dddheroes.heroesofddd.astrologers.write.proclaimweeksymbol.ProclaimWeekSymbol
 import com.dddheroes.heroesofddd.calendar.events.DayStarted
 import com.dddheroes.heroesofddd.calendar.write.CalendarId
+import com.dddheroes.heroesofddd.calendar.write.Day
+import com.dddheroes.heroesofddd.calendar.write.Month
+import com.dddheroes.heroesofddd.calendar.write.Week
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
 import org.axonframework.extensions.kotlin.AxonMetadata
 import org.axonframework.test.fixture.AxonTestFixture
@@ -58,7 +61,7 @@ internal class WhenWeekStartedThenProclaimWeekSymbolSpringSliceTest @Autowired c
 
         fixture.Scenario {
             Given {
-                event(DayStarted(calendarId, month = 1, week = 1, day = 1), gameMetadata)
+                event(DayStarted(calendarId, month = Month(1), week = Week(1), day = Day(1)), gameMetadata)
             } Then {
                 await({ it.commands(expectedCommand) }, Duration.ofSeconds(5))
             }
@@ -69,7 +72,7 @@ internal class WhenWeekStartedThenProclaimWeekSymbolSpringSliceTest @Autowired c
     fun `when DayStarted for non-first day of the week, then no commands dispatched`() {
         fixture.Scenario {
             Given {
-                event(DayStarted(calendarId, month = 1, week = 1, day = 3), gameMetadata)
+                event(DayStarted(calendarId, month = Month(1), week = Week(1), day = Day(3)), gameMetadata)
             } Then {
                 await({ it.noCommands() }, Duration.ofSeconds(5))
             }
