@@ -7,4 +7,6 @@ value class Month(val raw: Int) {
         require(raw >= 1) { "Month must be at least 1, got $raw" }
     }
 
+    fun next(): Month = Month(raw + 1)
+
 }

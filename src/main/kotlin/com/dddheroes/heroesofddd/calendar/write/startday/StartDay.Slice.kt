@@ -54,7 +54,7 @@ private data class State(
 }
 
 private fun decide(command: StartDay, state: State): List<HeroesEvent> {
-    if (state.currentDay == null) {
+    if (state.currentDay == null || state.currentWeek == null || state.currentMonth == null) {
         return listOf(
             DayStarted(
                 calendarId = command.calendarId,
@@ -65,21 +65,17 @@ private fun decide(command: StartDay, state: State): List<HeroesEvent> {
         )
     }
 
-    var nextDay = state.currentDay.raw + 1
-    var nextWeek = state.currentWeek!!.raw
-    var nextMonth = state.currentMonth!!.raw
+    val currentDay = state.currentDay
+    val currentWeek = state.currentWeek
+    val currentMonth = state.currentMonth
 
-    if (nextDay > 7) {
-        nextDay = 1
-        nextWeek += 1
-    }
+    val expectedDay = currentDay.next()
+    val weekRollover = currentDay.isLast
+    val expectedWeek = if (weekRollover) currentWeek.next() else currentWeek
+    val monthRollover = weekRollover && currentWeek.isLast
+    val expectedMonth = if (monthRollover) currentMonth.next() else currentMonth
 
-    if (nextWeek > 4) {
-        nextWeek = 1
-        nextMonth += 1
-    }
-
-    if (command.day.raw != nextDay || command.week.raw != nextWeek || command.month.raw != nextMonth) {
+    if (command.day != expectedDay || command.week != expectedWeek || command.month != expectedMonth) {
         throw IllegalStateException("Cannot skip days")
     }
 
