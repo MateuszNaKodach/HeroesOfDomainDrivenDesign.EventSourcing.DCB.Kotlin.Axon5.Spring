@@ -60,6 +60,18 @@ See [references/af4-input-mapping.md](references/af4-input-mapping.md) for conce
 
 **If requirements are unclear, ask the user before proceeding.**
 
+### Determine Interaction Trigger
+
+If the input does not make it clear how the command will be triggered, use `AskUserQuestion` to ask:
+
+> How will this command be triggered?
+> - **REST API** — exposed via HTTP endpoint (add Presentation section + REST API test)
+> - **Automation only** — dispatched internally by an event handler (no REST API, no Presentation section)
+> - **Both** — exposed via REST API and also dispatched by automations
+
+This determines whether to include the Presentation section (`@RestController`) and REST API test. Commands used only
+by automations don't need an HTTP endpoint. Skip the Presentation section and REST API test in that case.
+
 ## Step 2: Choose the AF5 Pattern
 
 **Spring Boot** — entity and handler auto-discovered by Spring:
@@ -105,7 +117,7 @@ Create `FeatureName.Slice.kt` with three sections (adapt to project conventions)
 // 7. @Configuration if advanced pattern
 
 ////////////////////////////////////////////
-////////// Presentation
+////////// Presentation (only if REST API trigger)
 ///////////////////////////////////////////
 // 8. @RestController (Body DTO, sends command via CommandGateway)
 ```
