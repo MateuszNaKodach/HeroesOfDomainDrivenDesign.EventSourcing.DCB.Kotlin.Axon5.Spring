@@ -13,7 +13,6 @@ import com.dddheroes.heroesofddd.shared.application.toCommandResult
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
 import com.dddheroes.heroesofddd.shared.domain.identifiers.*
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.Quantity
-import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.Resources
 import com.dddheroes.heroesofddd.shared.restapi.Headers
 import com.dddheroes.heroesofddd.shared.restapi.toResponseEntity
@@ -71,11 +70,6 @@ private val initialState = State(
     costPerTroop = Resources.empty(),
     creaturesInArmy = emptyMap()
 )
-
-
-private fun isSameCost(cost1: Map<ResourceType, Int>, cost2: Map<ResourceType, Int>): Boolean {
-    return cost1 == cost2
-}
 
 private fun decide(
     command: RecruitCreature,
