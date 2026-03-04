@@ -132,6 +132,37 @@ Handles ALL event types this slice needs for state reconstruction.
 **REST**: Private class. `CompletableFuture<ResponseEntity<Any>>` return type. Constructs command with value objects,
 sends via `commandGateway.send(command.asCommandMessage(metadata)).resultAs(...).toResponseEntity()`.
 
+## Value Objects with Kotlin `value class`
+
+When command or event properties represent constrained domain concepts (e.g. day 1–7, week 1–4, month ≥ 1), prefer
+wrapping them in `@JvmInline value class` types with validation in the `init` block. This pushes invariant enforcement
+to construction time — invalid values cannot exist — and makes the domain model self-documenting.
+
+```kotlin
+@JvmInline
+value class Day(val raw: Int) {
+    init {
+        require(raw in 1..7) { "Day must be between 1 and 7, got $raw" }
+    }
+}
+```
+
+**When to introduce a value class:**
+
+- The property has validation constraints (range, format, non-blank)
+- The same concept appears in command, event, and state — a value class avoids duplicating validation
+- Using primitives would allow invalid states (e.g. `day = 99`)
+
+**Where to place them:**
+
+- In the bounded context's write package (e.g. `calendar.write.Day`) by default
+- Move to `shared.domain.valueobjects` only when 3+ bounded contexts use them — same threshold as `Resources`/`Quantity`
+- Generic names (`Day`, `Week`, `Month`) risk collisions across BCs with different semantics, so keep them scoped until
+  reuse is proven
+
+**Using value classes in `decide()`:** Access the raw value via `.raw` for arithmetic and comparisons, then wrap results
+back into value classes when constructing events.
+
 ## Step 4: Ensure Events Exist
 
 Check target project's `events/` package. If events don't exist, create them following project conventions:
