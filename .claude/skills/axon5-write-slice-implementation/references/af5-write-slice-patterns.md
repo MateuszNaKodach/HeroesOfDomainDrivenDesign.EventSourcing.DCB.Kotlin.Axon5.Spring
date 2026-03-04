@@ -595,10 +595,87 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(configuration
 }
 ```
 
+### REST API Test (Presentation layer)
+
+Tests the REST controller in isolation — mocked `CommandGateway`, no Axon Server, no event store.
+
+```kotlin
+@RestAssuredMockMvcTest
+@AxonGatewaysMockTest
+@TestPropertySource(properties = ["slices.creaturerecruitment.write.builddwelling.enabled=true"])
+internal class BuildDwellingRestApiTest @Autowired constructor(val gateways: AxonGatewaysMock) {
+
+    private val gameId = GameId.random()
+    private val playerId = PlayerId.random()
+    private val dwellingId = DwellingId.random()
+
+    @Test
+    fun `command success - returns 204 No Content`() {
+        gateways.assumeCommandReturns<BuildDwelling>(Success)
+
+        Given {
+            pathParam("gameId", gameId.raw)
+            pathParam("dwellingId", dwellingId.raw)
+            header(Headers.PLAYER_ID, playerId.raw)
+            contentType(ContentType.JSON)
+            body("""
+                {
+                  "creatureId": "angel",
+                  "costPerTroop": {"gold": 3000}
+                }
+            """)
+        } When {
+            async().put("/games/{gameId}/dwellings/{dwellingId}")
+        } Then {
+            statusCode(HttpStatus.NO_CONTENT.value())
+        }
+    }
+
+    @Test
+    fun `command failure - returns 400 Bad Request`() {
+        gateways.assumeCommandReturns<BuildDwelling>(Failure("Dwelling already built"))
+
+        Given {
+            pathParam("gameId", gameId.raw)
+            pathParam("dwellingId", dwellingId.raw)
+            header(Headers.PLAYER_ID, playerId.raw)
+            contentType(ContentType.JSON)
+            body("""
+                {
+                  "creatureId": "angel",
+                  "costPerTroop": {"gold": 3000}
+                }
+            """)
+        } When {
+            async().put("/games/{gameId}/dwellings/{dwellingId}")
+        } Then {
+            statusCode(HttpStatus.BAD_REQUEST.value())
+            contentType(ContentType.JSON)
+            body("message", equalTo("Dwelling already built"))
+        }
+    }
+}
+```
+
+Key annotations and utilities:
+
+- `@RestAssuredMockMvcTest` — composes `@WebMvcTest` + RestAssured MockMvc setup
+- `@AxonGatewaysMockTest` — provides `AxonGatewaysMock` bean with mocked `CommandGateway`, `QueryGateway`, `Clock`
+- `gateways.assumeCommandReturns<T>(result)` — stubs by command type for all AF5 `CommandGateway` dispatch styles
+- `async().put(...)` / `async().post(...)` — required because controllers return `CompletableFuture`
+- Request body uses raw JSON primitives (not value objects) — mirrors HTTP client payloads
+
 ### Test Scenarios Checklist
+
+**Slice tests (Given-When-Then):**
 
 - Happy path: no prior events, command succeeds
 - Idempotency: duplicate command, no events emitted
 - Rule violations: invalid preconditions, `CommandHandlerResult.Failure`
 - State transitions: prior events change decide() behavior
 - Multiple prior events: cumulative state reconstruction
+
+**REST API tests (HTTP layer):**
+
+- Command success: `204 No Content`
+- Command failure: `400 Bad Request` with `{"message": "..."}` body

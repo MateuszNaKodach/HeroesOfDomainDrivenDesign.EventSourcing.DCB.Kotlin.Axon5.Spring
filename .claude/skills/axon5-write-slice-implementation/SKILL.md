@@ -184,6 +184,8 @@ handler/@config, and REST classes. Update ALL of these files:
 
 ## Step 6: Implement Tests
 
+### 6a. Slice Tests (domain logic via Given-When-Then)
+
 Two test approaches exist (see [references/af5-write-slice-patterns.md](references/af5-write-slice-patterns.md) "
 Testing" section):
 
@@ -198,6 +200,68 @@ Cover these scenarios:
 - **Idempotency**: duplicate command produces no events
 - **Rule violations**: invalid state returns `CommandHandlerResult.Failure`
 - **State transitions**: prior events change behavior
+
+### 6b. REST API Tests (presentation layer)
+
+Tests the REST controller in isolation — mocked `CommandGateway`, no Axon Server, no event store. Uses
+`@RestAssuredMockMvcTest` + `@AxonGatewaysMockTest` with RestAssured MockMvc.
+
+Cover two scenarios:
+
+- **Command success** → `204 No Content`
+- **Command failure** → `400 Bad Request` with JSON error body `{"message": "..."}`
+
+```kotlin
+@RestAssuredMockMvcTest
+@AxonGatewaysMockTest
+@TestPropertySource(properties = ["slices.{context}.write.{feature}.enabled=true"])
+internal class FeatureNameRestApiTest @Autowired constructor(val gateways: AxonGatewaysMock) {
+
+    private val gameId = GameId.random()
+    private val playerId = PlayerId.random()
+
+    @Test
+    fun `command success - returns 204 No Content`() {
+        gateways.assumeCommandReturns<FeatureCommand>(Success)
+
+        Given {
+            pathParam("gameId", gameId.raw)
+            // other path params...
+            header(Headers.PLAYER_ID, playerId.raw)
+            contentType(ContentType.JSON)
+            body("""{ ... }""")
+        } When {
+            async().post("/games/{gameId}/...")  // or put(), matching the slice's HTTP method
+        } Then {
+            statusCode(HttpStatus.NO_CONTENT.value())
+        }
+    }
+
+    @Test
+    fun `command failure - returns 400 Bad Request`() {
+        gateways.assumeCommandReturns<FeatureCommand>(Failure("Error message"))
+
+        Given {
+            // same setup...
+        } When {
+            async().post("/games/{gameId}/...")
+        } Then {
+            statusCode(HttpStatus.BAD_REQUEST.value())
+            contentType(ContentType.JSON)
+            body("message", equalTo("Error message"))
+        }
+    }
+}
+```
+
+Key points:
+
+- `@RestAssuredMockMvcTest` — composes `@WebMvcTest` + RestAssured setup (no `@BeforeEach` boilerplate)
+- `@AxonGatewaysMockTest` — provides mocked `CommandGateway`, `QueryGateway`, `Clock` via `AxonGatewaysMock` bean
+- `gateways.assumeCommandReturns<T>(result)` — stubs by command type, covers all AF5 `CommandGateway` dispatch styles
+- `async().post(...)` / `async().put(...)` — required because controllers return `CompletableFuture`
+- Request body uses raw JSON (primitives, not value objects) — mirrors what the HTTP client sends
+- Test file lives next to the slice test: `{feature}/FeatureNameRestApiTest.kt`
 
 ## References
 
