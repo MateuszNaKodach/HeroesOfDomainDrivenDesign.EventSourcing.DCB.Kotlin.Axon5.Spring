@@ -1,0 +1,146 @@
+{
+  "id": "c38978e2-cdd3-4fc8-915d-51cf607124e3",
+  "name": "Wandering Creatures",
+  "index": 3,
+  "context": "Adventure Map",
+  "mode": "event-modeling",
+  "lanes": [
+    {
+      "id": "45af85e8-5a2a-4f1a-80a9-b7d6882a2810",
+      "label": "Player",
+      "type": "user-lane",
+      "height": 180,
+      "icon": "",
+      "index": 0
+    },
+    {
+      "id": "cf432f36-09cf-4690-99bb-d74303b12fcb",
+      "label": "Information Flow",
+      "type": "information-flow",
+      "height": 150,
+      "icon": "",
+      "index": 1
+    },
+    {
+      "id": "1c48bcbd-8968-4877-9f15-933712decdc1",
+      "label": "Adventure Map",
+      "type": "system",
+      "height": 180,
+      "icon": "Map",
+      "index": 2
+    },
+    {
+      "id": "7e154673-4667-437c-a52f-5380ff103190",
+      "label": "Armies",
+      "type": "system",
+      "height": 150,
+      "icon": "Users",
+      "index": 3
+    }
+  ],
+  "slices": [
+    {
+      "id": "c40eaf26-f8b2-4be1-9a63-a59130f0aa08",
+      "label": "View <creatures> joins <hero> army",
+      "width": 200,
+      "index": 0,
+      "details": "",
+      "status": "planned"
+    },
+    {
+      "id": "57f0298b-9097-47fb-b090-92abc450d50b",
+      "label": "View Joined Creatures",
+      "width": 200,
+      "index": 1,
+      "details": "",
+      "status": "planned"
+    },
+    {
+      "id": "de7abfcf-0a43-431b-be52-cba585e4b26a",
+      "label": "When Creatures Joined, then add them to the army Automation",
+      "width": 200,
+      "index": 2,
+      "details": "",
+      "status": "planned"
+    }
+  ],
+  "elements": [
+    {
+      "id": "6ca05996-95c7-4480-8c7f-dc743f4432fa",
+      "type": "ui",
+      "name": "<creatures> joins <hero> army",
+      "description": "",
+      "details": "![image](https://dmgffkeqfgljebovngkh.supabase.co/storage/v1/object/public/markdown-images/bf96a8c5-fe6a-4ce6-b4f4-51722bbd050d/c38978e2-cdd3-4fc8-915d-51cf607124e3/6ca05996-95c7-4480-8c7f-dc743f4432fa/1772638325253-2ye21r.png)",
+      "laneId": "45af85e8-5a2a-4f1a-80a9-b7d6882a2810",
+      "sliceId": "c40eaf26-f8b2-4be1-9a63-a59130f0aa08",
+      "index": 0,
+      "comments": []
+    },
+    {
+      "id": "05732077-eea2-4629-83a0-c61eaf80cad5",
+      "type": "command",
+      "name": "Add Creature To Army",
+      "description": "",
+      "details": "",
+      "laneId": "cf432f36-09cf-4690-99bb-d74303b12fcb",
+      "sliceId": "de7abfcf-0a43-431b-be52-cba585e4b26a",
+      "index": 0,
+      "comments": []
+    },
+    {
+      "id": "013ef831-2bfd-4561-8acd-7e22b64e2381",
+      "type": "event",
+      "name": "Creatures Joined",
+      "description": "",
+      "details": "",
+      "laneId": "1c48bcbd-8968-4877-9f15-933712decdc1",
+      "sliceId": "c40eaf26-f8b2-4be1-9a63-a59130f0aa08",
+      "index": 0,
+      "comments": []
+    },
+    {
+      "id": "f5a82540-ab7d-4190-a4b6-0d6b5b3a900b",
+      "type": "command",
+      "name": "Accept Creatures",
+      "description": "",
+      "details": "",
+      "laneId": "cf432f36-09cf-4690-99bb-d74303b12fcb",
+      "sliceId": "c40eaf26-f8b2-4be1-9a63-a59130f0aa08",
+      "index": 0,
+      "comments": []
+    },
+    {
+      "id": "b0fabda2-5470-4a3d-b2b3-6284c0141a49",
+      "type": "information",
+      "name": "Joined Creatures",
+      "description": "",
+      "details": "",
+      "laneId": "cf432f36-09cf-4690-99bb-d74303b12fcb",
+      "sliceId": "57f0298b-9097-47fb-b090-92abc450d50b",
+      "index": 0,
+      "comments": []
+    },
+    {
+      "id": "718fb67a-2ad7-4aea-a66c-76ceb41faa4f",
+      "type": "automation",
+      "name": "When Creatures Joined, then add them to the army",
+      "description": "",
+      "details": "",
+      "laneId": "45af85e8-5a2a-4f1a-80a9-b7d6882a2810",
+      "sliceId": "de7abfcf-0a43-431b-be52-cba585e4b26a",
+      "index": 0,
+      "comments": []
+    },
+    {
+      "id": "39fe449a-d145-4caf-9bcc-111dc2b675b9",
+      "type": "event",
+      "name": "Creature Added To Army",
+      "description": "",
+      "details": "",
+      "laneId": "7e154673-4667-437c-a52f-5380ff103190",
+      "sliceId": "de7abfcf-0a43-431b-be52-cba585e4b26a",
+      "index": 0,
+      "comments": []
+    }
+  ]
+}
