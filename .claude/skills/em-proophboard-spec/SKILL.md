@@ -133,6 +133,66 @@ After the flow structure is modeled and validated, enrich elements with details:
 2. **UI mockups**: Add ASCII mockups to the `details` field of UI elements
 3. **Slice details**: Add user stories and Given-When-Then scenarios to slice details via `update_slice_details`
 
+#### Element Details Format
+
+The `details` field supports markdown and has no strict structure — it can contain whatever is useful for the element. Common content for commands and events includes:
+
+- **Example** — a concrete JSON instance showing what the message looks like
+- **JSON Schema** — formal schema describing the message structure
+- **Business rules** — validation constraints, invariants
+- **Description** — free-text explanation of purpose or behavior
+- Any other relevant documentation
+
+Example of details for a command element:
+
+````markdown
+## Example
+
+```json
+{
+  "dwellingId": "portal-of-glory",
+  "creatureId": "angel",
+  "costPerTroop": { "GOLD": 3000, "GEMS": 1 }
+}
+```
+
+## JSON Schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "dwellingId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for the dwelling"
+    },
+    "creatureId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the creature type"
+    },
+    "costPerTroop": {
+      "type": "object",
+      "description": "Resource cost per single troop",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    }
+  },
+  "required": ["dwellingId", "creatureId", "costPerTroop"]
+}
+```
+````
+
+**Guidelines for element details:**
+- Event modeling typically happens **before code exists** — propose domain-meaningful example values and ask the user to confirm or adjust before writing
+- In the less common case where code/tests already exist, derive example values from them for consistency
+- Use meaningful IDs (e.g., `"portal-of-glory"` not `"uuid-123"`)
+- JSON Schema should match the intended data structure (value classes unwrap to their raw type)
+- When updating details, always pass the **complete new content** to `update_element_details` — partial string replacements cause conflicts on proophboard
+
 ### Track Implementation Progress
 
 Update slice status to reflect code implementation state:
