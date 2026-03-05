@@ -14,6 +14,10 @@ Boundary) in Heroes of Might & Magic III domain.
 This project probably won't be a fully functional HOMM3 engine implementation because it's done for educational purposes.
 If you'd like to talk with me about mentioned development practices, feel free to contact on [linkedin.com/in/mateusznakodach/](https://www.linkedin.com/in/mateusznakodach).
 
+## ⚔️ [Business Domain](DOMAIN_OVERVIEW.md)
+
+Heroes III is not "just a game" — it's a rich, well-documented business domain where every mechanic maps to real-world patterns: creature recruitment is e-commerce with limited stock, resource management is budget allocation, weekly growth cycles are scheduled inventory replenishment. The [Domain Overview](DOMAIN_OVERVIEW.md) explains why this domain was chosen over typical examples like cinemas or shopping carts, how game mechanics translate to enterprise business processes, and how the modular architecture enables scenarios beyond the original game (real-time multiplayer, async gameplay, new products from existing modules).
+
 I'm focused on domain modeling on the backend, but I'm going to implement UI like below in the future.
 
 ![Heroes3_CreatureRecruitment_ExampleGif](https://github.com/user-attachments/assets/0e503a1e-e5d2-4e4a-9150-1a224e603be8)
