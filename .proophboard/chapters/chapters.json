@@ -1,0 +1,30 @@
+[
+  {
+    "id": "18774eb9-1dae-4052-9ee8-c8e1eb334743",
+    "name": "Calendar",
+    "index": 0,
+    "context": "Calendar",
+    "mode": "event-modeling"
+  },
+  {
+    "id": "abb55124-9e08-44d0-8131-b27d4b7d3a36",
+    "name": "Astrologers",
+    "index": 1,
+    "context": "Astrologers",
+    "mode": "event-modeling"
+  },
+  {
+    "id": "3f5aa883-08b1-4c94-88de-cb7e4398b9cb",
+    "name": "Creature Recruitment",
+    "index": 2,
+    "context": "Creature Recruitment",
+    "mode": "event-modeling"
+  },
+  {
+    "id": "c38978e2-cdd3-4fc8-915d-51cf607124e3",
+    "name": "Wandering Creatures",
+    "index": 3,
+    "context": "Adventure Map",
+    "mode": "event-modeling"
+  }
+]
