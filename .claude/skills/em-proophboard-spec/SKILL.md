@@ -1,5 +1,5 @@
 ---
-name: em-proophboard-design
+name: em-proophboard-spec
 description: "Work with proophboard Event Modeling boards via MCP. Read, create, and modify event models — chapters, lanes, slices, and elements (commands, events, information, automations, UI, hotspots). Use when: (1) user asks to read, explore, or understand an event model on proophboard, (2) user asks to create or modify chapters, slices, or elements on the board, (3) user asks to model a feature, flow, or bounded context using Event Modeling, (4) user says 'proophboard', 'event model', 'board', 'add slice to board', 'model this on proophboard', 'update the board', (5) translating between code and event model (syncing implementation status with board slices)."
 ---
 
