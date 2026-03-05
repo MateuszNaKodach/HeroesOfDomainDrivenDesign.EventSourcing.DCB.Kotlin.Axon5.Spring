@@ -9,14 +9,28 @@ Work with proophboard boards via MCP to read, create, and modify event models.
 
 ## Before You Start
 
-1. Call `mcp__proophboard__list_workspaces` to get the `workspace_id`
-2. Call `mcp__proophboard__list_chapters` to discover available chapters
-3. Call `mcp__proophboard__get_chapter` to load full chapter structure (lanes, slices, elements)
+### 1. Resolve Workspace ID
+Read `.proophboard/workspace.json` from the repository root.
+- **If the file exists**: use the `workspace_id` from it.
+- **If the file does not exist**:
+  1. Call `mcp__proophboard__list_workspaces` to list all available workspaces
+  2. Ask the user which workspace to use via `AskUserQuestion` (present workspace names as options)
+  3. Write the selected workspace to `.proophboard/workspace.json`:
+     ```json
+     {
+       "workspace_id": "<selected-id>",
+       "workspace_name": "<selected-name>"
+     }
+     ```
+
+### 2. Load Chapter Context
+1. Call `mcp__proophboard__list_chapters` to discover available chapters
+2. Call `mcp__proophboard__get_chapter` to load full chapter structure (lanes, slices, elements)
 
 Always `get_chapter` before any modifications — all update operations require current `old_*` values.
 
 For Event Modeling conventions and rules, read [references/guidelines.md](references/guidelines.md).
-For the full MCP API with all parameters, read [references/api-reference.md](references/api-reference.md).
+For MCP API parameters, use ToolSearch to discover `mcp__proophboard__*` tools on demand.
 
 ## Core Concepts
 
@@ -54,7 +68,7 @@ Connections are drawn automatically when elements are placed correctly:
 ## Workflows
 
 ### Read an Event Model
-1. `list_workspaces` → pick workspace
+1. Resolve workspace (see "Before You Start")
 2. `list_chapters` → pick chapter
 3. `get_chapter` → full structure with all lanes, slices, elements
 4. Present to user organized by slices (steps), showing the flow
@@ -102,4 +116,4 @@ Use `search_elements` to find elements by name or type across all chapters:
 
 ## References
 - **[references/guidelines.md](references/guidelines.md)** — Full Event Modeling guidelines from proophboard (element colors, flow patterns, best practices, freestyle mode)
-- **[references/api-reference.md](references/api-reference.md)** — Complete MCP API with all tool parameters
+- **MCP tools** — Use ToolSearch with `+proophboard` to discover tools and their parameters on demand
