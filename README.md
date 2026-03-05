@@ -40,6 +40,33 @@ Caused by: java.util.concurrent.ExecutionException: io.grpc.StatusRuntimeExcepti
 Thanks to that, you will be able to browse stored events in the Axon Server UI and see the attached tags to each of them.
 ![AxonServer_EventStore_Search.png](.github/images/AxonServer_EventStore_Search.png)
 
+## Conventions
+
+In this project, **Event Modeling** guidelines are implemented through a **Vertical Slice Architecture** using **Axon Framework 5** and **Kotlin**. Each feature is organized into a self-contained "slice" (typically a single file named `FeatureName.Slice.kt`) following these core principles:
+
+### 1. Write Slices (Command → Event → State)
+*   **Pattern:** `Command` (Blue) triggers a `decide()` function, which produces `Events` (Orange). These events are then used by an `evolve()` function to reconstruct the `State` (Green).
+*   **Pure Functions:** `decide(command, state)` handles business logic and validation, while `evolve(state, event)` handles state transitions. Both are side-effect-free.
+*   **Consistency Boundaries:** Defined using **Event Tags** (e.g., `DWELLING_ID`). The `@EventSourced` entity manages these boundaries.
+*   **Testing:** Verified using unit tests with the `AxonTestFixture` DSL (`Given { events } When { command } Then { expectedEvents }`).
+
+### 2. Read Slices (Event → Read Model → Query)
+*   **Pattern:** `Events` (Orange) are handled by a **Projector** that updates a **Read Model** (Green, typically a JPA entity). A **Query Handler** then retrieves data from this model.
+*   **Testing:** Integration tests ensure that publishing events correctly updates the read model and that queries return the expected data.
+
+### 3. Automation Slices (Event → Command)
+*   **Pattern:** An `Event` (Orange) triggers a **Processor** that dispatches a new `Command` (Blue).
+*   **Types:**
+    *   **Stateless:** Direct mapping from event data to a command.
+    *   **With Read Model:** Uses a private, slice-specific read model to look up data needed to construct the command.
+*   **Dispatching:** Uses `CommandDispatcher` (method-injected) to ensure proper coordination within the message processing context.
+
+### 4. Key Implementation Conventions
+*   **Value Objects:** Domain concepts (like `Day`, `Gold`, `Quantity`) are wrapped in Kotlin `value class` types with validation in `init` blocks to enforce invariants at construction time.
+*   **Feature Flags:** Every slice is toggled via `@ConditionalOnProperty`, requiring entries in `application.yaml` and Spring metadata.
+*   **Commit Style:** Follows a strict format: `✨ feat: <BoundedContext> | <slice type>: <Command/Event Flow>`.
+
+
 ## 🧱 Modules
 
 Modules (mostly designed using Bounded Context heuristic) are designed and documented on EventModeling below.
