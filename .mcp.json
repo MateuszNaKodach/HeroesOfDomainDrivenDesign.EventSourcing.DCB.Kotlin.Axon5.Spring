@@ -2,10 +2,7 @@
   "mcpServers": {
     "proophboard": {
       "type": "http",
-      "url": "https://flow.prooph-board.com/mcp",
-      "headers": {
-        "Authorization": "Bearer ${PROOPHBOARD_AUTH_TOKEN}"
-      }
+      "url": "https://flow.prooph-board.com/mcp"
     }
   }
 }
