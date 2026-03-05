@@ -44,3 +44,5 @@ slices:
     enabled: true
   calendar.write.startday:
     enabled: true
+  calendar.write.finishday:
+    enabled: true

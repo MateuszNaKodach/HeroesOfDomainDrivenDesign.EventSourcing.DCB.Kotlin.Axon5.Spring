@@ -22,3 +22,5 @@ slices:
     enabled: false
   calendar.write.startday:
     enabled: false
+  calendar.write.finishday:
+    enabled: false

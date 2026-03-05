@@ -156,6 +156,8 @@ value class Day(val raw: Int) {
     init {
         require(raw in 1..7) { "Day must be between 1 and 7, got $raw" }
     }
+    val isLast: Boolean get() = raw == 7
+    fun next(): Day = Day((raw % 7) + 1)
 }
 ```
 
@@ -165,15 +167,16 @@ value class Day(val raw: Int) {
 - The same concept appears in command, event, and state — a value class avoids duplicating validation
 - Using primitives would allow invalid states (e.g. `day = 99`)
 
+**Add domain operations (`next()`, `isLast`, etc.) to value classes** so that `decide()` works entirely with value
+objects and never unwraps to `.raw`. The `decide()` function is pure domain logic — it should speak the domain language,
+not escape to primitives. Reserve `.raw` for boundaries: REST layer, cross-BC mapping, serialization.
+
 **Where to place them:**
 
 - In the bounded context's write package (e.g. `calendar.write.Day`) by default
 - Move to `shared.domain.valueobjects` only when 3+ bounded contexts use them — same threshold as `Resources`/`Quantity`
 - Generic names (`Day`, `Week`, `Month`) risk collisions across BCs with different semantics, so keep them scoped until
   reuse is proven
-
-**Using value classes in `decide()`:** Access the raw value via `.raw` for arithmetic and comparisons, then wrap results
-back into value classes when constructing events.
 
 ## Step 4: Ensure Events Exist
 

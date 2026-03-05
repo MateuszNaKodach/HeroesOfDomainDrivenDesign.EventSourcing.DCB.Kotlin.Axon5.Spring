@@ -1,4 +1,4 @@
-package com.dddheroes.heroesofddd.calendar.write.startday
+package com.dddheroes.heroesofddd.calendar.write.finishday
 
 import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.calendar.events.CalendarEvent
@@ -36,7 +36,7 @@ import java.util.concurrent.CompletableFuture
 ////////// Domain
 ///////////////////////////////////////////
 
-data class StartDay(
+data class FinishDay(
     @get:JvmName("getCalendarId")
     val calendarId: CalendarId,
     val month: Month,
@@ -48,44 +48,25 @@ private data class State(
     val currentMonth: Month?,
     val currentWeek: Week?,
     val currentDay: Day?,
-    val lastMonth: Month?,
-    val lastWeek: Week?,
-    val lastDay: Day?,
 )
 
-private val initialState = State(
-    currentMonth = null, currentWeek = null, currentDay = null,
-    lastMonth = null, lastWeek = null, lastDay = null
-)
+private val initialState = State(currentMonth = null, currentWeek = null, currentDay = null)
 
-private fun decide(command: StartDay, state: State): List<HeroesEvent> {
-    if (state.lastDay == null || state.lastWeek == null || state.lastMonth == null) {
-        return listOf(
-            DayStarted(
-                calendarId = command.calendarId,
-                month = command.month,
-                week = command.week,
-                day = command.day
-            )
-        )
+private fun decide(command: FinishDay, state: State): List<HeroesEvent> {
+    if (state.currentDay == null || state.currentWeek == null || state.currentMonth == null) {
+        throw IllegalStateException("Can only finish current day")
     }
 
-    val lastDay = state.lastDay
-    val lastWeek = state.lastWeek
-    val lastMonth = state.lastMonth
+    val isCurrentDay = command.month == state.currentMonth
+            && command.week == state.currentWeek
+            && command.day == state.currentDay
 
-    val expectedDay = lastDay.next()
-    val weekRollover = lastDay.isLast
-    val expectedWeek = if (weekRollover) lastWeek.next() else lastWeek
-    val monthRollover = weekRollover && lastWeek.isLast
-    val expectedMonth = if (monthRollover) lastMonth.next() else lastMonth
-
-    if (command.day != expectedDay || command.week != expectedWeek || command.month != expectedMonth) {
-        throw IllegalStateException("Cannot skip days")
+    if (!isCurrentDay) {
+        throw IllegalStateException("Can only finish current day")
     }
 
     return listOf(
-        DayStarted(
+        DayFinished(
             calendarId = command.calendarId,
             month = command.month,
             week = command.week,
@@ -98,10 +79,7 @@ private fun evolve(state: State, event: CalendarEvent): State = when (event) {
     is DayStarted -> state.copy(
         currentMonth = event.month,
         currentWeek = event.week,
-        currentDay = event.day,
-        lastMonth = event.month,
-        lastWeek = event.week,
-        lastDay = event.day
+        currentDay = event.day
     )
 
     is DayFinished -> state.copy(
@@ -109,37 +87,35 @@ private fun evolve(state: State, event: CalendarEvent): State = when (event) {
         currentWeek = null,
         currentDay = null
     )
-
-    else -> state
 }
 
 ////////////////////////////////////////////
 ////////// Application
 ///////////////////////////////////////////
 
-@ConditionalOnProperty(prefix = "slices.calendar", name = ["write.startday.enabled"])
+@ConditionalOnProperty(prefix = "slices.calendar", name = ["write.finishday.enabled"])
 @EventSourced(tagKey = EventTags.CALENDAR_ID)
-private class StartDayEventSourcedState private constructor(val state: State) {
+private class FinishDayEventSourcedState private constructor(val state: State) {
 
     @EntityCreator
     constructor() : this(initialState)
 
     @EventSourcingHandler
-    fun evolve(event: DayStarted) = StartDayEventSourcedState(evolve(state, event))
+    fun evolve(event: DayStarted) = FinishDayEventSourcedState(evolve(state, event))
 
     @EventSourcingHandler
-    fun evolve(event: DayFinished) = StartDayEventSourcedState(evolve(state, event))
+    fun evolve(event: DayFinished) = FinishDayEventSourcedState(evolve(state, event))
 }
 
-@ConditionalOnProperty(prefix = "slices.calendar", name = ["write.startday.enabled"])
+@ConditionalOnProperty(prefix = "slices.calendar", name = ["write.finishday.enabled"])
 @Component
-private class StartDayCommandHandler {
+private class FinishDayCommandHandler {
 
     @CommandHandler
     fun handle(
-        command: StartDay,
+        command: FinishDay,
         metadata: AxonMetadata,
-        @InjectEntity(idProperty = EventTags.CALENDAR_ID) eventSourced: StartDayEventSourcedState,
+        @InjectEntity(idProperty = EventTags.CALENDAR_ID) eventSourced: FinishDayEventSourcedState,
         eventAppender: EventAppender
     ): CommandHandlerResult = resultOf {
         val events = decide(command, eventSourced.state)
@@ -153,21 +129,21 @@ private class StartDayCommandHandler {
 ////////// Presentation
 ///////////////////////////////////////////
 
-@ConditionalOnProperty(prefix = "slices.calendar", name = ["write.startday.enabled"])
+@ConditionalOnProperty(prefix = "slices.calendar", name = ["write.finishday.enabled"])
 @RestController
 @RequestMapping("games/{gameId}")
-private class StartDayRestApi(private val commandGateway: CommandGateway) {
+private class FinishDayRestApi(private val commandGateway: CommandGateway) {
 
     data class Body(val month: Int, val week: Int, val day: Int)
 
-    @PostMapping("/calendars/{calendarId}/days")
-    fun postStartDay(
+    @PostMapping("/calendars/{calendarId}/days/finish")
+    fun postFinishDay(
         @RequestHeader(Headers.PLAYER_ID) playerId: String,
         @PathVariable gameId: String,
         @PathVariable calendarId: String,
         @RequestBody requestBody: Body
     ): CompletableFuture<ResponseEntity<Any>> {
-        val command = StartDay(
+        val command = FinishDay(
             calendarId = CalendarId(calendarId),
             month = Month(requestBody.month),
             week = Week(requestBody.week),
