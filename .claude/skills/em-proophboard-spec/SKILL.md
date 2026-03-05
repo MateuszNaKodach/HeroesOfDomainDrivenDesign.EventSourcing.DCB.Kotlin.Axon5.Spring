@@ -58,6 +58,22 @@ Chapter (a user journey / business process path)
 
 **Never place commands and information in the same slice.**
 
+### Business Rules Placement (STRICT)
+- **Do NOT use HotSpots for business rules.** HotSpots are for open questions, bottlenecks, and unresolved issues only.
+- Business rules, validation constraints, and invariants belong in the **command's `details` field** alongside Example and JSON Schema.
+
+### Cross-Chapter Triggers (STRICT)
+- When a write slice is triggered by events from **another chapter** (e.g., an automation in Creature Recruitment dispatches a command to Armies), do **NOT** add an Automation or UI element on the write slice in this chapter.
+- The triggering context is modeled in the **other** chapter, not this one. This chapter only shows the command, event, and resulting state.
+
+### Write-Read Slice Ordering (STRICT)
+- Every write slice should be followed by a read slice so that events auto-connect to information via orange arrows.
+- Standard chapter pattern: **Write → Read → Write → Read → ...**
+- This ensures every event visibly feeds a read model on the board.
+
+### Shared UI Naming
+- When a UI element serves as both a read view and a trigger for a subsequent write slice, use the **same name** on both slices (e.g., "Army Creatures" on the read slice UI and the next write slice UI) to indicate they represent the same screen.
+
 ### Automatic Arrows (no manual wiring needed)
 Connections are drawn automatically when elements are placed correctly:
 - UI/Automation → Command (same slice)
@@ -96,7 +112,8 @@ Before creating anything, **plan the full chapter structure**:
 1. `add_chapter` with name and mode (`event-modeling`)
 2. This creates default lanes (user-lane, information-flow, system) and initial slices
 3. Rename lanes to match actual user roles and system contexts
-4. Add slices for each step in the flow
+4. Add/rename/remove slices for each step in the flow (Write → Read → Write → Read pattern)
+5. **Verify ordering**: call `get_chapter` after adding slices — new slices may not insert at the expected index. Use `reorder_slices` to fix ordering **before** placing any elements.
 
 ### Add a Write Slice (Command → Event)
 1. `get_chapter` to find lane IDs
