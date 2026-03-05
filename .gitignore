@@ -34,3 +34,6 @@ build/
 
 ### Docker volumes ###
 /volumes/
+
+### AI
+CLAUDE.local.md
