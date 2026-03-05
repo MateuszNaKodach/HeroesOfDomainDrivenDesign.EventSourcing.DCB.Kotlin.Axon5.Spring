@@ -1,5 +1,5 @@
 ---
-name: axon5-write-slice-implementation
+name: em2code-axon5-write-slice
 description: >
   Implement Event Sourcing write slices using Axon Framework 5, Vertical Slice Architecture, and
   Event Modeling patterns. A write slice is: Command to decide to Events to evolve to State.
