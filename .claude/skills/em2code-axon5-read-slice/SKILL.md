@@ -28,6 +28,8 @@ Look for:
 
 ## Step 1: Implement the Read Slice
 
+If the Event Modeling artifact includes slice details with `## Scenarios (GWTs)`, use them to derive test cases. Read slice GWT pattern: `Given (events) → Then (information)` — no When block. Events in Given tell you which events the projector must handle. The information element in Then describes the expected query result shape and values.
+
 A read slice file contains all layers in a single file. **Do NOT add section comments** (Domain/Application/Presentation)
 for read slices — those are only for write slices.
 
@@ -122,6 +124,19 @@ Cover these scenarios (adapt to specific slice):
 6. **Deletion**: Entity added then fully removed → disappears from query result
 7. **Isolation**: Multiple entities exist → query returns only matching ones (by ID, game, etc.)
 8. **Lifecycle**: Full sequence of events reflecting real usage
+
+### Mapping Event Model GWT Scenarios to Tests
+
+When the slice details contain `## Scenarios (GWTs)`, map each scenario to a test method:
+
+| GWT Element | Test Code |
+|---|---|
+| `NOTHING` in Given | `When { nothing() } Then { expect { ... empty result ... } }` (synchronous) |
+| `:::element event` in Given | `Given { event(EventClass(...), gameMetadata) }` |
+| Multiple `:::element event` in Given | Multiple `event(...)` calls in `Given { }` block |
+| `:::element information` in Then | `Then { awaitAndExpect { cfg -> assertThat(queryResult.field).isEqualTo(value) } }` |
+
+Properties in `:::element` blocks are rule-relevant only — fill remaining constructor params with test fixture values.
 
 ## Step 3: Implement the Spring Slice Test
 

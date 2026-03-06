@@ -46,6 +46,8 @@ Extract these elements regardless of input format:
 | **Metadata**           | Which metadata keys to propagate from event to command                 |
 | **Read model needed?** | Does the automation need to look up data not in the event itself?      |
 
+If the Event Modeling artifact includes slice details with `## Scenarios (GWTs)`, use them to derive test cases. Automation GWT pattern: `Given (events) → Then (command | hotspot | NOTHING)` — no When block. Events in Given include read-model-building events first, trigger event last. Command in Then is the dispatched command. Hotspot or NOTHING means no command dispatched.
+
 ### Stateless vs With Read Model Decision
 
 Choose **with read model** when:
@@ -365,6 +367,20 @@ fixture.Scenario {
 1. **Happy path**: Build read model entries + trigger event -> commands for matching entries only
 2. **Non-matching entries**: Build entries of different types + trigger for one type -> only matching type gets commands
 3. **Temporal ordering**: Build some entries, trigger, build more entries, trigger again -> each trigger only affects entries that existed at that point
+
+### Mapping Event Model GWT Scenarios to Tests
+
+When the slice details contain `## Scenarios (GWTs)`, map each scenario to a test method:
+
+| GWT Element | Test Code |
+|---|---|
+| `:::element event` in Given | `Given { event(EventClass(...), gameMetadata) }` |
+| Multiple events in Given | Multiple `event(...)` calls — read-model-building events first, trigger event last |
+| `:::element command` in Then | `Then { await({ it.commands(expectedCommand) }) }` |
+| `:::element hotspot` in Then | `Then { await({ it.noCommands() }) }` — exception/failure |
+| `NOTHING` in Then | `Then { await({ it.noCommands() }) }` — no reaction |
+
+Properties in `:::element` blocks are rule-relevant only — fill remaining constructor params with test fixture values.
 
 ## References
 

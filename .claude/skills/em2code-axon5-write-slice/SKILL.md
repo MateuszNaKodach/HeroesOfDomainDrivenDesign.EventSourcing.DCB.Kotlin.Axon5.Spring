@@ -53,6 +53,12 @@ Analyze test file to understand expected behavior: commands sent, events asserte
 
 The write slice (blue stripe) shows: Command on left, Events on right, State (read model) below.
 
+**Optionally**, the slice details may contain:
+- `## Business Rules` — invariants and preconditions for `decide()` implementation
+- `## Scenarios (GWTs)` — Given-When-Then acceptance criteria using `:::element` blocks
+
+When GWT scenarios are present, each numbered scenario (e.g., `### 1. build for the first time`) maps 1:1 to a test method. Properties in `:::element` blocks are **only rule-relevant** — fill remaining constructor params with test fixture values (random IDs, hardcoded domain values).
+
 ### Input: Axon Framework 4 Code
 
 Read the AF4 source: command class, aggregate class, events, domain rules, REST API.
@@ -215,6 +221,37 @@ Cover these scenarios:
 - **Idempotency**: duplicate command produces no events
 - **Rule violations**: invalid state returns `CommandHandlerResult.Failure`
 - **State transitions**: prior events change behavior
+
+#### Mapping Event Model GWT Scenarios to Tests
+
+When the slice details contain `## Scenarios (GWTs)`, map each scenario to a test method:
+
+| GWT Element | Test Code |
+|---|---|
+| Scenario name (e.g., `### 1. build for the first time`) | Test method name: `` `given not built dwelling, when build, then built` `` |
+| `NOTHING` in Given | `noPriorActivity()` |
+| `:::element event` in Given | `event(EventClass(...))` in `Given { }` block |
+| `:::element command` in When | `command(CommandClass(...), gameMetadata)` in `When { }` block |
+| `:::element event` in Then | `events(EventClass(...))` + `resultMessagePayload(Success)` |
+| `:::element hotspot` in Then | `resultMessagePayload(Failure("message"))` |
+| Failure event in Then (e.g., `PaymentRejected`) | `events(PaymentRejected(...))` — domain failure event, not exception |
+| `NOTHING` in Then | `noEvents()` + `resultMessagePayload(Success)` — idempotent |
+
+**Property mapping**: GWT properties are rule-relevant only. Fill remaining constructor params with test fixtures.
+
+Example — GWT scenario "try to build already built" shows only `dwellingId: portal-of-glory`:
+```kotlin
+// GWT has dwellingId only — creatureId and costPerTroop are test fixtures
+val dwellingId = DwellingId.random()
+val creatureId = CreatureId("angel")          // not in GWT, fixture value
+val costPerTroop = Resources.of(...)          // not in GWT, fixture value
+
+Given { events(DwellingBuilt(dwellingId, creatureId, costPerTroop)) }
+When  { command(BuildDwelling(dwellingId, creatureId, costPerTroop)) }
+Then  { resultMessagePayload(Success); noEvents() }
+```
+
+When the same property value appears in Given and When (e.g., `dwellingId: portal-of-glory`), use the same variable to make the relationship explicit.
 
 ### 6b. REST API Tests (presentation layer)
 

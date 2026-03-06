@@ -149,7 +149,7 @@ After the flow structure is modeled and validated, enrich elements with details:
 1. **Element description with properties** (optional): Add property names with example values or types directly in the element description via `update_element_description`. This makes properties visible on the board card itself. **Ask the user** whether to add description properties — it's not required.
 2. **Element details**: Add detailed descriptions, JSON examples, JSON Schema, validation rules, and business rules via `update_element_details` / `update_element_description`
 3. **UI mockups**: Add ASCII mockups to the `details` field of UI elements
-4. **Slice details**: Add user stories and Given-When-Then scenarios to slice details via `update_slice_details`
+4. **Slice details**: Add business rules and Given-When-Then scenarios to slice details via `update_slice_details` (see [Slice GWT Scenarios](#slice-gwt-scenarios) below)
 
 #### Element Description Properties (Optional)
 
@@ -176,6 +176,119 @@ costPerTroop: {gold: 3000, gems: 1}
 - Use `uuid` as a type hint for identifiers
 - This is **optional** — always ask the user if they want properties added to element descriptions
 - Keep it concise — this is a summary, not a full schema (use `details` for that)
+
+#### Slice GWT Scenarios (Optional)
+
+Slice details (set via `update_slice_details`) can contain Given-When-Then scenarios — executable acceptance criteria that map directly to test methods. This is **optional** — ask the user whether to add GWT scenarios when documenting slices.
+
+Use [references/SLICE_DOCUMENTATION.md](references/SLICE_DOCUMENTATION.md) as the starting template when a slice has no documentation.
+
+**Element block syntax** inside GWT scenarios:
+```
+:::element <type>
+<Element Name>
+<optional key: value properties — only rule-relevant>
+:::
+```
+Where `<type>` is: `command`, `event`, `information`, `hotspot`, `automation`.
+
+**Key principle**: Only include properties that are **relevant to the business rule** being tested. E.g., BuildDwelling idempotency scenario only shows `dwellingId` (the uniqueness key) — `creatureId` and `costPerTroop` are omitted because they don't influence the rule.
+
+##### GWT Patterns by Slice Type
+
+**Write slice** — `Given (events) → When (command) → Then (events | hotspot | NOTHING)`:
+
+```markdown
+## Business Rules
+
+<!-- WILL BE DERIVED FROM GWT Scenarios -->
+- Dwelling can only be built once (idempotent)
+
+## Scenarios (GWTs)
+
+### 1. build for the first time
+
+**Given**
+NOTHING
+**When**
+:::element command
+Build Dwelling
+:::
+**Then**
+:::element event
+Dwelling Built
+:::
+
+### 2. try to build already built
+
+**Given**
+:::element event
+Dwelling Built
+dwellingId: portal-of-glory
+:::
+**When**
+:::element command
+Build Dwelling
+dwellingId: portal-of-glory
+:::
+**Then**
+NOTHING
+```
+
+**Read slice** — `Given (events) → Then (information)` — no When block:
+
+```markdown
+## Scenarios (GWTs)
+
+### 1. given creatures added, then show army
+
+**Given**
+:::element event
+Creature Added To Army
+creatureId: Angel
+quantity: 5
+:::
+**Then**
+:::element information
+Army Creatures
+stacks: [{creatureId: Angel, quantity: 5}]
+:::
+```
+
+**Automation** — `Given (events) → Then (command | hotspot | NOTHING)` — no When block:
+
+```markdown
+## Scenarios (GWTs)
+
+### 1. when week symbol proclaimed, increase available creatures
+
+**Given**
+:::element event
+Week Symbol Proclaimed
+:::
+**Then**
+:::element command
+Increase Available Creatures
+:::
+```
+
+##### Failure / Rejection in Then
+
+Two forms:
+- **Hotspot** — exception or broken business rule:
+  ```
+  :::element hotspot
+  Exception
+  Can have max 7 different creature stacks in the army
+  :::
+  ```
+- **Failure event** — an explicit domain event representing a rejected outcome (e.g., `PaymentRejected`). This is a valid event, not an exception — model it as `:::element event`.
+
+##### NOTHING Keyword
+
+Use `NOTHING` for:
+- **Empty Given** — no prior events (fresh state)
+- **Empty Then** — no events produced (idempotent write) or no command dispatched (automation doesn't react)
 
 #### Element Details Format
 
