@@ -52,6 +52,8 @@ Determine the **bounded context** for each slice from the lane that holds its ke
 
 If the chapter has only one `system` lane, all slices share that context.
 
+**Element similarity:** In proophboard, elements with the same `name`, `type`, and `context` are considered **similar** — they represent the same concept even if they appear in different slices or chapters. The board uses copies to keep processes visually clean, but similar elements share documentation and identity. Keep this in mind when classifying slices — similar elements across slices indicate the same logical element.
+
 Extract the message flow from elements:
 - **Write**: `CommandName` → `EventName(s)`
 - **Read**: (`EventName(s)`) → `InformationName`
@@ -102,6 +104,17 @@ Column details:
 
 After the table, add a brief **Summary** listing counts: how many slices implemented, how many with tests, how many missing.
 
-### 7. Deduplicate Read Slices
+### 7. Deduplicate Similar Slices
 
-If multiple board slices map to the same implementation file (e.g., multiple "View Dwelling" read slices served by one projection), note this — show each board slice as its own row but indicate shared implementation.
+Before outputting the table, merge slices that are logically the same using proophboard's **element similarity** rules:
+
+- **Elements are similar** when they share the same `name`, `type`, AND `context`.
+- **Slices are the same** when they have the same slice `label` (name) AND all their elements are similar (same name+type+context across both slices).
+
+The same element can appear in multiple slices/chapters as a copy — proophboard favors copies to keep processes clean, but similar elements represent the same concept.
+
+When duplicate slices are found:
+1. **Merge them into a single row** in the output table.
+2. **Combine their input events** — e.g., if one copy of a read slice follows a `DayStarted` event and another follows `DayFinished`, the merged row should show both: `(DayStarted, DayFinished) → Current Day`.
+3. **Use the lowest slice index** as the `#` for the merged row.
+4. This applies to **all slice types** (write, read, automation), not just read slices.
