@@ -30,6 +30,24 @@ springdoc:
     docExpansion: none
   use-fqn: true
 
+cors:
+  allowed-origin-patterns:
+    - "*"
+  # To restrict to specific origins, replace "*" with your frontend URLs:
+  # allowed-origin-patterns:
+  #   - "http://localhost:5173"
+  #   - "https://yourdomain.com"
+  allowed-methods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - PATCH
+    - OPTIONS
+  allowed-headers:
+    - "*"
+  allow-credentials: true
+
 axon:
   axonserver:
     context: default

@@ -1,8 +1,10 @@
 package com.dddheroes.extensions.webmvc.test
 
+import com.dddheroes.heroesofddd.SecurityConfiguration
 import io.restassured.module.mockmvc.RestAssuredMockMvc
 import org.springframework.beans.factory.getBean
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.context.annotation.Import
 import org.springframework.core.annotation.AliasFor
 import org.springframework.test.context.TestContext
 import org.springframework.test.context.TestExecutionListener
@@ -53,6 +55,7 @@ class RestAssuredMockMvcSetupListener : TestExecutionListener {
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 @WebMvcTest
+@Import(SecurityConfiguration::class) // project specific
 @TestExecutionListeners(
     listeners = [RestAssuredMockMvcSetupListener::class],
     mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
