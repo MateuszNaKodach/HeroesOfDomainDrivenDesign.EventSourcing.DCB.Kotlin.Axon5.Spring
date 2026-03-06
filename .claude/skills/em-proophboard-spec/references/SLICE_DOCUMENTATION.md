@@ -1,3 +1,5 @@
+<!-- IMPORTANT: `··` in :::element blocks marks where two trailing spaces MUST be added. Replace `··` with real spaces when writing to proophboard. -->
+
 ## Business Rules
 
 <!-- WILL BE DERIVED FROM GWT Scenarios -->
@@ -10,21 +12,21 @@
 
 **Given**
 :::element event
-Event Name
-property1: value
-quantity2: value
+Event Name··
+property1: value··
+quantity2: value··
 :::
 **When**
 :::element command
-Command Name
-property1: value
-quantity2: value
+Command Name··
+property1: value··
+quantity2: value··
 :::
 **Then**
 :::element event
-Event Name
-property1: value
-quantity2: value
+Event Name··
+property1: value··
+quantity2: value··
 :::
 
 

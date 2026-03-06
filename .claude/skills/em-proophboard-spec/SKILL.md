@@ -186,13 +186,15 @@ Use [references/SLICE_DOCUMENTATION.md](references/SLICE_DOCUMENTATION.md) as th
 **Element block syntax** inside GWT scenarios:
 ```
 :::element <type>
-<Element Name>
-<optional key: value properties — only rule-relevant>
+<Element Name>··
+<optional key: value properties — only rule-relevant>··
 :::
 ```
 Where `<type>` is: `command`, `event`, `information`, `hotspot`, `automation`.
 
-**IMPORTANT — Trailing double spaces**: End **every line** inside `:::element` blocks with **two trailing spaces** (`  `) to force markdown line breaks. This includes the element name and each property line. Without trailing spaces, all lines render on a single line on proophboard.
+**CRITICAL — Trailing double spaces**: End **every line** inside `:::element` blocks with **two trailing spaces** to force markdown line breaks. This includes the element name, each property line, and description lines. Without trailing spaces, all lines render on a single line on proophboard. This is the **most common mistake** — always double-check before submitting to proophboard.
+
+In the examples below, `··` at end of line marks where two trailing spaces MUST be added. The actual content sent to proophboard must use real spaces, not the `··` marker.
 
 **Key principle**: Only include properties that are **relevant to the business rule** being tested. E.g., BuildDwelling idempotency scenario only shows `dwellingId` (the uniqueness key) — `creatureId` and `costPerTroop` are omitted because they don't influence the rule.
 
@@ -214,24 +216,24 @@ Where `<type>` is: `command`, `event`, `information`, `hotspot`, `automation`.
 NOTHING
 **When**
 :::element command
-Build Dwelling
+Build Dwelling··
 :::
 **Then**
 :::element event
-Dwelling Built
+Dwelling Built··
 :::
 
 ### 2. try to build already built
 
 **Given**
 :::element event
-Dwelling Built
-dwellingId: portal-of-glory
+Dwelling Built··
+dwellingId: portal-of-glory··
 :::
 **When**
 :::element command
-Build Dwelling
-dwellingId: portal-of-glory
+Build Dwelling··
+dwellingId: portal-of-glory··
 :::
 **Then**
 NOTHING
@@ -246,14 +248,14 @@ NOTHING
 
 **Given**
 :::element event
-Creature Added To Army
-creatureId: Angel
-quantity: 5
+Creature Added To Army··
+creatureId: Angel··
+quantity: 5··
 :::
 **Then**
 :::element information
-Army Creatures
-stacks: [{creatureId: Angel, quantity: 5}]
+Army Creatures··
+stacks: [{creatureId: Angel, quantity: 5}]··
 :::
 ```
 
@@ -266,11 +268,11 @@ stacks: [{creatureId: Angel, quantity: 5}]
 
 **Given**
 :::element event
-Week Symbol Proclaimed
+Week Symbol Proclaimed··
 :::
 **Then**
 :::element command
-Increase Available Creatures
+Increase Available Creatures··
 :::
 ```
 
