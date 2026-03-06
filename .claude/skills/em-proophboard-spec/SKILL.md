@@ -192,6 +192,8 @@ Use [references/SLICE_DOCUMENTATION.md](references/SLICE_DOCUMENTATION.md) as th
 ```
 Where `<type>` is: `command`, `event`, `information`, `hotspot`, `automation`.
 
+**IMPORTANT — Trailing double spaces**: End **every line** inside `:::element` blocks with **two trailing spaces** (`  `) to force markdown line breaks. This includes the element name and each property line. Without trailing spaces, all lines render on a single line on proophboard.
+
 **Key principle**: Only include properties that are **relevant to the business rule** being tested. E.g., BuildDwelling idempotency scenario only shows `dwellingId` (the uniqueness key) — `creatureId` and `costPerTroop` are omitted because they don't influence the rule.
 
 ##### GWT Patterns by Slice Type
@@ -349,7 +351,7 @@ Example of details for a command element:
 
 **Guidelines for element details:**
 - Event modeling typically happens **before code exists** — propose domain-meaningful example values and ask the user to confirm or adjust before writing
-- In the less common case where code/tests already exist, derive example values from them for consistency
+- In the less common case where code/tests already exist, derive example values from them for consistency. Read value objects and event classes to understand the full data shape — unwrap `value class` / `@JvmInline` wrappers to their raw type, and flatten nested data classes (e.g., `MonthWeek(month, week)` becomes separate `month` and `week` fields in JSON)
 - Use meaningful IDs (e.g., `"portal-of-glory"` not `"uuid-123"`)
 - JSON Schema should match the intended data structure (value classes unwrap to their raw type)
 - When updating details, always pass the **complete new content** to `update_element_details` — partial string replacements cause conflicts on proophboard
