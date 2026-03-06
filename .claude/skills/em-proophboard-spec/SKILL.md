@@ -146,9 +146,36 @@ When modifying an existing model, follow these rules strictly:
 
 After the flow structure is modeled and validated, enrich elements with details:
 
-1. **Element details**: Add short descriptions, list of properties with data types, validation rules, and business rules via `update_element_details` / `update_element_description`
-2. **UI mockups**: Add ASCII mockups to the `details` field of UI elements
-3. **Slice details**: Add user stories and Given-When-Then scenarios to slice details via `update_slice_details`
+1. **Element description with properties** (optional): Add property names with example values or types directly in the element description via `update_element_description`. This makes properties visible on the board card itself. **Ask the user** whether to add description properties — it's not required.
+2. **Element details**: Add detailed descriptions, JSON examples, JSON Schema, validation rules, and business rules via `update_element_details` / `update_element_description`
+3. **UI mockups**: Add ASCII mockups to the `details` field of UI elements
+4. **Slice details**: Add user stories and Given-When-Then scenarios to slice details via `update_slice_details`
+
+#### Element Description Properties (Optional)
+
+Element descriptions can list properties with example values or types. These are shown directly on the board card, making the data shape visible at a glance. Use `update_element_description` to set this.
+
+**Format**: each property on its own line. End each line with **two trailing spaces** (`  `) to force a line break in markdown.
+
+Example for a "Build Dwelling" command:
+```
+dwellingId: uuid
+creatureId: Angel
+costPerTroop: {gold: 3000, gems: 1}
+```
+
+Example for a "Dwelling Built" event:
+```
+dwellingId: uuid
+creatureId: Angel
+costPerTroop: {gold: 3000, gems: 1}
+```
+
+**Guidelines:**
+- Use domain-meaningful example values (e.g., `Angel` not `string`, `{gold: 3000, gems: 1}` not `object`)
+- Use `uuid` as a type hint for identifiers
+- This is **optional** — always ask the user if they want properties added to element descriptions
+- Keep it concise — this is a summary, not a full schema (use `details` for that)
 
 #### Element Details Format
 
