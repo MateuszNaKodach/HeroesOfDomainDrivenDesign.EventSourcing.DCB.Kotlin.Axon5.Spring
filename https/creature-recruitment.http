@@ -50,4 +50,4 @@ Content-Type: application/json
 
 ### GetArmyCreatures
 GET http://localhost:{{serverPort}}/games/{{gameId}}/armies/{{armyId}}/creatures
-
+Content-Type: application/json

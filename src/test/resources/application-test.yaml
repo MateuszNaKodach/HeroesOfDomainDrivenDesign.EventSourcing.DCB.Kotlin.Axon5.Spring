@@ -24,3 +24,7 @@ slices:
     enabled: false
   calendar.write.finishday:
     enabled: false
+  armies.read.getarmycreatures:
+    enabled: false
+  astrologers.read.getweeksymbol:
+    enabled: false
