@@ -136,15 +136,14 @@ private class FinishDayRestApi(private val commandGateway: CommandGateway) {
 
     data class Body(val month: Int, val week: Int, val day: Int)
 
-    @PostMapping("/calendars/{calendarId}/days/finish")
+    @PostMapping("/calendar/days/finish")
     fun postFinishDay(
         @RequestHeader(Headers.PLAYER_ID) playerId: String,
         @PathVariable gameId: String,
-        @PathVariable calendarId: String,
         @RequestBody requestBody: Body
     ): CompletableFuture<ResponseEntity<Any>> {
         val command = FinishDay(
-            calendarId = CalendarId(calendarId),
+            calendarId = CalendarId(gameId),
             month = Month(requestBody.month),
             week = Week(requestBody.week),
             day = Day(requestBody.day)

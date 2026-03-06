@@ -88,7 +88,7 @@ private class WeekSymbolReadModelQueryHandler(
 @RequestMapping("games/{gameId}")
 internal class GetWeekSymbolRestApi(private val queryGateway: QueryGateway) {
 
-    @GetMapping("/week-symbol/{month}/{week}")
+    @GetMapping("/astrologers/week-symbol/{month}/{week}")
     fun getWeekSymbol(
         @PathVariable gameId: String,
         @PathVariable month: Int,

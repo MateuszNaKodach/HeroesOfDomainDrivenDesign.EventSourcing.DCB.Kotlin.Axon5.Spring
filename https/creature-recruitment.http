@@ -1,9 +1,10 @@
 @serverPort = 3775
 
-### BuildDwelling
+## Context
 @gameId = scenario-1
 @playerId = player-1
 @dwellingId = dwelling-1
+@armyId = army-1
 
 ### BuildDwelling
 PUT http://localhost:{{serverPort}}/games/{{gameId}}/dwellings/{{dwellingId}}
@@ -46,4 +47,7 @@ X-Player-Id: {{playerId}}
 ### Dwelling read model
 GET http://localhost:{{serverPort}}/games/{{gameId}}/dwellings/{{dwellingId}}
 Content-Type: application/json
+
+### GetArmyCreatures
+GET http://localhost:{{serverPort}}/games/{{gameId}}/armies/{{armyId}}/creatures
 

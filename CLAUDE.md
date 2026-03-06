@@ -122,6 +122,9 @@ files. The source is available at:
 - REST endpoints follow: `games/{gameId}/resource/{resourceId}` pattern
 - Player ID passed via `X-Player-ID` header
 
+### Game-scoped singletons in REST API
+When a bounded context has exactly one instance per game (e.g., Calendar, Astrologers), do NOT expose its domain ID as a path variable. Use a fixed path segment (e.g., `/calendar/` not `/calendars/{calendarId}/`) and derive the domain ID from `gameId` inside the controller (`CalendarId(gameId)`).
+
 ### Spring
 - Prefer constructor injection over field injection, even in tests.
 

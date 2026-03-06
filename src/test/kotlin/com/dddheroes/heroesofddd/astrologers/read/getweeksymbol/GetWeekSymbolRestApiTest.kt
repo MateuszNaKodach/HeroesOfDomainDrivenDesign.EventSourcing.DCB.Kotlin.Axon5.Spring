@@ -32,7 +32,7 @@ internal class GetWeekSymbolRestApiTest @Autowired constructor(val gateways: Axo
             pathParam("month", 1)
             pathParam("week", 2)
         } When {
-            async().get("/games/{gameId}/week-symbol/{month}/{week}")
+            async().get("/games/{gameId}/astrologers/week-symbol/{month}/{week}")
         } Then {
             statusCode(HttpStatus.OK.value())
             contentType(ContentType.JSON)
@@ -53,7 +53,7 @@ internal class GetWeekSymbolRestApiTest @Autowired constructor(val gateways: Axo
             pathParam("month", 1)
             pathParam("week", 3)
         } When {
-            async().get("/games/{gameId}/week-symbol/{month}/{week}")
+            async().get("/games/{gameId}/astrologers/week-symbol/{month}/{week}")
         } Then {
             statusCode(HttpStatus.NOT_FOUND.value())
         }

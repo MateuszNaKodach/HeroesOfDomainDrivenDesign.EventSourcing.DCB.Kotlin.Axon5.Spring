@@ -110,15 +110,14 @@ private class ProclaimWeekSymbolCommandHandler {
 private class ProclaimWeekSymbolRestApi(private val commandGateway: CommandGateway) {
     data class Body(val month: Int, val week: Int, val creatureId: String, val growth: Int)
 
-    @PutMapping("/astrologers/{astrologersId}/week-symbol-proclamations")
+    @PutMapping("/astrologers/week-symbol-proclamations")
     fun putWeekSymbolProclamation(
         @RequestHeader(Headers.PLAYER_ID) playerId: String,
         @PathVariable gameId: String,
-        @PathVariable astrologersId: String,
         @RequestBody requestBody: Body
     ): CompletableFuture<ResponseEntity<Any>> {
         val command = ProclaimWeekSymbol(
-            astrologersId = AstrologersId(astrologersId),
+            astrologersId = AstrologersId(gameId),
             week = MonthWeek(requestBody.month, requestBody.week),
             symbol = WeekSymbol(CreatureId(requestBody.creatureId), requestBody.growth)
         )

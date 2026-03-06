@@ -3,7 +3,6 @@ package com.dddheroes.heroesofddd.calendar.write.finishday
 import com.dddheroes.extensions.axon.test.AxonGatewaysMock
 import com.dddheroes.extensions.axon.test.AxonGatewaysMockTest
 import com.dddheroes.extensions.webmvc.test.RestAssuredMockMvcTest
-import com.dddheroes.heroesofddd.calendar.write.CalendarId
 import com.dddheroes.heroesofddd.shared.application.CommandHandlerResult.Failure
 import com.dddheroes.heroesofddd.shared.application.CommandHandlerResult.Success
 import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
@@ -26,7 +25,6 @@ internal class FinishDayRestApiTest @Autowired constructor(val gateways: AxonGat
 
     private val gameId = GameId.random()
     private val playerId = PlayerId.random()
-    private val calendarId = CalendarId.random()
 
     @Test
     fun `command success - returns 204 No Content`() {
@@ -34,7 +32,6 @@ internal class FinishDayRestApiTest @Autowired constructor(val gateways: AxonGat
 
         Given {
             pathParam("gameId", gameId.raw)
-            pathParam("calendarId", calendarId.raw)
             header(Headers.PLAYER_ID, playerId.raw)
             contentType(ContentType.JSON)
             body(
@@ -47,7 +44,7 @@ internal class FinishDayRestApiTest @Autowired constructor(val gateways: AxonGat
                 """
             )
         } When {
-            async().post("/games/{gameId}/calendars/{calendarId}/days/finish")
+            async().post("/games/{gameId}/calendar/days/finish")
         } Then {
             statusCode(HttpStatus.NO_CONTENT.value())
         }
@@ -59,7 +56,6 @@ internal class FinishDayRestApiTest @Autowired constructor(val gateways: AxonGat
 
         Given {
             pathParam("gameId", gameId.raw)
-            pathParam("calendarId", calendarId.raw)
             header(Headers.PLAYER_ID, playerId.raw)
             contentType(ContentType.JSON)
             body(
@@ -72,7 +68,7 @@ internal class FinishDayRestApiTest @Autowired constructor(val gateways: AxonGat
                 """
             )
         } When {
-            async().post("/games/{gameId}/calendars/{calendarId}/days/finish")
+            async().post("/games/{gameId}/calendar/days/finish")
         } Then {
             statusCode(HttpStatus.BAD_REQUEST.value())
             contentType(ContentType.JSON)

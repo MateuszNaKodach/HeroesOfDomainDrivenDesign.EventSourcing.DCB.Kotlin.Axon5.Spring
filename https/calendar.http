@@ -1,0 +1,20 @@
+@serverPort = 3775
+@gameId = scenario-1
+@playerId = player-1
+
+### StartDay
+POST http://localhost:{{serverPort}}/games/{{gameId}}/calendar/days
+X-Player-Id: {{playerId}}
+Content-Type: application/json
+
+{ "month": 1, "week": 1, "day": 1 }
+
+### FinishDay
+POST http://localhost:{{serverPort}}/games/{{gameId}}/calendar/days/finish
+X-Player-Id: {{playerId}}
+Content-Type: application/json
+
+{ "month": 1, "week": 1, "day": 1 }
+
+### GetWeekSymbol
+GET http://localhost:{{serverPort}}/games/{{gameId}}/astrologers/week-symbol/1/1
