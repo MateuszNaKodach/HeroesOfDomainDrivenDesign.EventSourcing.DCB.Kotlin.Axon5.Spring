@@ -52,7 +52,7 @@ Determine the **bounded context** for each slice from the lane that holds its ke
 
 If the chapter has only one `system` lane, all slices share that context.
 
-**Element similarity:** In proophboard, elements with the same `name`, `type`, and `context` are considered **similar** — they represent the same concept even if they appear in different slices or chapters. The board uses copies to keep processes visually clean, but similar elements share documentation and identity. Keep this in mind when classifying slices — similar elements across slices indicate the same logical element.
+**Element similarity:** In proophboard, elements with the same `name`, `type`, and `context` are considered **similar** — they represent the same concept even if they appear in different slices or chapters. The board uses copies to keep processes visually clean, but similar elements share documentation and identity. When multiple slices share a similar `information` element but have different input events, they are **distinct slices that project into the same read model** (see Step 7).
 
 Extract the message flow from elements:
 - **Write**: `CommandName` → `EventName(s)`
@@ -104,17 +104,20 @@ Column details:
 
 After the table, add a brief **Summary** listing counts: how many slices implemented, how many with tests, how many missing.
 
-### 7. Deduplicate Similar Slices
+### 7. Identify Shared Projections
 
-Before outputting the table, merge slices that are logically the same using proophboard's **element similarity** rules:
+Multiple read slices can project into the **same read model** — e.g., two slices both named "View Current Day" with different input events (`DayStarted` vs `DayFinished`) but the same `information` element (same name+type+context).
 
-- **Elements are similar** when they share the same `name`, `type`, AND `context`.
-- **Slices are the same** when they have the same slice `label` (name) AND all their elements are similar (same name+type+context across both slices).
+These are **distinct slices** (different event inputs = different event handlers), NOT duplicates. Show each as its own row in the table. However, they share a single projection implementation file.
 
-The same element can appear in multiple slices/chapters as a copy — proophboard favors copies to keep processes clean, but similar elements represent the same concept.
+When shared projections are detected:
+1. **Keep every slice as a separate row** — preserve the board's structure and slice ordering.
+2. **Mark the relationship** — in the Code Status column of subsequent slices, show `= shared with #N` referencing the first slice's row number. This indicates they belong to the same implementation file.
+3. **Implementation guidance** — when these slices are implemented, they must be built together in the same file (same projection class handles all input events). They should NOT be implemented in parallel as separate tasks.
 
-When duplicate slices are found:
-1. **Merge them into a single row** in the output table.
-2. **Combine their input events** — e.g., if one copy of a read slice follows a `DayStarted` event and another follows `DayFinished`, the merged row should show both: `(DayStarted, DayFinished) → Current Day`.
-3. **Use the lowest slice index** as the `#` for the merged row.
-4. This applies to **all slice types** (write, read, automation), not just read slices.
+Example output:
+
+```
+| 1 | Read | Calendar | View Current Day | (`DayStarted`) → `Current Day`  | planned | NOT IMPLEMENTED |
+| 3 | Read | Calendar | View Current Day | (`DayFinished`) → `Current Day` | planned | = shared with #1 |
+```
