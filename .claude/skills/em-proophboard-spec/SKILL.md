@@ -290,6 +290,10 @@ Use `NOTHING` for:
 - **Empty Given** — no prior events (fresh state)
 - **Empty Then** — no events produced (idempotent write) or no command dispatched (automation doesn't react)
 
+##### Implementation Guidelines
+
+Slice documentation may include a `## Implementation Guidelines` section with Backend and/or Frontend subsections. These contain specific technical requirements for the slice (e.g., integrate with a payment provider, create an S3 bucket, use a specific library). When present, these guidelines **must be followed** during implementation — they take priority over generic patterns.
+
 #### Element Details Format
 
 The `details` field supports markdown and has no strict structure — it can contain whatever is useful for the element. Common content for commands and events includes:

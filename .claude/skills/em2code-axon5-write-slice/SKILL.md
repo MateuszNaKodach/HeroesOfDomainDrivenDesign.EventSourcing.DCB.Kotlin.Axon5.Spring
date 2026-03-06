@@ -59,6 +59,8 @@ The write slice (blue stripe) shows: Command on left, Events on right, State (re
 
 When GWT scenarios are present, each numbered scenario (e.g., `### 1. build for the first time`) maps 1:1 to a test method. Properties in `:::element` blocks are **only rule-relevant** — fill remaining constructor params with test fixture values (random IDs, hardcoded domain values).
 
+If the slice details contain `## Implementation Guidelines`, **follow them** — they describe specific technical requirements (e.g., integrate with a payment provider, create an S3 bucket, use a specific library) that go beyond the standard slice pattern.
+
 ### Input: Axon Framework 4 Code
 
 Read the AF4 source: command class, aggregate class, events, domain rules, REST API.

@@ -48,6 +48,8 @@ Extract these elements regardless of input format:
 
 If the Event Modeling artifact includes slice details with `## Scenarios (GWTs)`, use them to derive test cases. Automation GWT pattern: `Given (events) → Then (command | hotspot | NOTHING)` — no When block. Events in Given include read-model-building events first, trigger event last. Command in Then is the dispatched command. Hotspot or NOTHING means no command dispatched.
 
+If the slice details contain `## Implementation Guidelines`, **follow them** — they describe specific technical requirements that go beyond the standard slice pattern.
+
 ### Stateless vs With Read Model Decision
 
 Choose **with read model** when:

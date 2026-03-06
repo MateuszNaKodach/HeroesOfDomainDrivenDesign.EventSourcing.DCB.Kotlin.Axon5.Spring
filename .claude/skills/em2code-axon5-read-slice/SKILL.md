@@ -30,6 +30,8 @@ Look for:
 
 If the Event Modeling artifact includes slice details with `## Scenarios (GWTs)`, use them to derive test cases. Read slice GWT pattern: `Given (events) → Then (information)` — no When block. Events in Given tell you which events the projector must handle. The information element in Then describes the expected query result shape and values.
 
+If the slice details contain `## Implementation Guidelines`, **follow them** — they describe specific technical requirements that go beyond the standard slice pattern.
+
 A read slice file contains all layers in a single file. **Do NOT add section comments** (Domain/Application/Presentation)
 for read slices — those are only for write slices.
 
