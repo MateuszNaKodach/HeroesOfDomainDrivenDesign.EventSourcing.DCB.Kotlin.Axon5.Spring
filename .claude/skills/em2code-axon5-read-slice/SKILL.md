@@ -101,10 +101,13 @@ Add `@Table(indexes = [...])` for columns used in repository query methods:
 )
 ```
 
-### Spring Configuration Metadata
+### Feature Flag Configuration
 
-After creating the slice, add the feature flag entry to
-`src/main/resources/META-INF/additional-spring-configuration-metadata.json`:
+After creating the slice, update ALL of these files:
+
+- `application.yaml` — add `slices.{context}.read.{feature}.enabled: true`
+- `application-test.yaml` — add `slices.{context}.read.{feature}.enabled: false` (slices disabled by default in tests; individual tests opt-in via `@TestPropertySource`)
+- `META-INF/additional-spring-configuration-metadata.json` — add entry:
 
 ```json
 {
