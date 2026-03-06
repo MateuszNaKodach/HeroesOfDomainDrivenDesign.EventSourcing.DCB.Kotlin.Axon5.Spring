@@ -241,6 +241,8 @@ NOTHING
 
 **Read slice** — `Given (events) → Then (information)` — no When block:
 
+When a read slice returns **multiple items**, show each as a **separate `:::element information` block** in the Then section. Never wrap results in an `items` array property.
+
 ```markdown
 ## Scenarios (GWTs)
 
@@ -255,7 +257,29 @@ quantity: 5··
 **Then**
 :::element information
 Army Creatures··
-stacks: [{creatureId: Angel, quantity: 5}]··
+creatureId: Angel··
+quantity: 5··
+:::
+
+### 2. given two dwellings built, then both returned
+
+**Given**
+:::element event
+Dwelling Built··
+dwellingId: portal-of-glory··
+:::
+:::element event
+Dwelling Built··
+dwellingId: cursed-temple··
+:::
+**Then**
+:::element information
+Dwelling··
+dwellingId: portal-of-glory··
+:::
+:::element information
+Dwelling··
+dwellingId: cursed-temple··
 :::
 ```
 
@@ -293,6 +317,8 @@ Two forms:
 Use `NOTHING` for:
 - **Empty Given** — no prior events (fresh state)
 - **Empty Then** — no events produced (idempotent write) or no command dispatched (automation doesn't react)
+
+**Do NOT use `Given NOTHING → Then NOTHING`** for read slices. An empty-state-produces-empty-result scenario is not meaningful — it conveys no business rule. Only include read slice scenarios where events produce observable read model state.
 
 ##### Implementation Guidelines
 
