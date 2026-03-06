@@ -44,6 +44,11 @@
       "name": "slices.calendar.write.finishday.enabled",
       "type": "java.lang.Boolean",
       "description": "Enable/disable the FinishDay write slice in the Calendar bounded context."
+    },
+    {
+      "name": "slices.armies.read.getarmycreatures.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable/disable the GetArmyCreatures read slice in the Armies bounded context."
     }
   ]
 }
