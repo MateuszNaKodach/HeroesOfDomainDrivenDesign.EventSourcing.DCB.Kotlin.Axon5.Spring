@@ -188,12 +188,101 @@ not escape to primitives. Reserve `.raw` for boundaries: REST layer, cross-BC ma
 
 ## Step 4: Ensure Events Exist
 
-Check target project's `events/` package. If events don't exist, create them following project conventions:
+Before implementing the slice, check the target bounded context's `events/` package. If events don't exist yet, create
+them **first** — the slice file depends on them.
 
-- Sealed interface hierarchy (e.g., `DwellingEvent : HeroesEvent`)
-- `@EventTag` on tag properties
-- Value object types for properties
-- Annotate each event with `@Event(namespace = "<BoundedContext>", name = "<EventName>", version = "1.0.0")` — import from `org.axonframework.messaging.eventhandling.annotation.Event`. The namespace is the bounded context name (e.g., `"CreatureRecruitment"`, `"Calendar"`, `"Armies"`), the name matches the class name.
+### Event Hierarchy
+
+Events follow a three-level hierarchy:
+
+```
+DomainEvent                          ← marker (shared.domain)
+  ├─ HeroesEvent                     ← project-level marker (shared.domain)
+  │    └─ {Context}Event             ← sealed interface per bounded context ({context}.events)
+  │         └─ {ConcreteEvent}       ← data class ({context}.events)
+  └─ FailureEvent                    ← for business failure facts (shared.domain)
+       └─ {ConcreteFailureEvent}     ← e.g., PaymentRejected — domain failures we care about recording
+```
+
+`FailureEvent` (in `shared.domain`) is for domain failures that are **business facts worth recording** (e.g.,
+`PaymentRejected`). These are NOT exceptions — they are events emitted by `decide()` when a business rule produces a
+recordable failure outcome. They implement `FailureEvent` which has a `reason: String` property.
+
+### Step 4a: Context Event Interface (if it doesn't exist)
+
+Each bounded context has a **sealed interface** in `{context}/events/` that:
+- Extends `HeroesEvent`
+- Declares the tag property with `@get:EventTag`
+- All events in the context implement this interface
+
+```kotlin
+// File: {context}/events/{Context}Event.kt
+package com.dddheroes.heroesofddd.{context}.events
+
+import com.dddheroes.heroesofddd.EventTags
+import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
+import com.dddheroes.heroesofddd.shared.domain.identifiers.{IdType}
+import org.axonframework.eventsourcing.annotation.EventTag
+
+sealed interface {Context}Event : HeroesEvent {
+    @get:EventTag(EventTags.{TAG_CONSTANT})
+    val {tagProperty}: {IdType}
+}
+```
+
+The `@get:EventTag` on the sealed interface means **all implementing events automatically inherit the tag** — no need
+to repeat it on each concrete event class.
+
+Also ensure the tag constant exists in `EventTags.kt`:
+
+```kotlin
+object EventTags {
+    const val {TAG_CONSTANT} = "{tagProperty}"  // e.g., const val DWELLING_ID = "dwellingId"
+}
+```
+
+### Step 4b: Concrete Event Classes
+
+Each event is a separate file in `{context}/events/`:
+
+```kotlin
+// File: {context}/events/{EventName}.kt
+package com.dddheroes.heroesofddd.{context}.events
+
+import org.axonframework.messaging.eventhandling.annotation.Event
+
+@Event(namespace = "{Context}", name = "{EventName}", version = "1.0.0")
+data class {EventName}(
+    override val {tagProperty}: {IdType},  // inherited from sealed interface
+    val property1: ValueType1,
+    val property2: ValueType2
+) : {Context}Event
+```
+
+Key rules:
+- `@Event(namespace, name, version)` on every concrete event class
+- `namespace` = bounded context name (e.g., `"CreatureRecruitment"`, `"Calendar"`)
+- `name` = class name
+- `version` = `"1.0.0"` for new events
+- Use value object types for properties (not primitives)
+- The tag property is `override val` from the sealed interface
+
+### Additional Tags on Events
+
+When an event participates in a **Dynamic Consistency Boundary** (DCB) spanning multiple streams, add extra `@EventTag`
+annotations on the concrete event's properties:
+
+```kotlin
+@Event(namespace = "CreatureRecruitment", name = "CreatureRecruited", version = "1.0.0")
+data class CreatureRecruited(
+    override val dwellingId: DwellingId,     // tag inherited from DwellingEvent
+    val creatureId: CreatureId,
+    @EventTag(EventTags.ARMY_ID)             // additional tag for cross-stream DCB
+    val toArmy: ArmyId,
+    val quantity: Quantity,
+    val totalCost: Resources
+) : DwellingEvent
+```
 
 ## Step 5: Add Feature Flag
 

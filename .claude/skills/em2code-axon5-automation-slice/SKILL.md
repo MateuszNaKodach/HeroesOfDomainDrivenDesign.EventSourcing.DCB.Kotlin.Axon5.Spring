@@ -78,7 +78,57 @@ Function<A, B> interface             fun interface Name : (A) -> B
 
 **If requirements are unclear, ask the user before proceeding.**
 
-## Step 2: Implement the Automation
+## Step 2: Ensure Events Exist
+
+Before implementing the automation, verify that all events the processor will handle exist in the codebase. If they
+don't, create them **first**.
+
+### Event Hierarchy
+
+Events follow a three-level hierarchy:
+
+```
+DomainEvent                          ← marker (shared.domain)
+  └─ HeroesEvent                     ← project-level marker (shared.domain)
+       └─ {Context}Event             ← sealed interface per bounded context ({context}.events)
+            └─ {ConcreteEvent}       ← data class ({context}.events)
+```
+
+### Context Event Interface (if it doesn't exist)
+
+Each bounded context has a **sealed interface** in `{context}/events/` that extends `HeroesEvent` and declares the tag
+property with `@get:EventTag`. All events in the context implement this interface, inheriting the tag automatically.
+
+```kotlin
+// File: {context}/events/{Context}Event.kt
+sealed interface {Context}Event : HeroesEvent {
+    @get:EventTag(EventTags.{TAG_CONSTANT})
+    val {tagProperty}: {IdType}
+}
+```
+
+Also ensure the tag constant exists in `EventTags.kt`.
+
+### Concrete Event Classes
+
+Each event is a separate file in `{context}/events/`:
+
+```kotlin
+// File: {context}/events/{EventName}.kt
+@Event(namespace = "{Context}", name = "{EventName}", version = "1.0.0")
+data class {EventName}(
+    override val {tagProperty}: {IdType},
+    val property1: ValueType1
+) : {Context}Event
+```
+
+Key rules:
+- `@Event(namespace, name, version)` — import from `org.axonframework.messaging.eventhandling.annotation.Event`
+- `namespace` = bounded context name, `name` = class name, `version` = `"1.0.0"` for new events
+- Use value object types for properties
+- When an event participates in a Dynamic Consistency Boundary (DCB), add extra `@EventTag` on cross-stream properties
+
+## Step 3: Implement the Automation
 
 ### CommandDispatcher vs CommandGateway
 
@@ -268,7 +318,7 @@ Key rules:
 - **Two `@EventHandler` methods in one class**: one builds the read model (e.g., `DwellingBuilt`), the other reacts by dispatching commands (e.g., `WeekSymbolProclaimed`)
 - **Repository is constructor-injected** (Spring bean), `CommandDispatcher` is method-injected (ProcessingContext)
 
-## Step 3: Add Feature Flag
+## Step 4: Add Feature Flag
 
 Add `@ConditionalOnProperty` to processor, repository (if with read model), and configuration (if exists). Update ALL of:
 
@@ -276,7 +326,7 @@ Add `@ConditionalOnProperty` to processor, repository (if with read model), and 
 - `application-test.yaml` — `slices.{context}.automation.{name}.enabled: false`
 - `META-INF/additional-spring-configuration-metadata.json` — add entry
 
-## Step 4: Implement Tests
+## Step 5: Implement Tests
 
 Spring Boot integration test with `AxonTestFixture` Kotlin DSL.
 

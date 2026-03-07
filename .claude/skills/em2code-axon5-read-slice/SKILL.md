@@ -26,7 +26,58 @@ Look for:
 - REST API test pattern (`@RestAssuredMockMvcTest`, `@AxonGatewaysMockTest`)
 - Spring configuration metadata file location
 
-## Step 1: Implement the Read Slice
+## Step 1: Ensure Events Exist
+
+Before implementing the read slice, verify that all events the projector will handle exist in the codebase. If they
+don't, create them **first**.
+
+### Event Hierarchy
+
+Events follow a three-level hierarchy:
+
+```
+DomainEvent                          ← marker (shared.domain)
+  └─ HeroesEvent                     ← project-level marker (shared.domain)
+       └─ {Context}Event             ← sealed interface per bounded context ({context}.events)
+            └─ {ConcreteEvent}       ← data class ({context}.events)
+```
+
+### Context Event Interface (if it doesn't exist)
+
+Each bounded context has a **sealed interface** in `{context}/events/` that extends `HeroesEvent` and declares the tag
+property with `@get:EventTag`. All events in the context implement this interface, inheriting the tag automatically.
+
+```kotlin
+// File: {context}/events/{Context}Event.kt
+sealed interface {Context}Event : HeroesEvent {
+    @get:EventTag(EventTags.{TAG_CONSTANT})
+    val {tagProperty}: {IdType}
+}
+```
+
+Also ensure the tag constant exists in `EventTags.kt`.
+
+### Concrete Event Classes
+
+Each event is a separate file in `{context}/events/`:
+
+```kotlin
+// File: {context}/events/{EventName}.kt
+@Event(namespace = "{Context}", name = "{EventName}", version = "1.0.0")
+data class {EventName}(
+    override val {tagProperty}: {IdType},
+    val property1: ValueType1
+) : {Context}Event
+```
+
+Key rules:
+- `@Event(namespace, name, version)` — import from `org.axonframework.messaging.eventhandling.annotation.Event`
+- `namespace` = bounded context name (e.g., `"CreatureRecruitment"`)
+- `name` = class name, `version` = `"1.0.0"` for new events
+- Use value object types for properties
+- When an event participates in a Dynamic Consistency Boundary (DCB), add extra `@EventTag` on cross-stream properties
+
+## Step 2: Implement the Read Slice
 
 If the Event Modeling artifact includes slice details with `## Scenarios (GWTs)`, use them to derive test cases. Read slice GWT pattern: `Given (events) → Then (information)` — no When block. Events in Given tell you which events the projector must handle. The information element in Then describes the expected query result shape and values.
 
@@ -117,7 +168,7 @@ After creating the slice, update ALL of these files:
 }
 ```
 
-## Step 2: Design Test Cases
+## Step 3: Design Test Cases
 
 Cover these scenarios (adapt to specific slice):
 
@@ -143,7 +194,7 @@ When the slice details contain `## Scenarios (GWTs)`, map each scenario to a tes
 
 Properties in `:::element` blocks are rule-relevant only — fill remaining constructor params with test fixture values.
 
-## Step 3: Implement the Spring Slice Test
+## Step 4: Implement the Spring Slice Test
 
 Use the Spring Boot integration test approach with `AxonTestFixture`.
 
@@ -214,7 +265,7 @@ fixture.Given {
   from domain objects. This makes tests more readable and catches serialization issues.
 - **Constructor injection**: Inject `AxonTestFixture` via constructor, not field injection.
 
-## Step 4: Implement the REST API Test
+## Step 5: Implement the REST API Test
 
 Use `@RestAssuredMockMvcTest` + `@AxonGatewaysMockTest` with mocked `QueryGateway`:
 
