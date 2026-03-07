@@ -17,13 +17,20 @@
     "id": "3f5aa883-08b1-4c94-88de-cb7e4398b9cb",
     "name": "Creature Recruitment",
     "index": 2,
-    "context": "App",
+    "context": "Creature Recruitment",
+    "mode": "event-modeling"
+  },
+  {
+    "id": "d4db61e3-210e-4a06-98f2-a5ddc02b70bb",
+    "name": "Armies",
+    "index": 3,
+    "context": "Armies",
     "mode": "event-modeling"
   },
   {
     "id": "c38978e2-cdd3-4fc8-915d-51cf607124e3",
     "name": "Wandering Creatures",
-    "index": 3,
+    "index": 4,
     "context": "Adventure Map",
     "mode": "event-modeling"
   }
