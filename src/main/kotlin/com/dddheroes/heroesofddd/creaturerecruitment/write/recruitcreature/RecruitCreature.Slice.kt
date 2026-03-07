@@ -23,6 +23,7 @@ import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.eventsourcing.configuration.EventSourcedEntityModule
 import org.axonframework.extensions.kotlin.AxonMetadata
 import org.axonframework.extensions.kotlin.asEventMessages
+import org.axonframework.messaging.commandhandling.annotation.Command
 import org.axonframework.messaging.commandhandling.annotation.CommandHandler
 import org.axonframework.messaging.commandhandling.configuration.CommandHandlingModule
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
@@ -42,6 +43,7 @@ import java.util.concurrent.CompletableFuture
 ////////// Domain
 ///////////////////////////////////////////
 
+@Command(namespace = "CreatureRecruitment", name = "RecruitCreature", version = "1.0.0")
 data class RecruitCreature(
     @get:JvmName("getDwellingId")
     val dwellingId: DwellingId,
