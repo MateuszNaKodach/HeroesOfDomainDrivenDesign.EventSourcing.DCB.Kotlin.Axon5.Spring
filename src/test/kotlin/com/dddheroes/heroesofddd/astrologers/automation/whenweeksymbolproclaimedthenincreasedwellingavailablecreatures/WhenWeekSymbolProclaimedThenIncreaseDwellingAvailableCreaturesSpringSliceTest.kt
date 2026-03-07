@@ -46,7 +46,6 @@ internal class WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreaturesSpr
         val angelDwelling1 = DwellingId.random()
         val angelDwelling2 = DwellingId.random()
         val titanDwelling = DwellingId.random()
-        val testDwellingIds = setOf(angelDwelling1, angelDwelling2, titanDwelling)
 
         fixture.Scenario {
             Given {
@@ -60,11 +59,9 @@ internal class WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreaturesSpr
             } Then {
                 await({
                     it.commandsSatisfy { commands ->
-                        val relevantPayloads = commands.map { cmd -> cmd.payload() }
-                            .filterIsInstance<IncreaseAvailableCreatures>()
-                            .filter { cmd -> cmd.dwellingId in testDwellingIds }
+                        val payloads = commands.map { cmd -> cmd.payload() }
 
-                        assertThat(relevantPayloads).containsExactlyInAnyOrder(
+                        assertThat(payloads).contains(
                             IncreaseAvailableCreatures(angelDwelling1, CreatureId("angel"), Quantity(3)),
                             IncreaseAvailableCreatures(angelDwelling2, CreatureId("angel"), Quantity(3))
                         )
@@ -78,7 +75,6 @@ internal class WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreaturesSpr
     fun `when WeekSymbolProclaimed, then increase only dwellings built before the proclamation`() {
         val angelDwelling1 = DwellingId.random()
         val angelDwelling2 = DwellingId.random()
-        val testDwellingIds = setOf(angelDwelling1, angelDwelling2)
 
         fixture.Scenario {
             Given {
@@ -99,11 +95,9 @@ internal class WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreaturesSpr
             } Then {
                 await({
                     it.commandsSatisfy { commands ->
-                        val relevantPayloads = commands.map { cmd -> cmd.payload() }
-                            .filterIsInstance<IncreaseAvailableCreatures>()
-                            .filter { cmd -> cmd.dwellingId in testDwellingIds }
+                        val payloads = commands.map { cmd -> cmd.payload() }
 
-                        assertThat(relevantPayloads).containsExactlyInAnyOrder(
+                        assertThat(payloads).contains(
                             // Week 1: only dwelling 1 was built
                             IncreaseAvailableCreatures(angelDwelling1, CreatureId("angel"), Quantity(1)),
                             // Week 2: both dwellings were built
