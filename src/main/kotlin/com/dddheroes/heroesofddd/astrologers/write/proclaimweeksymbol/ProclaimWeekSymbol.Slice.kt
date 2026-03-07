@@ -20,6 +20,7 @@ import org.axonframework.eventsourcing.annotation.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.extension.spring.stereotype.EventSourced
 import org.axonframework.extensions.kotlin.AxonMetadata
+import org.axonframework.messaging.commandhandling.annotation.Command
 import org.axonframework.messaging.commandhandling.annotation.CommandHandler
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
 import org.axonframework.messaging.eventhandling.gateway.EventAppender
@@ -34,6 +35,7 @@ import java.util.concurrent.CompletableFuture
 ////////// Domain
 ///////////////////////////////////////////
 
+@Command(namespace = "Astrologers", name = "ProclaimWeekSymbol", version = "1.0.0")
 data class ProclaimWeekSymbol(
     @get:JvmName("getAstrologersId")
     val astrologersId: AstrologersId,
