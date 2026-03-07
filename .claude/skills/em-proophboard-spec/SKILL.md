@@ -198,6 +198,10 @@ In the examples below, `··` at end of line marks where two trailing spaces MUS
 
 **Key principle**: Only include properties that are **relevant to the business rule** being tested. E.g., BuildDwelling idempotency scenario only shows `dwellingId` (the uniqueness key) — `creatureId` and `costPerTroop` are omitted because they don't influence the rule.
 
+##### Idempotency Consideration
+
+When documenting a write slice, consider whether the command should be **idempotent** (repeating the same command produces no additional events). Ask the user about idempotency behavior for failure cases — e.g., should "remove something not present" be a silent no-op (NOTHING) or an exception? Common idempotent pattern: if the desired end state is already achieved, return Success with no events.
+
 ##### GWT Patterns by Slice Type
 
 **Write slice** — `Given (events) → When (command) → Then (events | hotspot | NOTHING)`:
