@@ -22,6 +22,7 @@ import java.util.concurrent.CompletableFuture
 
 data class GetDwellingById(
     val gameId: GameId,
+    @get:JvmName("getDwellingId")
     val dwellingId: DwellingId
 ) {
     data class Result(
