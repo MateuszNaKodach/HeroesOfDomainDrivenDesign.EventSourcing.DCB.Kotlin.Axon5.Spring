@@ -133,7 +133,7 @@ Create `FeatureName.Slice.kt` with three sections (adapt to project conventions)
 Key rules for each component:
 
 **Command**: No `@TargetAggregateIdentifier`. Plain data class. Public. Add `@get:JvmName` on properties whose names
-match their type pattern.
+match their type pattern. Annotate with `@Command(namespace = "<BoundedContext>", name = "<CommandName>", version = "1.0.0")` — import from `org.axonframework.messaging.commandhandling.annotation.Command`.
 
 **State**: Private. Immutable data class. Contains ONLY fields needed by `decide()`. Companion `initialState` val.
 
@@ -193,6 +193,7 @@ Check target project's `events/` package. If events don't exist, create them fol
 - Sealed interface hierarchy (e.g., `DwellingEvent : HeroesEvent`)
 - `@EventTag` on tag properties
 - Value object types for properties
+- Annotate each event with `@Event(namespace = "<BoundedContext>", name = "<EventName>", version = "1.0.0")` — import from `org.axonframework.messaging.eventhandling.annotation.Event`. The namespace is the bounded context name (e.g., `"CreatureRecruitment"`, `"Calendar"`, `"Armies"`), the name matches the class name.
 
 ## Step 5: Add Feature Flag
 

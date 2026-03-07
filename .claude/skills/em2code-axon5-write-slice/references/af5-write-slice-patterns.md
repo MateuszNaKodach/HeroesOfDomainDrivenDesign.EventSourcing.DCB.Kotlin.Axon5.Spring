@@ -42,6 +42,7 @@ import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.extension.spring.stereotype.EventSourced
 import org.axonframework.extensions.kotlin.AxonMetadata
 import org.axonframework.extensions.kotlin.asEventMessages
+import org.axonframework.messaging.commandhandling.annotation.Command
 import org.axonframework.messaging.commandhandling.annotation.CommandHandler
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
 import org.axonframework.messaging.eventhandling.gateway.EventAppender
@@ -56,6 +57,7 @@ import java.util.concurrent.CompletableFuture
 ////////// Domain
 ///////////////////////////////////////////
 
+@Command(namespace = "CreatureRecruitment", name = "BuildDwelling", version = "1.0.0")
 data class BuildDwelling(
     @get:JvmName("getDwellingId")
     val dwellingId: DwellingId,
@@ -267,6 +269,7 @@ import org.springframework.context.annotation.Configuration
 ////////// Domain
 ///////////////////////////////////////////
 
+@Command(namespace = "CreatureRecruitment", name = "RecruitCreature", version = "1.0.0")
 data class RecruitCreature(
     @get:JvmName("getDwellingId")
     val dwellingId: DwellingId,
@@ -503,7 +506,8 @@ sealed interface DwellingEvent : HeroesEvent {
     val dwellingId: DwellingId
 }
 
-// Concrete event
+// Concrete event — annotate with @Event(namespace, name, version)
+@Event(namespace = "CreatureRecruitment", name = "DwellingBuilt", version = "1.0.0")
 data class DwellingBuilt(
     override val dwellingId: DwellingId,
     val creatureId: CreatureId,
