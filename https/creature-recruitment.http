@@ -45,7 +45,7 @@ X-Player-Id: {{playerId}}
 }
 
 ### Dwelling read model
-GET http://localhost:{{serverPort}}/games/{{gameId}}/dwellings/{{dwellingId}}
+GET http://localhost:{{serverPort}}/games/{{gameId}}/dwellings
 Content-Type: application/json
 
 ### GetArmyCreatures

@@ -108,10 +108,9 @@ private class DwellingReadModelQueryHandler(
 @RequestMapping("games/{gameId}")
 internal class GetDwellingByIdRestApi(private val queryGateway: QueryGateway) {
 
-    @GetMapping("/dwellings/{dwellingId}")
+    @GetMapping("/dwellings")
     fun getDwellings(
         @PathVariable gameId: String,
-        @PathVariable dwellingId: String
     ): CompletableFuture<GetAllDwellings.Result> = queryGateway.query(
         GetAllDwellings(GameId(gameId)),
         GetAllDwellings.Result::class.java
