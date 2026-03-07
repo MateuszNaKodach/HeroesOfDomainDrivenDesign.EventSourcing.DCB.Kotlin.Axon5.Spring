@@ -1,5 +1,5 @@
 ---
-name: em2code-axon5-write-slice
+name: em2code-write-slice-axon5kotlin
 description: >
   Implement Event Sourcing write slices using Axon Framework 5, Vertical Slice Architecture, and
   Event Modeling patterns. A write slice is: Command to decide to Events to evolve to State.

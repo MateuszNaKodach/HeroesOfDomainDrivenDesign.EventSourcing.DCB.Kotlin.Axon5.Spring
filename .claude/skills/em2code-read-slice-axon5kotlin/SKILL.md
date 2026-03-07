@@ -1,5 +1,5 @@
 ---
-name: em2code-axon5-read-slice
+name: em2code-read-slice-axon5kotlin
 description: >
   Implement read slices (projections + query handlers + REST API + tests) using Axon Framework 5 AxonTestFixture
   with Spring Boot integration tests. A read slice is: Events projected into a Read Model, queried via QueryGateway.

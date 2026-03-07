@@ -1,5 +1,5 @@
 ---
-name: em2code-axon5-automation-slice
+name: em2code-automation-slice-axon5kotlin
 description: >
   Implement automation slices (Event to Command) using Axon Framework 5, Vertical Slice Architecture,
   and Event Modeling patterns. An automation is: an Event Handler that reacts to an event by dispatching a command
