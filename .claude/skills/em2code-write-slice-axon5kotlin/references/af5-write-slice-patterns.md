@@ -41,7 +41,6 @@ import org.axonframework.eventsourcing.annotation.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.extension.spring.stereotype.EventSourced
 import org.axonframework.extensions.kotlin.AxonMetadata
-import org.axonframework.extensions.kotlin.asEventMessages
 import org.axonframework.messaging.commandhandling.annotation.Command
 import org.axonframework.messaging.commandhandling.annotation.CommandHandler
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
@@ -115,7 +114,7 @@ private class BuildDwellingCommandHandler {
         eventAppender: EventAppender
     ): CommandHandlerResult = resultOf {
         val events = decide(command, eventSourced.state)
-        eventAppender.append(events.asEventMessages(metadata))
+        eventAppender.append(events, metadata)
         events.toCommandResult()
     }
 }
@@ -206,7 +205,7 @@ private class ProclaimWeekSymbolCommandHandler {
         eventAppender: EventAppender
     ): CommandHandlerResult = resultOf {
         val events = decide(command, eventSourced.state)
-        eventAppender.append(events.asEventMessages(metadata))
+        eventAppender.append(events, metadata)
         events.toCommandResult()
     }
 }
@@ -402,7 +401,7 @@ private class RecruitCreatureCommandHandler {
         eventAppender: EventAppender
     ): CommandHandlerResult = resultOf {
         val events = decide(command, eventSourced.state)
-        eventAppender.append(events.asEventMessages(metadata))
+        eventAppender.append(events, metadata)
         events.toCommandResult()
     }
 }
@@ -478,10 +477,10 @@ private class RecruitCreatureRestApi(private val commandGateway: CommandGateway)
 
 ```kotlin
 // Multiple events (List)
-eventAppender.append(events.asEventMessages(metadata))
+eventAppender.append(events, metadata)
 
 // Single event
-eventAppender.append(event.asEventMessage(metadata))
+eventAppender.append(event, metadata)
 ```
 
 ### Domain Rule Enforcement in decide()

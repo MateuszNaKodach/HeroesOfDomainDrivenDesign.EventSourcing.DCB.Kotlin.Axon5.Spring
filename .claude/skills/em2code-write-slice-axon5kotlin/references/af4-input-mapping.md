@@ -82,7 +82,7 @@ Split into: pure `evolve()` function + entity `@EventSourcingHandler` methods wr
 
 ```
 AF4: apply(event)  // static import from AggregateLifecycle
-AF5: eventAppender.append(events.asEventMessages(metadata))  // injected into handler
+AF5: eventAppender.append(events, metadata)  // injected into handler
 ```
 
 ### @CreationPolicy(CREATE_IF_MISSING)

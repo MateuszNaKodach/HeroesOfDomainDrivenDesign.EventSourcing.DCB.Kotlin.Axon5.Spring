@@ -157,7 +157,7 @@ private class ProclaimWeekSymbolCommandHandler {
         eventAppender: EventAppender                                         // AF5 - replaces AggregateLifecycle.apply()
     ): CommandHandlerResult = resultOf {                                      // Project Style
         val events = decide(command, eventSourced.state)                     // Project Style - functional decide()
-        eventAppender.append(events.asEventMessages(metadata))               // AF5 - explicit event appending
+        eventAppender.append(events, metadata)                               // AF5 - explicit event appending
         events.toCommandResult()                                             // Project Style
     }
 }
@@ -416,9 +416,8 @@ symbol()));
 
 ```kotlin
 import org.axonframework.messaging.eventhandling.gateway.EventAppender       // AF5
-import org.axonframework.extensions.kotlin.asEventMessages                   // AF5 Kotlin extension
 
-eventAppender.append(events.asEventMessages(metadata))
+eventAppender.append(events, metadata)
 ```
 
 This is a fundamental shift: events are no longer published from inside the entity — the handler controls when and how
