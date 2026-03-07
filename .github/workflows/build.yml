@@ -6,8 +6,18 @@ name: "🚀 Build | EventStore = AxonServer"
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - '.claude/**'
+      - '.proophboard/**'
+      - 'docs/**'
+      - '**/*.md'
   pull_request:
     branches: [ "main" ]
+    paths-ignore:
+      - '.claude/**'
+      - '.proophboard/**'
+      - 'docs/**'
+      - '**/*.md'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
