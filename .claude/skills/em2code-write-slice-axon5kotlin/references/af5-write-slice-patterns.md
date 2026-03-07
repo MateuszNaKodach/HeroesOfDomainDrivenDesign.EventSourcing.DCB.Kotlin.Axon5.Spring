@@ -191,7 +191,7 @@ private class ProclaimWeekSymbolEventSourcedState private constructor(val state:
         fun resolveCriteria(astrologersId: AstrologersId) = // takes the id value object directly (not composite)
             EventCriteria
                 .havingTags(Tag.of(EventTags.ASTROLOGERS_ID, astrologersId.raw))
-                .andBeingOneOfTypes(WeekSymbolProclaimed::class.java.getName())
+                .andBeingOneOfTypes("Astrologers.WeekSymbolProclaimed")
     }
 }
 
@@ -378,14 +378,14 @@ private class RecruitCreatureEventSourcedState private constructor(val state: St
                 EventCriteria
                     .havingTags(Tag.of(EventTags.DWELLING_ID, recruitmentId.dwellingId.raw))
                     .andBeingOneOfTypes(
-                        DwellingBuilt::class.java.getName(),
-                        AvailableCreaturesChanged::class.java.getName(),
+                        "CreatureRecruitment.DwellingBuilt",
+                        "CreatureRecruitment.AvailableCreaturesChanged",
                     ),
                 EventCriteria
                     .havingTags(Tag.of(EventTags.ARMY_ID, recruitmentId.armyId.raw))
                     .andBeingOneOfTypes(
-                        CreatureAddedToArmy::class.java.getName(),
-                        CreatureRemovedFromArmy::class.java.getName(),
+                        "Armies.CreatureAddedToArmy",
+                        "Armies.CreatureRemovedFromArmy",
                     )
             )
     }
@@ -464,7 +464,7 @@ private class RecruitCreatureRestApi(private val commandGateway: CommandGateway)
 - `@EventSourcedEntity` (no tagKey)
 - `@EventCriteriaBuilder` companion method defines which tags and event types to query
 - `EventCriteria.either(...)` combines multiple tag queries
-- `.andBeingOneOfTypes(...)` filters to specific event classes per tag
+- `.andBeingOneOfTypes(...)` filters to specific event types — **MUST use `"Namespace.Name"` strings** (e.g., `"CreatureRecruitment.DwellingBuilt"`), NEVER `ClassName::class.java.getName()`. The type name is `@Event(namespace).@Event(name)` joined with a dot
 - Handler has NO `@Component` - instantiated by `CommandHandlingModule`
 - `@InjectEntity(idProperty = "recruitmentId")` points to composite ID property
 - `@Configuration` class registers both `EntityModule` and `CommandHandlingModule`

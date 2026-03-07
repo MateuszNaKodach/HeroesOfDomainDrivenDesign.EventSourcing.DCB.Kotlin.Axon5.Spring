@@ -106,7 +106,7 @@ private class GetAllDwellingsQueryHandler(
 @ConditionalOnProperty(prefix = "slices.creaturerecruitment", name = ["read.getalldwellings.enabled"])
 @RestController
 @RequestMapping("games/{gameId}")
-internal class GetDwellingByIdRestApi(private val queryGateway: QueryGateway) {
+internal class GetAllDwellingsRestApi(private val queryGateway: QueryGateway) {
 
     @GetMapping("/dwellings")
     fun getDwellings(

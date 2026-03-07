@@ -176,14 +176,14 @@ private class RecruitCreatureEventSourcedState private constructor(val state: St
                 EventCriteria
                     .havingTags(Tag.of(EventTags.DWELLING_ID, recruitmentId.dwellingId.raw))
                     .andBeingOneOfTypes(
-                        DwellingBuilt::class.java.getName(),
-                        AvailableCreaturesChanged::class.java.getName(),
+                        "CreatureRecruitment.DwellingBuilt",
+                        "CreatureRecruitment.AvailableCreaturesChanged",
                     ),
                 EventCriteria
                     .havingTags(Tag.of(EventTags.ARMY_ID, recruitmentId.armyId.raw))
                     .andBeingOneOfTypes(
-                        CreatureAddedToArmy::class.java.getName(),
-                        CreatureRemovedFromArmy::class.java.getName(),
+                        "Armies.CreatureAddedToArmy",
+                        "Armies.CreatureRemovedFromArmy",
                     )
             )
     }

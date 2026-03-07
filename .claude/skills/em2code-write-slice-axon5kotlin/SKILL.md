@@ -144,7 +144,9 @@ here: throw `IllegalStateException` for violations, return `emptyList()` for ide
 Handles ALL event types this slice needs for state reconstruction.
 
 **Entity**: Private class wrapping `val state: State`. Constructor with `@EntityCreator` returns `initialState`. Each
-`@EventSourcingHandler` returns new entity instance via `evolve()`.
+`@EventSourcingHandler` returns new entity instance via `evolve()`. In `@EventCriteriaBuilder` methods,
+`.andBeingOneOfTypes(...)` **MUST use `"Namespace.Name"` strings** (e.g., `"CreatureRecruitment.DwellingBuilt"`), NEVER
+`ClassName::class.java.getName()`. The type name is the `@Event` annotation's `namespace` + `"."` + `name`.
 
 **Handler**: `@CommandHandler` method receives `(command, AxonMetadata, @InjectEntity entity, EventAppender)`. Returns
 `CommandHandlerResult` via `resultOf { }`. Calls `decide()`, appends events.
