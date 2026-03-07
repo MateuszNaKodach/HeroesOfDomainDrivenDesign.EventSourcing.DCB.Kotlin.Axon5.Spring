@@ -3,7 +3,7 @@ package com.dddheroes.extensions.webmvc.test
 import com.dddheroes.heroesofddd.SecurityConfiguration
 import io.restassured.module.mockmvc.RestAssuredMockMvc
 import org.springframework.beans.factory.getBean
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
 import org.springframework.context.annotation.Import
 import org.springframework.core.annotation.AliasFor
 import org.springframework.test.context.TestContext

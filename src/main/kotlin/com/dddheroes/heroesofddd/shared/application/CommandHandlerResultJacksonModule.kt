@@ -3,7 +3,7 @@ package com.dddheroes.heroesofddd.shared.application
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.fasterxml.jackson.databind.module.SimpleModule
+import tools.jackson.databind.module.SimpleModule
 import org.springframework.stereotype.Component
 
 @Component
