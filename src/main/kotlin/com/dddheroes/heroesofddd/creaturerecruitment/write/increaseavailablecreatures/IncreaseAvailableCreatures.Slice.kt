@@ -19,7 +19,6 @@ import org.axonframework.eventsourcing.annotation.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.extension.spring.stereotype.EventSourced
 import org.axonframework.extensions.kotlin.AxonMetadata
-import org.axonframework.extensions.kotlin.asEventMessage
 import org.axonframework.messaging.commandhandling.annotation.Command
 import org.axonframework.messaging.commandhandling.annotation.CommandHandler
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
@@ -116,7 +115,7 @@ private class IncreaseAvailableCreaturesCommandHandler {
         eventAppender: EventAppender
     ): CommandHandlerResult = resultOf {
         val events = decide(command, eventSourced.state)
-        eventAppender.append(events.asEventMessage(metadata))
+        eventAppender.append(events, metadata)
         events.toCommandResult()
     }
 

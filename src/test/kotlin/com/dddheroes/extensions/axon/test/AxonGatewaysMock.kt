@@ -4,8 +4,9 @@ import org.axonframework.messaging.commandhandling.GenericCommandResultMessage
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
 import org.axonframework.messaging.commandhandling.gateway.CommandResult
 import org.axonframework.messaging.commandhandling.gateway.FutureCommandResult
-import org.axonframework.messaging.core.MessageType
 import org.axonframework.messaging.core.Metadata
+import org.axonframework.messaging.core.MessageTypeResolver
+import org.axonframework.messaging.core.annotation.AnnotationMessageTypeResolver
 import org.axonframework.messaging.eventhandling.GenericEventMessage
 import org.axonframework.messaging.queryhandling.gateway.QueryGateway
 import org.mockito.ArgumentMatchers.*
@@ -66,7 +67,8 @@ import java.util.concurrent.CompletableFuture
 class AxonGatewaysMock(
     @PublishedApi internal val commandGateway: CommandGateway,
     @PublishedApi internal val queryGateway: QueryGateway,
-    private val clock: Clock
+    private val clock: Clock,
+    private val messageTypeResolver: MessageTypeResolver
 ) {
 
     /**
@@ -208,9 +210,8 @@ class AxonGatewaysMock(
     /** Wraps a payload in a completed [FutureCommandResult]. Works with any result type. */
     @PublishedApi
     internal fun commandResultOf(payload: Any): CommandResult {
-        val message = GenericCommandResultMessage(
-            MessageType(payload::class.java), payload
-        )
+        val messageType = messageTypeResolver.resolveOrThrow(payload)
+        val message = GenericCommandResultMessage(messageType, payload)
         return FutureCommandResult(CompletableFuture.completedFuture(message))
     }
 }
@@ -219,12 +220,17 @@ class AxonGatewaysMock(
 @TestConfiguration
 class AxonGatewaysMockConfiguration {
 
+    // fixme: AF5 - should be bean in Axon by default
+    @Bean
+    fun messageTypeResolver(): MessageTypeResolver = AnnotationMessageTypeResolver()
+
     @Bean
     fun axonGatewaysMock(
         commandGateway: CommandGateway,
         queryGateway: QueryGateway,
-        clock: Clock
-    ) = AxonGatewaysMock(commandGateway, queryGateway, clock)
+        clock: Clock,
+        messageTypeResolver: MessageTypeResolver
+    ) = AxonGatewaysMock(commandGateway, queryGateway, clock, messageTypeResolver)
 }
 
 /** Resets the [Clock] mock before each test (after Spring's mock reset). */
