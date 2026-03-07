@@ -84,11 +84,11 @@ For each chapter, output a markdown table:
 ```
 ## Chapter Name
 
-| # | Type | Context | Slice Name | Messages | Board Status | Code Status | Implementation | Tests |
-|---|------|---------|-----------|----------|--------------|-------------|----------------|-------|
-| 0 | Write | Creature Recruitment | Build Dwelling | `BuildDwelling` → `DwellingBuilt` | planned | Implemented | `path/to/file.kt` | `path/to/test.kt` |
-| 1 | Read | Creature Recruitment | View Dwelling | (`DwellingBuilt`) → `Dwelling` | planned | Implemented | `path/to/file.kt` | No tests |
-| 2 | Automation | Armies | ... | `EventName` → `CommandName` | planned | NOT IMPLEMENTED | — | — |
+| # | Type | Context | Slice Name | Messages | GWTs | Board Status | Code Status | Implementation | Tests |
+|---|------|---------|-----------|----------|------|--------------|-------------|----------------|-------|
+| 0 | Write | Creature Recruitment | Build Dwelling | `BuildDwelling` → `DwellingBuilt` | 2 | planned | Implemented | `path/to/file.kt` | `path/to/test.kt` |
+| 1 | Read | Creature Recruitment | View Dwelling | (`DwellingBuilt`) → `Dwelling` | 3 | planned | Implemented | `path/to/file.kt` | No tests |
+| 2 | Automation | Armies | ... | `EventName` → `CommandName` | — | planned | NOT IMPLEMENTED | — | — |
 ```
 
 Column details:
@@ -97,6 +97,7 @@ Column details:
 - **Context**: Bounded context — derived from the `system` lane label where the slice's events live
 - **Slice Name**: From the board slice label
 - **Messages**: The command/event/information flow using backtick formatting
+- **GWTs**: Number of GWT scenarios in the slice `details` field — count `### N.` headings under `## Scenarios (GWTs)`. Show the count as an integer, or `—` if the slice has no GWT documentation
 - **Board Status**: The slice `status` field from proophboard (planned / in-progress / ready / deployed)
 - **Code Status**: Derived from codebase search — "Implemented" if code exists, "NOT IMPLEMENTED" if not. Flag mismatches: if code exists but board status is still `planned`, highlight that the board status should be at least `in-progress` or `ready`
 - **Implementation**: Relative path to slice file, or "—"
