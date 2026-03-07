@@ -64,6 +64,8 @@ slices:
     enabled: true
   creaturerecruitment.read.getalldwellings:
     enabled: true
+  creaturerecruitment.read.getdwellingbyid:
+    enabled: true
   astrologers.write.proclaimweeksymbol:
     enabled: true
   astrologers.automation.whenweekstartedthenproclaimweeksymbol:

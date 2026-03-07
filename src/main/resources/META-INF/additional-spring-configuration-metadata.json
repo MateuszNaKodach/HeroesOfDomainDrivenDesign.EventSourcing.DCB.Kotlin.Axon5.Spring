@@ -6,6 +6,11 @@
       "description": "Enable/disable the GetAllDwellings vertical slice in the Creature Recruitment bounded context."
     },
     {
+      "name": "slices.creaturerecruitment.read.getdwellingbyid.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable/disable the GetDwellingById vertical slice in the Creature Recruitment bounded context."
+    },
+    {
       "name": "slices.creaturerecruitment.write.builddwelling.enabled",
       "type": "java.lang.Boolean",
       "description": "Enable/disable the BuildDwelling vertical slice in the Creature Recruitment bounded context."
