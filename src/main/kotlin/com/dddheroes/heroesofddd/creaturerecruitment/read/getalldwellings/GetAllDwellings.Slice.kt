@@ -92,7 +92,7 @@ private class DwellingReadModelProjector(
 
 @ConditionalOnProperty(prefix = "slices.creaturerecruitment", name = ["read.getalldwellings.enabled"])
 @Component
-private class DwellingReadModelQueryHandler(
+private class GetAllDwellingsQueryHandler(
     private val repository: DwellingReadModelRepository
 ) {
 
