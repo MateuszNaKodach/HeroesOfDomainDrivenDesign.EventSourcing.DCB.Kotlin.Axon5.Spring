@@ -220,7 +220,7 @@ internal class RecruitCreatureWriteSliceConfig {
     fun recruitCreatureSlice(): CommandHandlingModule =
         CommandHandlingModule.named(RecruitCreature::class.simpleName!!)
             .commandHandlers()
-            .annotatedCommandHandlingComponent { RecruitCreatureCommandHandler() }
+            .autodetectedCommandHandlingComponent { RecruitCreatureCommandHandler() }
             .build()
 
 }

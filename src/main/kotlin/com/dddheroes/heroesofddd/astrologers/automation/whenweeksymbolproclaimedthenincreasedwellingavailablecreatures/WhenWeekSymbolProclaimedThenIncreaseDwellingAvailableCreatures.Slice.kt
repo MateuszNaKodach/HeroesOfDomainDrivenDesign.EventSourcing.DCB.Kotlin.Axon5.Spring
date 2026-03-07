@@ -15,9 +15,9 @@ import jakarta.persistence.Index
 import jakarta.persistence.Table
 import org.axonframework.messaging.commandhandling.gateway.CommandDispatcher
 import org.axonframework.messaging.core.annotation.MetadataValue
+import org.axonframework.messaging.core.annotation.SequencingPolicy
+import org.axonframework.messaging.core.sequencing.MetadataSequencingPolicy
 import org.axonframework.messaging.eventhandling.annotation.EventHandler
-import org.axonframework.messaging.eventhandling.annotation.SequencingPolicy
-import org.axonframework.messaging.eventhandling.sequencing.MetadataSequencingPolicy
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Component

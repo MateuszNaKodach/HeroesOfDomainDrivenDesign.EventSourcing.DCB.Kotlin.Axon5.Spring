@@ -8,10 +8,10 @@ import jakarta.persistence.Id
 import jakarta.persistence.IdClass
 import jakarta.persistence.Table
 import org.axonframework.messaging.core.annotation.MetadataValue
+import org.axonframework.messaging.core.annotation.SequencingPolicy
+import org.axonframework.messaging.core.sequencing.MetadataSequencingPolicy
 import org.axonframework.messaging.eventhandling.annotation.EventHandler
-import org.axonframework.messaging.eventhandling.annotation.SequencingPolicy
 import org.axonframework.messaging.eventhandling.replay.annotation.ResetHandler
-import org.axonframework.messaging.eventhandling.sequencing.MetadataSequencingPolicy
 import org.axonframework.messaging.queryhandling.annotation.QueryHandler
 import org.axonframework.messaging.queryhandling.gateway.QueryGateway
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
