@@ -6,6 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment
 import org.springframework.context.annotation.Import
 import org.springframework.core.annotation.AliasFor
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.ContextConfiguration
 import kotlin.reflect.KClass
 
 @Target(AnnotationTarget.CLASS)
@@ -13,6 +14,7 @@ import kotlin.reflect.KClass
 @ActiveProfiles("test", "testcontainers", "axonserver")
 // @ActiveProfiles("test", "axonserver") // uncomment if you don't want to use testcontainers
 @Import(TestcontainersConfiguration::class)
+@ContextConfiguration(initializers = [AxonServerContextInitializer::class])
 @AxonSpringBootTest
 annotation class HeroesAxonSpringBootTest(
 
