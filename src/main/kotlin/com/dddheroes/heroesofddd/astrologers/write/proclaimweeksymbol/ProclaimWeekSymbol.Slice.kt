@@ -95,7 +95,7 @@ private class ProclaimWeekSymbolCommandHandler {
         eventAppender: EventAppender
     ): CommandHandlerResult = resultOf {
         val events = decide(command, eventSourced.state)
-        eventAppender.append(metadata, events)
+        eventAppender.append(events, metadata)
         events.toCommandResult()
     }
 
