@@ -11,21 +11,24 @@ import org.testcontainers.postgresql.PostgreSQLContainer
 @TestConfiguration(proxyBeanMethods = false)
 class TestcontainersConfiguration {
 
+    companion object {
+        private val axonServer: AxonServerContainer = AxonServerContainer("axoniq/axonserver:2025.2.4")
+            .withDevMode(true)
+            .withDcbContext(true)
+
+        private val postgres: PostgreSQLContainer = PostgreSQLContainer("postgres:18")
+            .withCommand("postgres", "-c", "max_connections=300")
+    }
+
     @Profile("testcontainers")
     @ConditionalOnProperty(name = ["axon.axonserver.enabled"], havingValue = "true")
     @Bean
     @ServiceConnection
-    fun axonServerContainer(): AxonServerContainer {
-        return AxonServerContainer("axoniq/axonserver:2025.2.4")
-            .withDevMode(true)
-            .withDcbContext(true)
-    }
+    fun axonServerContainer(): AxonServerContainer = axonServer
 
     @Profile("testcontainers")
     @Bean
     @ServiceConnection
-    fun postgresContainer(): PostgreSQLContainer {
-        return PostgreSQLContainer("postgres:18")
-    }
+    fun postgresContainer(): PostgreSQLContainer = postgres
 
 }
