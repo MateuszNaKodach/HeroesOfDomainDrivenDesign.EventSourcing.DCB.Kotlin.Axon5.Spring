@@ -30,9 +30,7 @@ internal class FinishDaySpringSliceTest @Autowired constructor(
     fun `given day started, when finish that day, then DayFinished`() {
         sliceUnderTest.Scenario {
             Given {
-                events(
-                    DayStarted(calendarId, month = Month(1), week = Week(1), day = Day(1))
-                )
+                event(DayStarted(calendarId, month = Month(1), week = Week(1), day = Day(1)), gameMetadata)
             } When {
                 command(FinishDay(calendarId, month = Month(1), week = Week(1), day = Day(1)), gameMetadata)
             } Then {
@@ -61,9 +59,7 @@ internal class FinishDaySpringSliceTest @Autowired constructor(
     fun `given day started, when finish different day, then failure`() {
         sliceUnderTest.Scenario {
             Given {
-                events(
-                    DayStarted(calendarId, month = Month(1), week = Week(1), day = Day(1))
-                )
+                event(DayStarted(calendarId, month = Month(1), week = Week(1), day = Day(1)), gameMetadata)
             } When {
                 command(FinishDay(calendarId, month = Month(1), week = Week(1), day = Day(2)), gameMetadata)
             } Then {
@@ -77,10 +73,8 @@ internal class FinishDaySpringSliceTest @Autowired constructor(
     fun `given day already finished, when finish same day again, then failure`() {
         sliceUnderTest.Scenario {
             Given {
-                events(
-                    DayStarted(calendarId, month = Month(1), week = Week(1), day = Day(1)),
-                    DayFinished(calendarId, month = Month(1), week = Week(1), day = Day(1))
-                )
+                event(DayStarted(calendarId, month = Month(1), week = Week(1), day = Day(1)), gameMetadata)
+                event(DayFinished(calendarId, month = Month(1), week = Week(1), day = Day(1)), gameMetadata)
             } When {
                 command(FinishDay(calendarId, month = Month(1), week = Week(1), day = Day(1)), gameMetadata)
             } Then {
@@ -94,11 +88,9 @@ internal class FinishDaySpringSliceTest @Autowired constructor(
     fun `given second day started, when finish second day, then DayFinished`() {
         sliceUnderTest.Scenario {
             Given {
-                events(
-                    DayStarted(calendarId, month = Month(1), week = Week(1), day = Day(1)),
-                    DayFinished(calendarId, month = Month(1), week = Week(1), day = Day(1)),
-                    DayStarted(calendarId, month = Month(1), week = Week(1), day = Day(2))
-                )
+                event(DayStarted(calendarId, month = Month(1), week = Week(1), day = Day(1)), gameMetadata)
+                event(DayFinished(calendarId, month = Month(1), week = Week(1), day = Day(1)), gameMetadata)
+                event(DayStarted(calendarId, month = Month(1), week = Week(1), day = Day(2)), gameMetadata)
             } When {
                 command(FinishDay(calendarId, month = Month(1), week = Week(1), day = Day(2)), gameMetadata)
             } Then {

@@ -9,16 +9,23 @@ import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.Quantity
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.Resources
+import org.axonframework.extensions.kotlin.AxonMetadata
 import org.axonframework.test.fixture.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.TestPropertySource
+import java.util.*
 
 @TestPropertySource(properties = ["slices.creaturerecruitment.write.increaseavailablecreatures.enabled=true"])
 @HeroesAxonSpringBootTest
 internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
     private val sliceUnderTest: AxonTestFixture
 ) {
+
+    private val gameId: String = UUID.randomUUID().toString()
+    private val playerId: String = UUID.randomUUID().toString()
+    private val gameMetadata = AxonMetadata.with("gameId", gameId)
+        .and("playerId", playerId)
 
     @Test
     fun `given DwellingBuild, when IncreaseAvailableCreatures, then exception`() {
@@ -45,7 +52,7 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
+                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
             } When {
                 command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy))
             } Then {
@@ -70,8 +77,8 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)))
+                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)), gameMetadata)
             } When {
                 command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy = Quantity(2)))
             } Then {
