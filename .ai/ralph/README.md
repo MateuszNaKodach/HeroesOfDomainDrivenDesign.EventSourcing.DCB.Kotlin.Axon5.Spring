@@ -56,9 +56,10 @@ Each worktree is dedicated to one slice and lives for the duration of that slice
 ### Worktree Lifecycle
 
 1. **Create**: `git worktree add .claude/worktrees/ralph-<slice-kebab> <parent-branch>`
-2. **Claude runs**: Full em2code-slice flow (branch, implement, quality gates, commit, finalize)
-3. **Signal**: Claude outputs `SLICE_DONE` or `SLICE_BLOCKED`
-4. **Cleanup**: Worktree removed, branch cleaned up
+2. **Maven install**: `./mvnw install -DskipTests -q` — compiles dependencies in the fresh worktree so Claude can build and test immediately
+3. **Claude runs**: Full em2code-slice flow (branch, implement, quality gates, commit, finalize)
+4. **Signal**: Claude outputs `SLICE_DONE` or `SLICE_BLOCKED`
+5. **Cleanup**: Worktree removed, branch cleaned up
 
 ### Slice Discovery
 

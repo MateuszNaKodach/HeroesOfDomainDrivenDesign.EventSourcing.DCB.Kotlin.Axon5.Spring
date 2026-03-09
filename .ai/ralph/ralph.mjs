@@ -11,6 +11,10 @@
 //
 // Sequential mode (--max-worktrees 1, default): identical to legacy behavior.
 // Parallel mode (--max-worktrees > 1): per-slice git worktrees, concurrent Claude agents.
+//   Each worktree gets ./mvnw install -DskipTests before Claude starts.
+//
+// Flags: --max-iterations, --max-worktrees, --stream, --finalize (pr|merge|none),
+//        --discover (every|once), --fresh
 
 import { spawn, execSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync, readdirSync, rmSync } from "node:fs";
@@ -553,6 +557,24 @@ function printStatusTable(registry, loopStartTime) {
 
 // ── Worker: spawn Claude in a worktree ──────────────────────
 
+function runMvnInstall(cwd, sliceLabel) {
+    log.info(`Running ./mvnw install -DskipTests in worktree for "${sliceLabel}"...`);
+    const startTime = Date.now();
+    try {
+        execSync("./mvnw install -DskipTests -q", {
+            cwd,
+            encoding: "utf8",
+            stdio: "pipe",
+            timeout: 5 * 60 * 1000, // 5 min timeout
+        });
+        log.done(`Maven install for "${sliceLabel}" done (${elapsed(startTime)})`);
+        return true;
+    } catch (e) {
+        log.error(`Maven install failed for "${sliceLabel}": ${e.message?.slice(0, 200)}`);
+        return false;
+    }
+}
+
 function spawnWorker(slice, registry, parentBranch) {
     const kebab = toKebab(slice.label);
     const worktreePath = join(".claude", "worktrees", `ralph-${kebab}`);
@@ -579,6 +601,13 @@ function spawnWorker(slice, registry, parentBranch) {
             log.error(`Failed to create worktree for "${slice.label}": ${e.message}`);
             return null;
         }
+    }
+
+    // Run Maven install to compile dependencies in the fresh worktree
+    if (!runMvnInstall(absWorktreePath, slice.label)) {
+        removeWorktree(worktreePath);
+        deleteBranch(branchName);
+        return null;
     }
 
     // Build prompt with assignment
@@ -636,7 +665,6 @@ ${finalizeMode === "none" ? `- Leave changes on the feature branch. Do not merge
 
     let output = "";
     let rawOutput = "";
-    let logFd;
 
     // Ensure log directory exists
     if (!existsSync(dirname(logFile))) mkdirSync(dirname(logFile), { recursive: true });
