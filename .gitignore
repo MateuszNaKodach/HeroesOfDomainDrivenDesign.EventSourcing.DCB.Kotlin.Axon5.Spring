@@ -38,3 +38,4 @@ build/
 ### AI
 CLAUDE.local.md
 .ai/temp/
+.claude/worktrees/
