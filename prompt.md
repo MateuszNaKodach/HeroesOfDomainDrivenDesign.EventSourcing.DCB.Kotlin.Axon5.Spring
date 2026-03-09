@@ -17,9 +17,15 @@ You delegate implementation to the project's skills — do NOT implement slices 
 7. Pick the first planned slice. This becomes your current task.
 8. If no planned slices exist: reply with `<promise>NO_TASKS</promise>` and stop.
 
+## Shared Implementation Detection
+
+Before implementing, check if multiple planned slices share the same read model or projection
+(e.g., two Read slices reacting to different events but projecting into the same view).
+If so, group them — implement them together as a single unit and update ALL their statuses.
+
 ## Slice Implementation (delegate to skills)
 
-9. Update slice status to "in-progress": call `mcp__proophboard__update_slice_status`.
+9. Update slice status to "in-progress" for the selected slice(s): call `mcp__proophboard__update_slice_status`.
 10. Based on slice type, invoke the matching skill using the Skill tool:
     - Write slice  -> `/em2code-write-slice-axon5kotlin`
     - Read slice   -> `/em2code-read-slice-axon5kotlin`
@@ -27,6 +33,7 @@ You delegate implementation to the project's skills — do NOT implement slices 
 11. Pass the proophboard chapter and slice data as context to the skill.
     The skill knows how to extract commands, events, properties, GWT scenarios
     and how to implement them following project conventions.
+    If multiple slices are grouped, pass all of them to the skill.
 
 ## Quality Gate
 
@@ -43,7 +50,7 @@ You delegate implementation to the project's skills — do NOT implement slices 
 
 ## After Implementation
 
-18. Update slice status to "ready": call `mcp__proophboard__update_slice_status`.
+18. Update slice status to "ready" for ALL slices implemented in this iteration: call `mcp__proophboard__update_slice_status` for each.
 19. Append your progress to `progress.txt` (create if missing). Format:
 
 ```
@@ -68,7 +75,7 @@ After completing a slice, check if ALL slices across ALL chapters have status "r
 
 ## Important
 
-- Work on ONE slice per iteration.
+- Work on ONE slice per iteration, unless multiple slices share the same implementation (e.g., shared read model) — then group and implement them together.
 - Commit only when quality gate passes.
 - Never implement slice logic directly — always delegate to the matching skill.
 - The proophboard slice definition (elements, GWT scenarios) is always the source of truth.
