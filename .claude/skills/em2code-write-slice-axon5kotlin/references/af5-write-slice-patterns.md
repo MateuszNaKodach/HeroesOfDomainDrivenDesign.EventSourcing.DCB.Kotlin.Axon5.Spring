@@ -549,9 +549,9 @@ internal class RecruitCreatureUnitTest {
     fun `given built dwelling with creatures, when recruit, then recruited`() {
         sliceUnderTest
             .given()
-            .event(DwellingBuilt(...))
-        .event(AvailableCreaturesChanged(...))
-        .`when`().command(RecruitCreature(...))
+            .event(DwellingBuilt(...), gameMetadata)
+        .event(AvailableCreaturesChanged(...), gameMetadata)
+        .`when`().command(RecruitCreature(...), gameMetadata)
         .then()
             .resultMessagePayload(CommandHandlerResult.Success)
             .events(CreatureRecruited(...), CreatureAddedToArmy(...), AvailableCreaturesChanged(...))
@@ -561,7 +561,7 @@ internal class RecruitCreatureUnitTest {
     fun `given not built dwelling, when recruit, then failure`() {
         sliceUnderTest
             .given().noPriorActivity()
-            .`when`().command(RecruitCreature(...))
+            .`when`().command(RecruitCreature(...), gameMetadata)
         .then()
             .resultMessagePayload(CommandHandlerResult.Failure("Recruit creatures cannot exceed available creatures"))
     }
@@ -580,7 +580,7 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(configuration
     fun `given not built dwelling, when build, then built`() {
         sliceUnderTest
             .given().noPriorActivity()
-            .`when`().command(BuildDwelling(...))
+            .`when`().command(BuildDwelling(...), gameMetadata)
         .then()
             .resultMessagePayload(CommandHandlerResult.Success)
             .events(DwellingBuilt(...))
@@ -589,8 +589,8 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(configuration
     @Test
     fun `given already built, when build again, then no events`() {
         sliceUnderTest
-            .given().event(DwellingBuilt(...))
-        .`when`().command(BuildDwelling(...))
+            .given().event(DwellingBuilt(...), gameMetadata)
+        .`when`().command(BuildDwelling(...), gameMetadata)
         .then()
             .resultMessagePayload(CommandHandlerResult.Success)
             .noEvents()

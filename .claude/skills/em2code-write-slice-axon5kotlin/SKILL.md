@@ -324,12 +324,24 @@ When the slice details contain `## Scenarios (GWTs)`, map each scenario to a tes
 |---|---|
 | Scenario name (e.g., `### 1. build for the first time`) | Test method name: `` `given not built dwelling, when build, then built` `` |
 | `NOTHING` in Given | `noPriorActivity()` |
-| `:::element event` in Given | `event(EventClass(...))` in `Given { }` block |
+| `:::element event` in Given | `event(EventClass(...), gameMetadata)` in `Given { }` block |
 | `:::element command` in When | `command(CommandClass(...), gameMetadata)` in `When { }` block |
 | `:::element event` in Then | `events(EventClass(...))` + `resultMessagePayload(Success)` |
 | `:::element hotspot` in Then | `resultMessagePayload(Failure("message"))` |
 | Failure event in Then (e.g., `PaymentRejected`) | `events(PaymentRejected(...))` — domain failure event, not exception |
 | `NOTHING` in Then | `noEvents()` + `resultMessagePayload(Success)` — idempotent |
+
+**⚠️ CRITICAL — `gameMetadata` is MANDATORY on ALL `event()` and `command()` calls in tests.**
+The project uses `MetadataSequencingPolicy` which routes events to processors based on metadata keys (e.g., `gameId`).
+Events published without `gameMetadata` will have `null` sequencing key, causing event processor failures when
+Testcontainers are shared across test contexts (events from one test leak into another's processor).
+Always define `gameMetadata` in every test class and pass it to every `event(...)` and `command(...)` call:
+```kotlin
+private val gameId: String = UUID.randomUUID().toString()
+private val playerId: String = UUID.randomUUID().toString()
+private val gameMetadata = AxonMetadata.with("gameId", gameId)
+    .and("playerId", playerId)
+```
 
 **Property mapping**: GWT properties are rule-relevant only. Fill remaining constructor params with test fixtures.
 
@@ -340,8 +352,8 @@ val dwellingId = DwellingId.random()
 val creatureId = CreatureId("angel")          // not in GWT, fixture value
 val costPerTroop = Resources.of(...)          // not in GWT, fixture value
 
-Given { events(DwellingBuilt(dwellingId, creatureId, costPerTroop)) }
-When  { command(BuildDwelling(dwellingId, creatureId, costPerTroop)) }
+Given { event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata) }
+When  { command(BuildDwelling(dwellingId, creatureId, costPerTroop), gameMetadata) }
 Then  { resultMessagePayload(Success); noEvents() }
 ```
 
