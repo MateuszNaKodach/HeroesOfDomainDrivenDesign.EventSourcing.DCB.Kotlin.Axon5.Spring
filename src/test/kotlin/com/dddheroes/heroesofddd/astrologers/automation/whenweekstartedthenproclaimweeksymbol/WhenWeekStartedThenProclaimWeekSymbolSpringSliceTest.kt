@@ -63,7 +63,11 @@ internal class WhenWeekStartedThenProclaimWeekSymbolSpringSliceTest @Autowired c
             Given {
                 event(DayStarted(calendarId, month = Month(1), week = Week(1), day = Day(1)), gameMetadata)
             } Then {
-                await({ it.commands(expectedCommand) }, Duration.ofSeconds(5))
+                await({
+                    it.commandsMatch { commands ->
+                        commands.map { c -> c.payload() }.any { c -> c == expectedCommand }
+                    }
+                }, Duration.ofSeconds(5))
             }
         }
     }

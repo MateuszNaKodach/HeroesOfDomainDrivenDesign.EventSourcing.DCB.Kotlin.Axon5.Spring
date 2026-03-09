@@ -429,7 +429,7 @@ internal class RecruitCreatureUnitTest {
                             armyId = armyId,
                             quantity = Quantity(1),
                             expectedCost = costPerTroop
-                        )
+                        ), gameMetadata
                     )
                 } Then {
                     resultMessagePayload(CommandHandlerResult.Success)
@@ -484,7 +484,7 @@ internal class RecruitCreatureUnitTest {
                             armyId = armyId,
                             quantity = Quantity(1),
                             expectedCost = costPerTroop
-                        )
+                        ), gameMetadata
                     )
                 } Then {
                     resultMessagePayload(CommandHandlerResult.Failure("Army cannot contain more than 7 different creature types"))
@@ -518,7 +518,7 @@ internal class RecruitCreatureUnitTest {
                             armyId = armyId,
                             quantity = Quantity(1),
                             expectedCost = costPerTroop
-                        )
+                        ), gameMetadata
                     )
                 } Then {
                     resultMessagePayload(CommandHandlerResult.Success)

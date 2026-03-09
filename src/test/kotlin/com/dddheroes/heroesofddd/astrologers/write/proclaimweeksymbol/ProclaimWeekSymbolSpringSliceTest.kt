@@ -63,7 +63,7 @@ internal class ProclaimWeekSymbolSpringSliceTest @Autowired constructor(
 
         sliceUnderTest.Scenario {
             Given {
-                events(firstProclamation)
+                event(firstProclamation, gameMetadata)
             } When {
                 command(
                     ProclaimWeekSymbol(
@@ -100,7 +100,7 @@ internal class ProclaimWeekSymbolSpringSliceTest @Autowired constructor(
 
         sliceUnderTest.Scenario {
             Given {
-                events(firstProclamation)
+                event(firstProclamation, gameMetadata)
             } When {
                 command(
                     ProclaimWeekSymbol(
@@ -137,7 +137,7 @@ internal class ProclaimWeekSymbolSpringSliceTest @Autowired constructor(
 
         sliceUnderTest.Scenario {
             Given {
-                events(firstProclamation)
+                event(firstProclamation, gameMetadata)
             } When {
                 command(
                     ProclaimWeekSymbol(
@@ -166,7 +166,7 @@ internal class ProclaimWeekSymbolSpringSliceTest @Autowired constructor(
 
         sliceUnderTest.Scenario {
             Given {
-                events(firstProclamation)
+                event(firstProclamation, gameMetadata)
             } When {
                 command(
                     ProclaimWeekSymbol(
