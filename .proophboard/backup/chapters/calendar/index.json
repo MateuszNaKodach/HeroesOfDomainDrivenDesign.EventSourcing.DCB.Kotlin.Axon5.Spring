@@ -1,0 +1,173 @@
+{
+  "id": "18774eb9-1dae-4052-9ee8-c8e1eb334743",
+  "name": "Calendar",
+  "index": 0,
+  "context": "Calendar",
+  "mode": "event-modeling",
+  "lanes": [
+    {
+      "id": "40e84d09-7b35-4b84-96fe-d62ebfd13f7d",
+      "label": "Player",
+      "type": "user-lane",
+      "height": 185,
+      "icon": "",
+      "index": 0
+    },
+    {
+      "id": "0c545664-2fa8-488d-9600-18b6e534a0c1",
+      "label": "Information Flow",
+      "type": "information-flow",
+      "height": 186,
+      "icon": "",
+      "index": 1
+    },
+    {
+      "id": "a6452ab3-64a7-47f3-bf3d-20aad4ea07b4",
+      "label": "Calendar",
+      "type": "system",
+      "height": 186,
+      "icon": "Calendar",
+      "index": 2
+    },
+    {
+      "id": "cda244dc-1d11-44f4-9e07-a145c15c653b",
+      "label": "Astrologers",
+      "type": "system",
+      "height": 150,
+      "icon": "Brain",
+      "index": 3
+    }
+  ],
+  "slices": [
+    {
+      "id": "bfedd250-2fae-4b32-9354-4b0ec5b2516d",
+      "label": "Start Day",
+      "width": 200,
+      "index": 0,
+      "details": "## Business Rules\n\n- Days cannot be skipped — must follow sequential order (day 1, 2, ..., 7)\n- When last day of week (7) finishes, next day rolls over to day 1 of the next week\n- When last week of month (4) finishes, next day rolls over to week 1 of the next month\n- First day ever can be started without prior events\n\n## Scenarios (GWTs)\n\n### 1. start first day ever\n\n**Given**\nNOTHING\n**When**\n:::element command\nStart Day  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n**Then**\n:::element event\nDay Started  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n\n### 2. previous day finished, start next day\n\n**Given**\n:::element event\nDay Started  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n:::element event\nDay Finished  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n**When**\n:::element command\nStart Day  \nmonth: 1  \nweek: 1  \nday: 2  \n:::\n**Then**\n:::element event\nDay Started  \nmonth: 1  \nweek: 1  \nday: 2  \n:::\n\n### 3. cannot skip days\n\n**Given**\n:::element event\nDay Started  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n:::element event\nDay Finished  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n**When**\n:::element command\nStart Day  \nmonth: 1  \nweek: 1  \nday: 3  \n:::\n**Then**\n:::element hotspot\nException  \nCannot skip days  \n:::\n\n### 4. last day of week finished, start first day of next week\n\n**Given**\n:::element event\nDay Started  \nmonth: 1  \nweek: 1  \nday: 7  \n:::\n:::element event\nDay Finished  \nmonth: 1  \nweek: 1  \nday: 7  \n:::\n**When**\n:::element command\nStart Day  \nmonth: 1  \nweek: 2  \nday: 1  \n:::\n**Then**\n:::element event\nDay Started  \nmonth: 1  \nweek: 2  \nday: 1  \n:::\n\n### 5. last day of month finished, start first day of next month\n\n**Given**\n:::element event\nDay Started  \nmonth: 1  \nweek: 4  \nday: 7  \n:::\n:::element event\nDay Finished  \nmonth: 1  \nweek: 4  \nday: 7  \n:::\n**When**\n:::element command\nStart Day  \nmonth: 2  \nweek: 1  \nday: 1  \n:::\n**Then**\n:::element event\nDay Started  \nmonth: 2  \nweek: 1  \nday: 1  \n:::\n",
+      "status": "ready"
+    },
+    {
+      "id": "dfa75496-69c5-40a4-bfbf-8191357ad0c0",
+      "label": "View Current Day",
+      "width": 200,
+      "index": 1,
+      "details": "## Business Rules\n\n- The read model tracks the current day from the latest Day Started event\n- Each Day Started sets `finished: false`\n- Day Finished sets `finished: true` but keeps the same month/week/day\n- Keyed by calendarId (which equals gameId)\n\n## Scenarios (GWTs)\n\n### 1. given day started, then show current day in progress\n\n**Given**\n:::element event\nDay Started  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n**Then**\n:::element information\nCurrent Day  \nmonth: 1  \nweek: 1  \nday: 1  \nfinished: false  \n:::\n\n### 2. given multiple days started, then show the latest day\n\n**Given**\n:::element event\nDay Started  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n:::element event\nDay Started  \nmonth: 1  \nweek: 1  \nday: 2  \n:::\n**Then**\n:::element information\nCurrent Day  \nmonth: 1  \nweek: 1  \nday: 2  \nfinished: false  \n:::\n\n### 3. given no day started, then no result\n\n**Given**\nNOTHING\n**Then**\n:::element information\nCurrent Day  \nNOTHING  \n:::\n\n## Implementation Guidelines\n\n### Backend\n\n- REST API: `GET /games/{gameId}/current-day`\n- `calendarId` equals `gameId` — derive it from the path variable, do not expose as a separate parameter\n- Response: return the full read model as-is, no mapping needed\n- Return 404 if no day has been started yet",
+      "status": "planned"
+    },
+    {
+      "id": "74b7fba2-0513-47f0-8d5c-0f7d0b85dd95",
+      "label": "Finish Day",
+      "width": 200,
+      "index": 2,
+      "details": "## Business Rules\n\n- Can only finish the current day (the one that was started and not yet finished)\n- Cannot finish a day that was never started\n- Cannot finish a day that was already finished\n\n## Scenarios (GWTs)\n\n### 1. day started, finish that day\n\n**Given**\n:::element event\nDay Started  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n**When**\n:::element command\nFinish Day  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n**Then**\n:::element event\nDay Finished  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n\n### 2. no day started, cannot finish\n\n**Given**\nNOTHING\n**When**\n:::element command\nFinish Day  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n**Then**\n:::element hotspot\nException  \nCan only finish current day  \n:::\n\n### 3. day started, try to finish different day\n\n**Given**\n:::element event\nDay Started  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n**When**\n:::element command\nFinish Day  \nmonth: 1  \nweek: 1  \nday: 2  \n:::\n**Then**\n:::element hotspot\nException  \nCan only finish current day  \n:::\n\n### 4. day already finished, cannot finish again\n\n**Given**\n:::element event\nDay Started  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n:::element event\nDay Finished  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n**When**\n:::element command\nFinish Day  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n**Then**\n:::element hotspot\nException  \nCan only finish current day  \n:::\n\n### 5. second day started, finish second day\n\n**Given**\n:::element event\nDay Started  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n:::element event\nDay Finished  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n:::element event\nDay Started  \nmonth: 1  \nweek: 1  \nday: 2  \n:::\n**When**\n:::element command\nFinish Day  \nmonth: 1  \nweek: 1  \nday: 2  \n:::\n**Then**\n:::element event\nDay Finished  \nmonth: 1  \nweek: 1  \nday: 2  \n:::\n",
+      "status": "ready"
+    },
+    {
+      "id": "a9d12b09-4ee9-45d6-a650-2b18f4faae78",
+      "label": "View Current Day",
+      "width": 200,
+      "index": 4,
+      "details": "## Business Rules\n\n- Day Finished sets `finished: true` on the current day — month/week/day remain unchanged\n- Next Day Started resets `finished: false` with the new day\n- Keyed by calendarId (which equals gameId)\n\n## Scenarios (GWTs)\n\n### 1. given day started and finished, then show that day as finished\n\n**Given**\n:::element event\nDay Started  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n:::element event\nDay Finished  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n**Then**\n:::element information\nCurrent Day  \nmonth: 1  \nweek: 1  \nday: 1  \nfinished: true  \n:::\n\n### 2. given day finished and next day started, then show new day in progress\n\n**Given**\n:::element event\nDay Started  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n:::element event\nDay Finished  \nmonth: 1  \nweek: 1  \nday: 1  \n:::\n:::element event\nDay Started  \nmonth: 1  \nweek: 1  \nday: 2  \n:::\n**Then**\n:::element information\nCurrent Day  \nmonth: 1  \nweek: 1  \nday: 2  \nfinished: false  \n:::\n\n## Implementation Guidelines\n\n### Backend\n\n- REST API: `GET /games/{gameId}/current-day`\n- Same projection as the first View Current Day slice — shared read model\n- `calendarId` equals `gameId` — derive it from the path variable, do not expose as a separate parameter\n- Response: return the full read model as-is, no mapping needed\n- Return 404 if no day has been started yet",
+      "status": "planned"
+    }
+  ],
+  "elements": [
+    {
+      "id": "b0028ce9-e2e2-416f-83c9-e11382d38350",
+      "type": "information",
+      "name": "Current Day",
+      "description": "",
+      "details": "## Example\n\n```json\n{\n  \"month\": 1,\n  \"week\": 2,\n  \"day\": 3,\n  \"finished\": false\n}\n```\n\n## JSON Schema\n\n```json\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"month\": {\n      \"type\": \"integer\",\n      \"minimum\": 1,\n      \"description\": \"Current month number (1-based)\"\n    },\n    \"week\": {\n      \"type\": \"integer\",\n      \"minimum\": 1,\n      \"maximum\": 4,\n      \"description\": \"Current week of the month (1-4)\"\n    },\n    \"day\": {\n      \"type\": \"integer\",\n      \"minimum\": 1,\n      \"maximum\": 7,\n      \"description\": \"Current day of the week (1-7)\"\n    },\n    \"finished\": {\n      \"type\": \"boolean\",\n      \"description\": \"Whether the current day has been finished\"\n    }\n  },\n  \"required\": [\"month\", \"week\", \"day\", \"finished\"]\n}\n```",
+      "laneId": "0c545664-2fa8-488d-9600-18b6e534a0c1",
+      "sliceId": "dfa75496-69c5-40a4-bfbf-8191357ad0c0",
+      "index": 0,
+      "comments": [],
+      "context": "Calendar"
+    },
+    {
+      "id": "6f72ea84-cb5a-435e-b6ae-632f18ae067f",
+      "type": "ui",
+      "name": "Day, Week, Month",
+      "description": "",
+      "details": "",
+      "laneId": "40e84d09-7b35-4b84-96fe-d62ebfd13f7d",
+      "sliceId": "dfa75496-69c5-40a4-bfbf-8191357ad0c0",
+      "index": 0,
+      "comments": [],
+      "context": "Calendar"
+    },
+    {
+      "id": "bb4fc828-b73d-4c7c-a9db-231715dcb66f",
+      "type": "command",
+      "name": "Finish Day",
+      "description": "",
+      "details": "",
+      "laneId": "0c545664-2fa8-488d-9600-18b6e534a0c1",
+      "sliceId": "74b7fba2-0513-47f0-8d5c-0f7d0b85dd95",
+      "index": 0,
+      "comments": [],
+      "context": "Calendar"
+    },
+    {
+      "id": "4d8c6b70-9f0b-427a-8a88-30153f98cea0",
+      "type": "event",
+      "name": "Day Started",
+      "description": "",
+      "details": "",
+      "laneId": "a6452ab3-64a7-47f3-bf3d-20aad4ea07b4",
+      "sliceId": "bfedd250-2fae-4b32-9354-4b0ec5b2516d",
+      "index": 0,
+      "comments": [],
+      "context": "Calendar"
+    },
+    {
+      "id": "ee8c800f-fe1c-4e81-941c-c02d8084a0de",
+      "type": "event",
+      "name": "Day Finished",
+      "description": "",
+      "details": "",
+      "laneId": "a6452ab3-64a7-47f3-bf3d-20aad4ea07b4",
+      "sliceId": "74b7fba2-0513-47f0-8d5c-0f7d0b85dd95",
+      "index": 0,
+      "comments": [],
+      "context": "Calendar"
+    },
+    {
+      "id": "2465b605-41f5-4259-b736-92939984d066",
+      "type": "information",
+      "name": "Current Day",
+      "description": "",
+      "details": "## Example\n\n```json\n{\n  \"month\": 1,\n  \"week\": 2,\n  \"day\": 3,\n  \"finished\": false\n}\n```\n\n## JSON Schema\n\n```json\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"month\": {\n      \"type\": \"integer\",\n      \"minimum\": 1,\n      \"description\": \"Current month number (1-based)\"\n    },\n    \"week\": {\n      \"type\": \"integer\",\n      \"minimum\": 1,\n      \"maximum\": 4,\n      \"description\": \"Current week of the month (1-4)\"\n    },\n    \"day\": {\n      \"type\": \"integer\",\n      \"minimum\": 1,\n      \"maximum\": 7,\n      \"description\": \"Current day of the week (1-7)\"\n    },\n    \"finished\": {\n      \"type\": \"boolean\",\n      \"description\": \"Whether the current day has been finished\"\n    }\n  },\n  \"required\": [\"month\", \"week\", \"day\", \"finished\"]\n}\n```",
+      "laneId": "0c545664-2fa8-488d-9600-18b6e534a0c1",
+      "sliceId": "a9d12b09-4ee9-45d6-a650-2b18f4faae78",
+      "index": 0,
+      "comments": [],
+      "context": "Calendar"
+    },
+    {
+      "id": "c7cebc07-95ef-4a61-a330-2e0b9edf0114",
+      "type": "command",
+      "name": "Start Day",
+      "description": "",
+      "details": "```\n{\n  \"calendarId\": \"string\",\n  \"month\": \"integer\",\n  \"week\": \"integer\",\n  \"day\": \"integer\"\n}\n```",
+      "laneId": "0c545664-2fa8-488d-9600-18b6e534a0c1",
+      "sliceId": "bfedd250-2fae-4b32-9354-4b0ec5b2516d",
+      "index": 0,
+      "comments": [],
+      "context": "Calendar"
+    },
+    {
+      "id": "a6639f40-8f56-4b83-bbc5-958a9b6cf726",
+      "type": "ui",
+      "name": "Day, Week, Month",
+      "description": "",
+      "details": "",
+      "laneId": "40e84d09-7b35-4b84-96fe-d62ebfd13f7d",
+      "sliceId": "a9d12b09-4ee9-45d6-a650-2b18f4faae78",
+      "index": 0,
+      "comments": [],
+      "context": "Calendar"
+    }
+  ]
+}

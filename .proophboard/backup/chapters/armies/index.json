@@ -1,0 +1,165 @@
+{
+  "id": "d4db61e3-210e-4a06-98f2-a5ddc02b70bb",
+  "name": "Armies",
+  "index": 3,
+  "context": "Armies",
+  "mode": "event-modeling",
+  "lanes": [
+    {
+      "id": "9c729731-18f2-48c7-9050-f44346582fb3",
+      "label": "Garrison",
+      "type": "user-lane",
+      "height": 265,
+      "icon": "Castle",
+      "index": 1
+    },
+    {
+      "id": "19e4f709-5f35-44ee-ba6d-57434510914c",
+      "label": "Information Flow",
+      "type": "information-flow",
+      "height": 186,
+      "icon": "",
+      "index": 2
+    },
+    {
+      "id": "024c5ace-b0a5-4c49-b14d-62325b825cb6",
+      "label": "Armies",
+      "type": "system",
+      "height": 242,
+      "icon": "",
+      "index": 3
+    }
+  ],
+  "slices": [
+    {
+      "id": "de9a5bbe-ad66-4693-b6a4-45666a312065",
+      "label": "Add Creature To Army",
+      "width": 200,
+      "index": 0,
+      "details": "## Business Rules\n\n- Army has a maximum of **7 creature type slots**\n- Each `creatureId` represents a distinct creature type occupying one slot\n- Adding troops of an **existing** creature type is always allowed (increases amount)\n- Adding a **new** creature type when all 7 slots are occupied must be **rejected**\n\n## Scenarios (GWTs)\n\n### 1. given empty army, when add creature, then success\n\n**Given**\nNOTHING  \n**When**\n:::element command\nAdd Creature To Army\ncreatureId: Angel  \nquantity: 1\n:::\n**Then**\n:::element event\nCreature Added To Army\ncreatureId: Angel  \nquantity: 1\n:::\n\n### 2. given some creatures in the army, when add creature, then success \n\n**Given**\n:::element event\nCreature Added To Army\ncreatureId: Centaur  \nquantity: 5\n:::\n:::element event\nCreature Added To Army\ncreatureId: Bowman  \nquantity: 3\n:::\n**When**\n:::element command\nAdd Creature To Army\ncreatureId: Angel  \nquantity: 1\n:::\n**Then**\n:::element event\nCreature Added To Army\ncreatureId: Angel  \nquantity: 1\n:::\n\n### 3. given army with max creature stacks, when add creature, then failure\n\n**Given**\n:::element event\nCreature Added To Army\ncreatureId: Centaur  \nquantity: 5\n:::\n:::element event\nCreature Added To Army\ncreatureId: Angel  \nquantity: 1\n:::\n:::element event\nCreature Added To Army\ncreatureId: ArchAngel  \nquantity: 3\n:::\n:::element event\nCreature Added To Army\ncreatureId: BlackDragon  \nquantity: 9\n:::\n:::element event\nCreature Added To Army\ncreatureId: RedDragon  \nquantity: 15\n:::\n:::element event\nCreature Added To Army\ncreatureId: Bowman  \nquantity: 12\n:::\n:::element event\nCreature Added To Army\ncreatureId: Behemoth  \nquantity: 11\n:::\n**When**\n:::element command\nAdd Creature To Army\ncreatureId: Phoenix  \nquantity: 3\n:::\n**Then**\n:::element hotspot\nException\nCan have max 7 different creature stacks in the army\n:::\n\n### 4. given army with max creature stacks, when add present creature, then success\n\n**Given**\n:::element event\nCreature Added To Army\ncreatureId: Centaur  \nquantity: 5\n:::\n:::element event\nCreature Added To Army\ncreatureId: Angel  \nquantity: 1\n:::\n:::element event\nCreature Added To Army\ncreatureId: ArchAngel  \nquantity: 3\n:::\n:::element event\nCreature Added To Army\ncreatureId: BlackDragon  \nquantity: 9\n:::\n:::element event\nCreature Added To Army\ncreatureId: RedDragon  \nquantity: 15\n:::\n:::element event\nCreature Added To Army\ncreatureId: Bowman  \nquantity: 12\n:::\n:::element event\nCreature Added To Army\ncreatureId: Behemoth  \nquantity: 11\n:::\n**When**\n:::element command\nAdd Creature To Army\ncreatureId: ArchAngel  \nquantity: 3\n:::\n**Then**\n:::element event\nCreature Added To Army\ncreatureId: ArchAngel  \nquantity: 3\n:::\n\n\n### 5. given army with max creature stacks (after removal), when add present creature, then success\n\n**Given**\n:::element event\nCreature Added To Army\ncreatureId: Centaur  \nquantity: 5\n:::\n:::element event\nCreature Added To Army\ncreatureId: Angel  \nquantity: 1\n:::\n:::element event\nCreature Added To Army\ncreatureId: ArchAngel  \nquantity: 3\n:::\n:::element event\nCreature Added To Army\ncreatureId: BlackDragon  \nquantity: 9\n:::\n:::element event\nCreature Added To Army\ncreatureId: RedDragon  \nquantity: 15\n:::\n:::element event\nCreature Added To Army\ncreatureId: Bowman  \nquantity: 12\n:::\n:::element event\nCreature Added To Army\ncreatureId: Behemoth  \nquantity: 11\n:::\n:::element event\nCreature Removed From Army\ncreatureId: Behemoth  \nquantity: 11\n:::\n**When**\n:::element command\nAdd Creature To Army\ncreatureId: Phoenix  \nquantity: 3\n:::\n**Then**\n:::element event\nCreature Added To Army\ncreatureId: Phoenix  \nquantity: 3\n:::\n",
+      "status": "planned"
+    },
+    {
+      "id": "02c8f541-b0e8-4101-8014-0c7c6997ac87",
+      "label": "View Army Creatures",
+      "width": 200,
+      "index": 1,
+      "details": "## Scenarios (GWTs)\n\n### 1. creature added, then one stack returned\n\n**Given**\n:::element event\nCreature Added To Army  \narmyId: hero-catherine-army  \ncreatureId: Angel  \nquantity: 5  \n:::\n**Then**\n:::element information\nArmy Creatures  \narmyId: hero-catherine-army  \nstacks: [{creatureId: Angel, quantity: 5}]  \n:::\n\n### 2. two different creatures added, then two stacks returned\n\n**Given**\n:::element event\nCreature Added To Army  \narmyId: hero-catherine-army  \ncreatureId: Angel  \nquantity: 5  \n:::\n:::element event\nCreature Added To Army  \narmyId: hero-catherine-army  \ncreatureId: Bowman  \nquantity: 3  \n:::\n**Then**\n:::element information\nArmy Creatures  \narmyId: hero-catherine-army  \nstacks: [{creatureId: Angel, quantity: 5}, {creatureId: Bowman, quantity: 3}]  \n:::\n\n### 3. same creature added twice, quantities aggregated\n\n**Given**\n:::element event\nCreature Added To Army  \narmyId: hero-catherine-army  \ncreatureId: Angel  \nquantity: 5  \n:::\n:::element event\nCreature Added To Army  \narmyId: hero-catherine-army  \ncreatureId: Angel  \nquantity: 3  \n:::\n**Then**\n:::element information\nArmy Creatures  \narmyId: hero-catherine-army  \nstacks: [{creatureId: Angel, quantity: 8}]  \n:::\n\n### 4. creatures from different armies, only requested army returned\n\n**Given**\n:::element event\nCreature Added To Army  \narmyId: hero-catherine-army  \ncreatureId: Angel  \nquantity: 5  \n:::\n:::element event\nCreature Added To Army  \narmyId: hero-roland-army  \ncreatureId: Black Dragon  \nquantity: 2  \n:::\n**Then**\n:::element information\nArmy Creatures  \narmyId: hero-catherine-army  \nstacks: [{creatureId: Angel, quantity: 5}]  \n:::\n",
+      "status": "ready"
+    },
+    {
+      "id": "4c02673e-c97b-4c9c-b49f-933595ca8c6b",
+      "label": "Remove creature from army",
+      "width": 200,
+      "index": 2,
+      "details": "## Business Rules\n\n- Can only remove up to the quantity present in the army\n- Removing a creature not present in the army is a no-op (idempotent)\n\n## Scenarios (GWTs)\n\n### 1. army has creature, remove exact quantity\n\n**Given**\n:::element event\nCreature Added To Army  \ncreatureId: Centaur  \nquantity: 5  \n:::\n:::element event\nCreature Added To Army  \ncreatureId: Bowman  \nquantity: 99  \n:::\n**When**\n:::element command\nRemove Creature From Army  \ncreatureId: Centaur  \nquantity: 5  \n:::\n**Then**\n:::element event\nCreature Removed From Army  \ncreatureId: Centaur  \nquantity: 5  \n:::\n\n### 2. army has creature, remove partial quantity\n\n**Given**\n:::element event\nCreature Added To Army  \ncreatureId: Centaur  \nquantity: 5  \n:::\n**When**\n:::element command\nRemove Creature From Army  \ncreatureId: Centaur  \nquantity: 3  \n:::\n**Then**\n:::element event\nCreature Removed From Army  \ncreatureId: Centaur  \nquantity: 3  \n:::\n\n### 3. creature not present in army (idempotent no-op)\n\n**Given**\n:::element event\nCreature Added To Army  \ncreatureId: Centaur  \nquantity: 5  \n:::\n**When**\n:::element command\nRemove Creature From Army  \ncreatureId: Angel  \nquantity: 1  \n:::\n**Then**\nNOTHING\n\n### 4. remove more than available\n\n**Given**\n:::element event\nCreature Added To Army  \ncreatureId: Centaur  \nquantity: 5  \n:::\n**When**\n:::element command\nRemove Creature From Army  \ncreatureId: Centaur  \nquantity: 6  \n:::\n**Then**\n:::element hotspot\nException  \nCannot remove more creatures than present in army  \n:::\n\n### 5. creature already fully removed (idempotent replay)\n\n**Given**\n:::element event\nCreature Added To Army  \ncreatureId: Centaur  \nquantity: 5  \n:::\n:::element event\nCreature Removed From Army  \ncreatureId: Centaur  \nquantity: 5  \n:::\n**When**\n:::element command\nRemove Creature From Army  \ncreatureId: Centaur  \nquantity: 5  \n:::\n**Then**\nNOTHING\n",
+      "status": "planned"
+    },
+    {
+      "id": "a3b7cde1-6ebd-4c56-b83e-637da160c9f5",
+      "label": "View Army Creatures",
+      "width": 200,
+      "index": 3,
+      "details": "## Scenarios (GWTs)\n\n### 1. creature added then partially removed, reduced quantity\n\n**Given**\n:::element event\nCreature Added To Army  \narmyId: hero-catherine-army  \ncreatureId: Angel  \nquantity: 5  \n:::\n:::element event\nCreature Removed From Army  \narmyId: hero-catherine-army  \ncreatureId: Angel  \nquantity: 2  \n:::\n**Then**\n:::element information\nArmy Creatures  \narmyId: hero-catherine-army  \nstacks: [{creatureId: Angel, quantity: 3}]  \n:::\n\n### 2. creature added then fully removed, stack disappears\n\n**Given**\n:::element event\nCreature Added To Army  \narmyId: hero-catherine-army  \ncreatureId: Angel  \nquantity: 5  \n:::\n:::element event\nCreature Removed From Army  \narmyId: hero-catherine-army  \ncreatureId: Angel  \nquantity: 5  \n:::\n**Then**\n:::element information\nArmy Creatures  \narmyId: hero-catherine-army  \nstacks: []  \n:::\n",
+      "status": "ready"
+    }
+  ],
+  "elements": [
+    {
+      "id": "d0f89dfd-be2f-4c06-9c29-0586e38efa25",
+      "type": "event",
+      "name": "Creature Removed From Army",
+      "description": "",
+      "details": "## Example\n\n```json\n{\n  \"armyId\": \"hero-catherine-army\",\n  \"creatureId\": \"angel\",\n  \"quantity\": 3\n}\n```\n\n## JSON Schema\n\n```json\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"armyId\": {\n      \"type\": \"string\",\n      \"minLength\": 1,\n      \"description\": \"Unique identifier of the army\"\n    },\n    \"creatureId\": {\n      \"type\": \"string\",\n      \"minLength\": 1,\n      \"description\": \"Creature type removed\"\n    },\n    \"quantity\": {\n      \"type\": \"integer\",\n      \"minimum\": 1,\n      \"description\": \"Number of troops removed\"\n    }\n  },\n  \"required\": [\"armyId\", \"creatureId\", \"quantity\"]\n}\n```",
+      "laneId": "024c5ace-b0a5-4c49-b14d-62325b825cb6",
+      "sliceId": "4c02673e-c97b-4c9c-b49f-933595ca8c6b",
+      "index": 0,
+      "comments": [],
+      "context": "Armies"
+    },
+    {
+      "id": "c8cb0024-d568-4bcf-8de6-fe103ae63f30",
+      "type": "ui",
+      "name": "Army Creatures",
+      "description": "![image](./images/markdown-images/bf96a8c5-fe6a-4ce6-b4f4-51722bbd050d/d4db61e3-210e-4a06-98f2-a5ddc02b70bb/c8cb0024-d568-4bcf-8de6-fe103ae63f30/1772795001356-177ijl.png)",
+      "details": "",
+      "laneId": "9c729731-18f2-48c7-9050-f44346582fb3",
+      "sliceId": "02c8f541-b0e8-4101-8014-0c7c6997ac87",
+      "index": 0,
+      "comments": [],
+      "context": "Armies"
+    },
+    {
+      "id": "2b3d184c-1fb3-45d4-bf41-b48ed082ab87",
+      "type": "ui",
+      "name": "Army Creatures",
+      "description": "![image](./images/markdown-images/bf96a8c5-fe6a-4ce6-b4f4-51722bbd050d/d4db61e3-210e-4a06-98f2-a5ddc02b70bb/c8cb0024-d568-4bcf-8de6-fe103ae63f30/1772795001356-177ijl.png)",
+      "details": "",
+      "laneId": "9c729731-18f2-48c7-9050-f44346582fb3",
+      "sliceId": "a3b7cde1-6ebd-4c56-b83e-637da160c9f5",
+      "index": 0,
+      "comments": [],
+      "context": "Armies"
+    },
+    {
+      "id": "da533ea0-4bf8-46d7-9792-e2394cddaaa6",
+      "type": "event",
+      "name": "Creature Added To Army",
+      "description": "",
+      "details": "## Example\n\n```json\n{\n  \"armyId\": \"hero-catherine-army\",\n  \"creatureId\": \"angel\",\n  \"quantity\": 5\n}\n```\n\n## JSON Schema\n\n```json\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"armyId\": {\n      \"type\": \"string\",\n      \"minLength\": 1,\n      \"description\": \"Unique identifier of the army\"\n    },\n    \"creatureId\": {\n      \"type\": \"string\",\n      \"minLength\": 1,\n      \"description\": \"Creature type identifier\"\n    },\n    \"quantity\": {\n      \"type\": \"integer\",\n      \"minimum\": 1,\n      \"description\": \"Number of troops added\"\n    }\n  },\n  \"required\": [\"armyId\", \"creatureId\", \"quantity\"]\n}\n\n\n\n\n  ",
+      "laneId": "024c5ace-b0a5-4c49-b14d-62325b825cb6",
+      "sliceId": "de9a5bbe-ad66-4693-b6a4-45666a312065",
+      "index": 0,
+      "comments": [],
+      "context": "Armies"
+    },
+    {
+      "id": "3a76c0da-c572-4c2f-a649-3759e9f8f41d",
+      "type": "command",
+      "name": "Remove Creature From Army",
+      "description": "",
+      "details": "## Example\n\n```json\n{\n  \"armyId\": \"hero-catherine-army\",\n  \"creatureId\": \"angel\",\n  \"quantity\": 3\n}\n```\n\n## JSON Schema\n\n```json\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"armyId\": {\n      \"type\": \"string\",\n      \"minLength\": 1,\n      \"description\": \"Unique identifier of the army\"\n    },\n    \"creatureId\": {\n      \"type\": \"string\",\n      \"minLength\": 1,\n      \"description\": \"Creature type to remove\"\n    },\n    \"quantity\": {\n      \"type\": \"integer\",\n      \"minimum\": 1,\n      \"description\": \"Number of troops to remove\"\n    }\n  },\n  \"required\": [\"armyId\", \"creatureId\", \"quantity\"]\n}\n```",
+      "laneId": "19e4f709-5f35-44ee-ba6d-57434510914c",
+      "sliceId": "4c02673e-c97b-4c9c-b49f-933595ca8c6b",
+      "index": 0,
+      "comments": [],
+      "context": "Armies"
+    },
+    {
+      "id": "ee4902b2-f965-458f-a617-7488a66f3b9b",
+      "type": "information",
+      "name": "Army Creatures",
+      "description": "",
+      "details": "## Example\n\n```json\n{\n  \"armyId\": \"hero-catherine-army\",\n  \"stacks\": [\n     {\n      \"creatureId\": \"angel\",\n      \"quantity\": 5\n     },\n     {\n      \"creatureId\": \"bowman\",\n      \"quantity\": 3\n     }\n  ]\n}\n```\n\n## JSON Schema\n\n```json\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"armyId\": {\n      \"type\": \"string\",\n      \"minLength\": 1,\n      \"description\": \"Unique identifier of the army\"\n    },\n    \"stacks\": {\n      \"type\": \"array\",\n      \"description\": \"Creature stacks in the army, one entry per creature type\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"creatureId\": {\n            \"type\": \"string\",\n            \"minLength\": 1,\n            \"description\": \"Creature type identifier\"\n          },\n          \"quantity\": {\n            \"type\": \"integer\",\n            \"minimum\": 1,\n            \"description\": \"Total number of troops of this creature type\"\n          }\n        },\n        \"required\": [\"creatureId\", \"quantity\"]\n      },\n      \"maxItems\": 7\n    }\n  },\n  \"required\": [\"armyId\", \"stacks\"]\n}\n```",
+      "laneId": "19e4f709-5f35-44ee-ba6d-57434510914c",
+      "sliceId": "a3b7cde1-6ebd-4c56-b83e-637da160c9f5",
+      "index": 0,
+      "comments": [],
+      "context": "Armies"
+    },
+    {
+      "id": "9fc4a155-c164-4cf3-b8d0-7df94dfc6423",
+      "type": "information",
+      "name": "Army Creatures",
+      "description": "",
+      "details": "## Example\n\n```json\n{\n  \"armyId\": \"hero-catherine-army\",\n  \"stacks\": [\n     {\n      \"creatureId\": \"angel\",\n      \"quantity\": 5\n     },\n     {\n      \"creatureId\": \"bowman\",\n      \"quantity\": 3\n     }\n  ]\n}\n```\n\n## JSON Schema\n\n```json\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"armyId\": {\n      \"type\": \"string\",\n      \"minLength\": 1,\n      \"description\": \"Unique identifier of the army\"\n    },\n    \"stacks\": {\n      \"type\": \"array\",\n      \"description\": \"Creature stacks in the army, one entry per creature type\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"creatureId\": {\n            \"type\": \"string\",\n            \"minLength\": 1,\n            \"description\": \"Creature type identifier\"\n          },\n          \"quantity\": {\n            \"type\": \"integer\",\n            \"minimum\": 1,\n            \"description\": \"Total number of troops of this creature type\"\n          }\n        },\n        \"required\": [\"creatureId\", \"quantity\"]\n      },\n      \"maxItems\": 7\n    }\n  },\n  \"required\": [\"armyId\", \"stacks\"]\n}\n```",
+      "laneId": "19e4f709-5f35-44ee-ba6d-57434510914c",
+      "sliceId": "02c8f541-b0e8-4101-8014-0c7c6997ac87",
+      "index": 0,
+      "comments": [],
+      "context": "Armies"
+    },
+    {
+      "id": "4e426347-2ec8-4156-b8cd-7b20b11bf5b9",
+      "type": "command",
+      "name": "Add Creature To Army",
+      "description": "",
+      "details": "## Example\n\n```json\n{\n  \"armyId\": \"hero-catherine-army\",\n  \"creatureId\": \"angel\",\n  \"quantity\": 5\n}\n```\n\n## JSON Schema\n\n```json\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"armyId\": {\n      \"type\": \"string\",\n      \"minLength\": 1,\n      \"description\": \"Unique identifier of the army\"\n    },\n    \"creatureId\": {\n      \"type\": \"string\",\n      \"minLength\": 1,\n      \"description\": \"Creature type identifier\"\n    },\n    \"quantity\": {\n      \"type\": \"integer\",\n      \"minimum\": 1,\n      \"description\": \"Number of troops to add\"\n    }\n  },\n  \"required\": [\"armyId\", \"creatureId\", \"quantity\"]\n}\n```",
+      "laneId": "19e4f709-5f35-44ee-ba6d-57434510914c",
+      "sliceId": "de9a5bbe-ad66-4693-b6a4-45666a312065",
+      "index": 0,
+      "comments": [],
+      "context": "Armies"
+    }
+  ]
+}

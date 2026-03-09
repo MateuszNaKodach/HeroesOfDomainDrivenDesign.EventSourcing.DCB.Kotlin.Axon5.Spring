@@ -1,0 +1,923 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "prooph board REST API",
+    "description": "REST API for prooph board - Event Model Designer.\n\nThis API allows you to programmatically interact with your workspaces, chapters, elements, and more.\nAll endpoints require authentication via API key.\n\n## Authentication\n\nInclude your API key in requests using one of these headers:\n\n```\nAuthorization: Bearer pb_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n```\n\nOr:\n\n```\nX-API-Key: pb_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n```\n\nAPI keys are created in the workspace settings and are scoped to a specific workspace.\nThe `workspace_id` is automatically injected from the API key, so you don't need to provide it.\n\n## Workspace Seats\n\nEach API key uses one workspace seat, just like a team member. This is because API keys\ncreate machine users that are added to your workspace for proper access control.\n\n## Images\n\nImages in markdown content are referenced using `storage:` placeholders:\n\n```\n![Diagram](storage:markdown-images/diagram-abc123.png)\n```\n\nUse the `/api/storage/images/{storagePath}` endpoint to fetch images.\n",
+    "version": "1.0.0",
+    "contact": {
+      "name": "prooph board Support"
+    },
+    "license": {
+      "name": "Proprietary"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://flow.prooph-board.com/api",
+      "description": "prooph board REST API"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Chapters",
+      "description": "Operations on chapters (business processes)"
+    },
+    {
+      "name": "Elements",
+      "description": "Operations on elements (UI, commands, events, etc.)"
+    },
+    {
+      "name": "Changelog",
+      "description": "Access changelog events for audit trails"
+    },
+    {
+      "name": "Playshots",
+      "description": "Manage playshots (saved states)"
+    },
+    {
+      "name": "Tools",
+      "description": "Execute any available tool by name"
+    },
+    {
+      "name": "Storage",
+      "description": "Access images from storage"
+    },
+    {
+      "name": "API Keys",
+      "description": "Manage API keys (JWT auth required)"
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "paths": {
+    "/chapters": {
+      "get": {
+        "tags": [
+          "Chapters"
+        ],
+        "summary": "List all chapters",
+        "description": "Returns a list of all chapters in the workspace with basic metadata.",
+        "operationId": "listChapters",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChapterSummary"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Chapters"
+        ],
+        "summary": "Add a new chapter",
+        "description": "Creates a new chapter in the workspace.",
+        "operationId": "addChapter",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Chapter name"
+                  },
+                  "context": {
+                    "type": "string",
+                    "description": "Chapter context/description"
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "event-modeling",
+                      "freestyle"
+                    ],
+                    "default": "event-modeling"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Chapter created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Chapter"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/chapters/{chapter_id}": {
+      "get": {
+        "tags": [
+          "Chapters"
+        ],
+        "summary": "Get chapter with lanes/slices/elements",
+        "description": "Returns a complete chapter with all its lanes, slices, and elements.",
+        "operationId": "getChapter",
+        "parameters": [
+          {
+            "name": "chapter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The chapter ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Chapter"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Chapters"
+        ],
+        "summary": "Remove a chapter",
+        "description": "Deletes a chapter and all its lanes, slices, and elements.",
+        "operationId": "removeChapter",
+        "parameters": [
+          {
+            "name": "chapter_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The chapter ID"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "chapter_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Chapter deleted successfully"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/elements/search": {
+      "get": {
+        "tags": [
+          "Elements"
+        ],
+        "summary": "Search elements",
+        "description": "Search for elements across all chapters in the workspace.",
+        "operationId": "searchElements",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search query (optional, returns all if not provided)"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ui",
+                "command",
+                "event",
+                "information",
+                "automation",
+                "hotspot"
+              ]
+            },
+            "description": "Filter by element type"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Element"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/changelog": {
+      "get": {
+        "tags": [
+          "Changelog"
+        ],
+        "summary": "List changelog events",
+        "description": "Returns a list of changelog events for audit trails.",
+        "operationId": "listChangelogEvents",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50
+            },
+            "description": "Maximum number of events to return"
+          },
+          {
+            "name": "chapter_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Filter by chapter ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChangelogEvent"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/playshots": {
+      "get": {
+        "tags": [
+          "Playshots"
+        ],
+        "summary": "List playshots",
+        "description": "Returns a list of all playshots (saved states) in the workspace.",
+        "operationId": "listPlayshots",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Playshot"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/rpc": {
+      "get": {
+        "tags": [
+          "Tools"
+        ],
+        "summary": "List all available tools",
+        "description": "Returns a list of all available tools that can be executed via the API.",
+        "operationId": "listTools",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Tool"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/rpc/{tool_name}": {
+      "post": {
+        "tags": [
+          "Tools"
+        ],
+        "summary": "Execute any tool by name",
+        "description": "Execute any available tool by name. The tool name is passed in the URL path.\nTool arguments are passed in the request body.\n\nAvailable tools include:\n- `list_chapters`\n- `get_chapter`\n- `add_chapter`\n- `remove_chapter`\n- `search_elements`\n- `list_changelog_events`\n- `list_playshots`\n- And more...\n",
+        "operationId": "executeTool",
+        "parameters": [
+          {
+            "name": "tool_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The name of the tool to execute"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "chapter_id": "uuid",
+                "name": "New Chapter"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool executed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "description": "Tool not found"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/storage/images/{storagePath}": {
+      "get": {
+        "tags": [
+          "Storage"
+        ],
+        "summary": "Get image from storage",
+        "description": "Fetch an image from storage. Images are referenced in markdown using `storage:` placeholders:\n\n```\n![Diagram](storage:markdown-images/diagram-abc123.png)\n```\n\nTo fetch this image, call:\n```\nGET /api/storage/images/markdown-images/diagram-abc123.png\n```\n",
+        "operationId": "getImage",
+        "parameters": [
+          {
+            "name": "storagePath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The storage path (e.g., `markdown-images/diagram-abc123.png`)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image binary",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/gif": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/webp": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/svg+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Image not found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "API key authentication. Enter your API key (starts with pb_...). The 'Bearer ' prefix will be added automatically."
+      }
+    },
+    "schemas": {
+      "ChapterSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "index": {
+            "type": "integer"
+          },
+          "context": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "event-modeling",
+              "freestyle"
+            ]
+          }
+        }
+      },
+      "Chapter": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "index": {
+            "type": "integer"
+          },
+          "context": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "event-modeling",
+              "freestyle"
+            ]
+          },
+          "lanes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Lane"
+            }
+          },
+          "slices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Slice"
+            }
+          },
+          "elements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Element"
+            }
+          }
+        }
+      },
+      "Lane": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "user-lane",
+              "information-flow",
+              "system"
+            ]
+          },
+          "height": {
+            "type": "integer"
+          },
+          "index": {
+            "type": "integer"
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Slice": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string"
+          },
+          "width": {
+            "type": "integer"
+          },
+          "index": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "in-progress",
+              "blocked",
+              "ready",
+              "deployed"
+            ],
+            "nullable": true
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Element": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "ui",
+              "command",
+              "event",
+              "information",
+              "automation",
+              "hotspot"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "details": {
+            "type": "string"
+          },
+          "context": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true
+          },
+          "laneId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sliceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "index": {
+            "type": "integer"
+          }
+        }
+      },
+      "ChangelogEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "event_type": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "chapter_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "element_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "slice_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "event_data": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Playshot": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "playshot": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Tool": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "inputSchema": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiKey": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "key_prefix": {
+            "type": "string",
+            "description": "First 11 characters of the API key (e.g., pb_abc12345)"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "revoked_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "CreateApiKeyResponse": {
+        "type": "object",
+        "properties": {
+          "api_key": {
+            "type": "string",
+            "description": "The full API key (shown only once!)"
+          },
+          "key_prefix": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "message": {
+            "type": "string",
+            "example": "Store this API key securely. It will not be shown again."
+          }
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Authentication required. Provide a valid API key.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string"
+                }
+              }
+            },
+            "example": {
+              "error": "Unauthorized. Provide API key via 'Authorization: Bearer pb_xxx' or 'X-API-Key: pb_xxx' header."
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Access denied",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string"
+                }
+              }
+            },
+            "examples": {
+              "noSeats": {
+                "summary": "No seats available",
+                "value": {
+                  "error": "No seats available. Current usage: 3 / 3 seats. Please upgrade your workspace or remove unused members/API keys."
+                }
+              },
+              "adminRequired": {
+                "summary": "Admin access required",
+                "value": {
+                  "error": "Only workspace admins can create API keys"
+                }
+              }
+            }
+          }
+        }
+      },
+      "BadRequest": {
+        "description": "Invalid request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
