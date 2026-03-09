@@ -15,9 +15,11 @@ class TestcontainersConfiguration {
         private val axonServer: AxonServerContainer = AxonServerContainer("axoniq/axonserver:2025.2.4")
             .withDevMode(true)
             .withDcbContext(true)
+            .withReuse(true)
 
         private val postgres: PostgreSQLContainer = PostgreSQLContainer("postgres:18")
             .withCommand("postgres", "-c", "max_connections=300")
+            .withReuse(true)
     }
 
     @Profile("testcontainers")
