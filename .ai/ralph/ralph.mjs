@@ -2,11 +2,12 @@
 
 // Ralph Loop - Autonomous AI agent orchestrator
 //
-// Usage:
-//   node ralph.mjs                          # 10 iterations (default)
-//   node ralph.mjs --iterations 5           # 5 iterations
+// Usage (from repo root):
+//   node .ai/ralph/ralph.mjs                          # 10 iterations (default)
+//   node .ai/ralph/ralph.mjs --iterations 5           # 5 iterations
 //
-// Spawns Claude Code CLI in a loop, piping prompt.md to stdin each iteration.
+// Spawns Claude Code CLI in a loop from the repository root,
+// piping .ai/ralph/prompt.md to stdin each iteration.
 // Output is streamed in real-time via --output-format stream-json.
 // Checks output for signal strings to decide: stop / continue / wait.
 
@@ -16,6 +17,7 @@ import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
+const repoRoot = join(scriptDir, "..", "..");
 
 // ── CLI arg parsing ──────────────────────────────────────────
 
@@ -30,7 +32,7 @@ function parseFlag(flag, fallback) {
 const maxIterations = parseFlag("--iterations", 10);
 
 const PROMPT_FILE = join(scriptDir, "prompt.md");
-const STATE_FILE = join(scriptDir, ".ai", "temp", "ralph-state.json");
+const STATE_FILE = join(repoRoot, ".ai", "temp", "ralph-state.json");
 
 const now = () => new Date().toISOString().replace("T", " ").replace(/\.\d+Z$/, "");
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -128,8 +130,9 @@ function runClaude(iteration) {
             "--print",
             "--dangerously-skip-permissions",
             "--output-format", "stream-json",
+            "--verbose",
         ], {
-            cwd: scriptDir,
+            cwd: repoRoot,
             stdio: ["pipe", "pipe", "pipe"],
         });
 
