@@ -16,11 +16,21 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import tools.jackson.databind.JacksonModule
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.json.JsonMapper
 import java.time.Clock
 
 
 @Configuration
 internal class AxonFrameworkConfiguration {
+
+    @Bean("defaultAxonObjectMapper")
+    fun defaultAxonObjectMapper(modules: List<JacksonModule>): ObjectMapper =
+        JsonMapper.builder()
+            .findAndAddModules()
+            .addModules(modules)
+            .build()
 
     @Bean
     fun tagResolverEnhancer(): ConfigurationEnhancer = ConfigurationEnhancer { configuration ->
