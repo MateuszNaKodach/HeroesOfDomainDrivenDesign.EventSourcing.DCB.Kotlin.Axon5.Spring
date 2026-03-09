@@ -54,10 +54,19 @@ The slice is a self-contained unit of work — trust that and stay focused.
 
 Before implementing, check if other planned slices share the same read model or projection as the selected one (e.g., two Read slices reacting to different events but projecting into the same view). If so, inform the user and suggest grouping them. Implement grouped slices together as a single unit.
 
-## Step 3: Implement
+## Step 3: Determine Parent Branch
+
+1. Check the current git branch.
+2. If NOT on `main`, ask the user via `AskUserQuestion`:
+   > You're currently on branch `<current-branch>`. Should I:
+   > - **Switch to main** — use `main` as the parent branch (standard flow)
+   > - **Stay on `<current-branch>`** — use this branch as the parent instead
+3. Remember the chosen **parent branch** — the feature branch is created from it, and merges/PRs target it in Step 7.
+
+## Step 4: Implement
 
 1. Update slice status to `"in-progress"`: call `mcp__proophboard__update_slice_status`.
-2. Create git branch `feature/<slice-label-kebab-case>` from `main` (if it doesn't exist). Switch to it.
+2. Create git branch `feature/<slice-label-kebab-case>` from the **parent branch** (if it doesn't exist). Switch to it.
 3. Based on slice type, invoke the matching skill using the `Skill` tool:
    - Write  -> `em2code-write-slice-axon5kotlin`
    - Read   -> `em2code-read-slice-axon5kotlin`
@@ -65,17 +74,17 @@ Before implementing, check if other planned slices share the same read model or 
 4. Pass the proophboard chapter and slice data as context to the skill.
    If multiple slices are grouped, pass all of them.
 
-## Step 4: Quality Gate
+## Step 5: Quality Gate
 
 5. Run `./mvnw install -DskipTests` (compile check).
 6. Run `./mvnw test` (all tests must pass).
 7. If checks fail, fix issues and re-run until they pass.
 
-## Step 5: Commit
+## Step 6: Commit
 
 8. Invoke the `/commit` skill. The commit type MUST be `feat` and the scope should reflect the slice label (e.g., `feat: <Slice Label>`).
 
-## Step 6: Finalize
+## Step 7: Finalize
 
 9. Update slice status to `"ready"` for ALL implemented slices: call `mcp__proophboard__update_slice_status` for each.
 10. **Update CLAUDE.md with learnings** — before committing, check if any edited files revealed knowledge worth preserving:
@@ -85,9 +94,9 @@ Before implementing, check if other planned slices share the same read model or 
     - Testing approaches, fixture patterns, or configuration needed for that area
     - Integration details (MCP tools, Axon config, Spring beans, feature flags)
     - Only add genuinely new and useful learnings — don't duplicate what's already there
-11. Ask the user via `AskUserQuestion` how to finalize:
-    - **Merge to main** — fast-forward merge (pull/rebase first if needed), then delete the feature branch
-    - **Open a pull request** — push the branch and create a PR via `gh pr create`
+11. Ask the user via `AskUserQuestion` how to finalize (target = **parent branch** from Step 3):
+    - **Merge to `<base-branch>`** — fast-forward merge (pull/rebase first if needed), then delete the feature branch
+    - **Open a pull request** — push the branch and create a PR targeting `<base-branch>` via `gh pr create`
     - **Leave on branch** — do nothing further, leave changes on the feature branch
 
 ## Important
