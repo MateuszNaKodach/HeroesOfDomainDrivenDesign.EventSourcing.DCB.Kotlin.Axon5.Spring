@@ -36,7 +36,7 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
             Given {
                 noPriorActivity()
             } When {
-                command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy = Quantity(5)))
+                command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy = Quantity(5)), gameMetadata)
             } Then {
                 resultMessagePayload(CommandHandlerResult.Failure("Only built dwelling can have available creatures"))
             }
@@ -54,7 +54,7 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
             Given {
                 event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
             } When {
-                command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy))
+                command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy), gameMetadata)
             } Then {
                 resultMessagePayload(CommandHandlerResult.Success)
                 events(
@@ -80,7 +80,7 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
                 event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)), gameMetadata)
             } When {
-                command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy = Quantity(2)))
+                command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy = Quantity(2)), gameMetadata)
             } Then {
                 resultMessagePayload(CommandHandlerResult.Success)
                 events(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 2, changedTo = Quantity(3)))

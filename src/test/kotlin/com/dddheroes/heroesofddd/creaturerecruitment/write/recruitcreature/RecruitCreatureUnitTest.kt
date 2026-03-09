@@ -11,12 +11,19 @@ import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.Quantity
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.Resources
+import org.axonframework.extensions.kotlin.AxonMetadata
 import org.axonframework.test.fixture.*
 import org.junit.jupiter.api.*
+import java.util.*
 
 internal class RecruitCreatureUnitTest {
 
     private lateinit var sliceUnderTest: AxonTestFixture;
+
+    private val gameId: String = UUID.randomUUID().toString()
+    private val playerId: String = UUID.randomUUID().toString()
+    private val gameMetadata = AxonMetadata.with("gameId", gameId)
+        .and("playerId", playerId)
 
     @BeforeEach
     fun beforeEach() {
@@ -53,7 +60,7 @@ internal class RecruitCreatureUnitTest {
                         armyId = armyId,
                         quantity = Quantity(1),
                         expectedCost = costPerTroop
-                    )
+                    ), gameMetadata
                 )
             } Then {
                 resultMessagePayload(CommandHandlerResult.Failure("Recruit creatures cannot exceed available creatures"))
@@ -70,7 +77,7 @@ internal class RecruitCreatureUnitTest {
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
+                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
             } When {
                 command(
                     RecruitCreature(
@@ -79,7 +86,7 @@ internal class RecruitCreatureUnitTest {
                         armyId = armyId,
                         quantity = Quantity(1),
                         expectedCost = costPerTroop
-                    )
+                    ), gameMetadata
                 )
             } Then {
                 resultMessagePayload(CommandHandlerResult.Failure("Recruit creatures cannot exceed available creatures"))
@@ -96,8 +103,8 @@ internal class RecruitCreatureUnitTest {
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)))
+                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)), gameMetadata)
             } When {
                 command(
                     RecruitCreature(
@@ -106,7 +113,7 @@ internal class RecruitCreatureUnitTest {
                         armyId = armyId,
                         quantity = Quantity(1),
                         expectedCost = costPerTroop
-                    )
+                    ), gameMetadata
                 )
             } Then {
                 resultMessagePayload(CommandHandlerResult.Success)
@@ -144,8 +151,8 @@ internal class RecruitCreatureUnitTest {
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 2, changedTo = Quantity(2)))
+                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 2, changedTo = Quantity(2)), gameMetadata)
             } When {
                 command(
                     RecruitCreature(
@@ -154,7 +161,7 @@ internal class RecruitCreatureUnitTest {
                         armyId = armyId,
                         quantity = Quantity(2),
                         expectedCost = expectedCost
-                    )
+                    ), gameMetadata
                 )
             } Then {
                 resultMessagePayload(CommandHandlerResult.Success)
@@ -192,9 +199,9 @@ internal class RecruitCreatureUnitTest {
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 3, changedTo = Quantity(3)))
-                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(4)))
+                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 3, changedTo = Quantity(3)), gameMetadata)
+                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(4)), gameMetadata)
             } When {
                 command(
                     RecruitCreature(
@@ -203,7 +210,7 @@ internal class RecruitCreatureUnitTest {
                         armyId = armyId,
                         quantity = Quantity(3),
                         expectedCost = expectedCost
-                    )
+                    ), gameMetadata
                 )
             } Then {
                 resultMessagePayload(CommandHandlerResult.Success)
@@ -241,8 +248,8 @@ internal class RecruitCreatureUnitTest {
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 5, changedTo = Quantity(5)))
+                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 5, changedTo = Quantity(5)), gameMetadata)
             } When {
                 command(
                     RecruitCreature(
@@ -251,7 +258,7 @@ internal class RecruitCreatureUnitTest {
                         armyId = armyId,
                         quantity = Quantity(6),
                         expectedCost = expectedCost
-                    )
+                    ), gameMetadata
                 )
             } Then {
                 resultMessagePayload(CommandHandlerResult.Failure("Recruit creatures cannot exceed available creatures"))
@@ -269,8 +276,8 @@ internal class RecruitCreatureUnitTest {
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)))
+                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)), gameMetadata)
             } When {
                 command(
                     RecruitCreature(
@@ -279,7 +286,7 @@ internal class RecruitCreatureUnitTest {
                         armyId = armyId,
                         quantity = Quantity(1),
                         expectedCost = costPerTroop
-                    )
+                    ), gameMetadata
                 )
             } Then {
                 resultMessagePayload(CommandHandlerResult.Failure("Recruit creatures cannot exceed available creatures"))
@@ -299,13 +306,13 @@ internal class RecruitCreatureUnitTest {
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 3, changedTo = Quantity(3)))
-                event(CreatureRecruited(dwellingId, creatureId, armyId, Quantity(2), cost2))
-                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = -2, changedTo = Quantity(1)))
-                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 3, changedTo = Quantity(4)))
-                event(CreatureRecruited(dwellingId, creatureId, armyId, Quantity(4), cost4))
-                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = -4, changedTo = Quantity(0)))
+                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 3, changedTo = Quantity(3)), gameMetadata)
+                event(CreatureRecruited(dwellingId, creatureId, armyId, Quantity(2), cost2), gameMetadata)
+                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = -2, changedTo = Quantity(1)), gameMetadata)
+                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 3, changedTo = Quantity(4)), gameMetadata)
+                event(CreatureRecruited(dwellingId, creatureId, armyId, Quantity(4), cost4), gameMetadata)
+                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = -4, changedTo = Quantity(0)), gameMetadata)
             } When {
                 command(
                     RecruitCreature(
@@ -314,7 +321,7 @@ internal class RecruitCreatureUnitTest {
                         armyId = armyId,
                         quantity = Quantity(3),
                         expectedCost = cost3
-                    )
+                    ), gameMetadata
                 )
             } Then {
                 resultMessagePayload(CommandHandlerResult.Failure("Recruit creatures cannot exceed available creatures"))
@@ -332,10 +339,10 @@ internal class RecruitCreatureUnitTest {
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 4, changedTo = Quantity(4)))
-                event(CreatureRecruited(dwellingId, creatureId, armyId, Quantity(3), cost3))
-                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = -3, changedTo = Quantity(1)))
+                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 4, changedTo = Quantity(4)), gameMetadata)
+                event(CreatureRecruited(dwellingId, creatureId, armyId, Quantity(3), cost3), gameMetadata)
+                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = -3, changedTo = Quantity(1)), gameMetadata)
             } When {
                 command(
                     RecruitCreature(
@@ -344,7 +351,7 @@ internal class RecruitCreatureUnitTest {
                         armyId = armyId,
                         quantity = Quantity(1),
                         expectedCost = costPerTroop
-                    )
+                    ), gameMetadata
                 )
             } Then {
                 resultMessagePayload(CommandHandlerResult.Success)
@@ -382,8 +389,8 @@ internal class RecruitCreatureUnitTest {
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)))
+                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)), gameMetadata)
             } When {
                 command(
                     RecruitCreature(
@@ -392,7 +399,7 @@ internal class RecruitCreatureUnitTest {
                         armyId = armyId,
                         quantity = Quantity(1),
                         expectedCost = wrongExpectedCost
-                    )
+                    ), gameMetadata
                 )
             } Then {
                 resultMessagePayload(CommandHandlerResult.Failure("Recruit cost cannot differ than expected cost"))
@@ -412,8 +419,8 @@ internal class RecruitCreatureUnitTest {
 
             sliceUnderTest.Scenario {
                 Given {
-                    event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-                    event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)))
+                    event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                    event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)), gameMetadata)
                 } When {
                     command(
                         RecruitCreature(
@@ -459,16 +466,16 @@ internal class RecruitCreatureUnitTest {
 
             sliceUnderTest.Scenario {
                 Given {
-                    event(DwellingBuilt(dwellingId, newCreatureId, costPerTroop))
-                    event(AvailableCreaturesChanged(dwellingId, newCreatureId, changedBy = 1, changedTo = Quantity(1)))
+                    event(DwellingBuilt(dwellingId, newCreatureId, costPerTroop), gameMetadata)
+                    event(AvailableCreaturesChanged(dwellingId, newCreatureId, changedBy = 1, changedTo = Quantity(1)), gameMetadata)
                     // Simulate army already having 7 different creature types
-                    event(CreatureAddedToArmy(armyId, CreatureId("angel"), Quantity(5)))
-                    event(CreatureAddedToArmy(armyId, CreatureId("griffin"), Quantity(10)))
-                    event(CreatureAddedToArmy(armyId, CreatureId("swordsman"), Quantity(20)))
-                    event(CreatureAddedToArmy(armyId, CreatureId("monk"), Quantity(8)))
-                    event(CreatureAddedToArmy(armyId, CreatureId("cavalier"), Quantity(6)))
-                    event(CreatureAddedToArmy(armyId, CreatureId("mage"), Quantity(4)))
-                    event(CreatureAddedToArmy(armyId, CreatureId("titan"), Quantity(2)))
+                    event(CreatureAddedToArmy(armyId, CreatureId("angel"), Quantity(5)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("griffin"), Quantity(10)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("swordsman"), Quantity(20)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("monk"), Quantity(8)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("cavalier"), Quantity(6)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("mage"), Quantity(4)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("titan"), Quantity(2)), gameMetadata)
                 } When {
                     command(
                         RecruitCreature(
@@ -494,15 +501,15 @@ internal class RecruitCreatureUnitTest {
 
             sliceUnderTest.Scenario {
                 Given {
-                    event(DwellingBuilt(dwellingId, newCreatureId, costPerTroop))
-                    event(AvailableCreaturesChanged(dwellingId, newCreatureId, changedBy = 1, changedTo = Quantity(1)))
+                    event(DwellingBuilt(dwellingId, newCreatureId, costPerTroop), gameMetadata)
+                    event(AvailableCreaturesChanged(dwellingId, newCreatureId, changedBy = 1, changedTo = Quantity(1)), gameMetadata)
                     // Simulate army having 6 different creature types
-                    event(CreatureAddedToArmy(armyId, CreatureId("angel"), Quantity(5)))
-                    event(CreatureAddedToArmy(armyId, CreatureId("griffin"), Quantity(10)))
-                    event(CreatureAddedToArmy(armyId, CreatureId("swordsman"), Quantity(20)))
-                    event(CreatureAddedToArmy(armyId, CreatureId("monk"), Quantity(8)))
-                    event(CreatureAddedToArmy(armyId, CreatureId("cavalier"), Quantity(6)))
-                    event(CreatureAddedToArmy(armyId, CreatureId("mage"), Quantity(4)))
+                    event(CreatureAddedToArmy(armyId, CreatureId("angel"), Quantity(5)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("griffin"), Quantity(10)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("swordsman"), Quantity(20)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("monk"), Quantity(8)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("cavalier"), Quantity(6)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("mage"), Quantity(4)), gameMetadata)
                 } When {
                     command(
                         RecruitCreature(
@@ -548,23 +555,23 @@ internal class RecruitCreatureUnitTest {
 
             sliceUnderTest.Scenario {
                 Given {
-                    event(DwellingBuilt(dwellingId, existingCreatureId, costPerTroop))
+                    event(DwellingBuilt(dwellingId, existingCreatureId, costPerTroop), gameMetadata)
                     event(
                         AvailableCreaturesChanged(
                             dwellingId,
                             existingCreatureId,
                             changedBy = 2,
                             changedTo = Quantity(2)
-                        )
+                        ), gameMetadata
                     )
                     // Simulate army already having 7 different creature types including the one we want to recruit
-                    event(CreatureAddedToArmy(armyId, existingCreatureId, Quantity(5)))
-                    event(CreatureAddedToArmy(armyId, CreatureId("griffin"), Quantity(10)))
-                    event(CreatureAddedToArmy(armyId, CreatureId("swordsman"), Quantity(20)))
-                    event(CreatureAddedToArmy(armyId, CreatureId("monk"), Quantity(8)))
-                    event(CreatureAddedToArmy(armyId, CreatureId("cavalier"), Quantity(6)))
-                    event(CreatureAddedToArmy(armyId, CreatureId("mage"), Quantity(4)))
-                    event(CreatureAddedToArmy(armyId, CreatureId("titan"), Quantity(2)))
+                    event(CreatureAddedToArmy(armyId, existingCreatureId, Quantity(5)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("griffin"), Quantity(10)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("swordsman"), Quantity(20)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("monk"), Quantity(8)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("cavalier"), Quantity(6)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("mage"), Quantity(4)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("titan"), Quantity(2)), gameMetadata)
                 } When {
                     command(
                         RecruitCreature(
@@ -573,7 +580,7 @@ internal class RecruitCreatureUnitTest {
                             armyId = armyId,
                             quantity = Quantity(2),
                             expectedCost = Resources.of(ResourceType.GOLD to 6000, ResourceType.GEMS to 2)
-                        )
+                        ), gameMetadata
                     )
                 } Then {
                     resultMessagePayload(CommandHandlerResult.Success)

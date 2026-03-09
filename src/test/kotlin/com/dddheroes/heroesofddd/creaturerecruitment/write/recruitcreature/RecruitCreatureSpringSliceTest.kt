@@ -50,7 +50,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
                         armyId = armyId,
                         quantity = Quantity(1),
                         expectedCost = costPerTroop
-                    )
+                    ), gameMetadata
                 )
             } Then {
                 resultMessagePayload(CommandHandlerResult.Failure("Recruit creatures cannot exceed available creatures"))
@@ -76,7 +76,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
                         armyId = armyId,
                         quantity = Quantity(1),
                         expectedCost = costPerTroop
-                    )
+                    ), gameMetadata
                 )
             } Then {
                 resultMessagePayload(CommandHandlerResult.Failure("Recruit creatures cannot exceed available creatures"))
@@ -103,7 +103,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
                         armyId = armyId,
                         quantity = Quantity(1),
                         expectedCost = costPerTroop
-                    )
+                    ), gameMetadata
                 )
             } Then {
                 resultMessagePayload(CommandHandlerResult.Success)
@@ -151,7 +151,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
                         armyId = armyId,
                         quantity = Quantity(2),
                         expectedCost = expectedCost
-                    )
+                    ), gameMetadata
                 )
             } Then {
                 resultMessagePayload(CommandHandlerResult.Success)
@@ -200,7 +200,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
                         armyId = armyId,
                         quantity = Quantity(3),
                         expectedCost = expectedCost
-                    )
+                    ), gameMetadata
                 )
             } Then {
                 resultMessagePayload(CommandHandlerResult.Success)
@@ -248,7 +248,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
                         armyId = armyId,
                         quantity = Quantity(6),
                         expectedCost = expectedCost
-                    )
+                    ), gameMetadata
                 )
             } Then {
                 resultMessagePayload(CommandHandlerResult.Failure("Recruit creatures cannot exceed available creatures"))
@@ -276,7 +276,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
                         armyId = armyId,
                         quantity = Quantity(1),
                         expectedCost = costPerTroop
-                    )
+                    ), gameMetadata
                 )
             } Then {
                 resultMessagePayload(CommandHandlerResult.Failure("Recruit creatures cannot exceed available creatures"))
@@ -311,7 +311,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
                         armyId = armyId,
                         quantity = Quantity(3),
                         expectedCost = cost3
-                    )
+                    ), gameMetadata
                 )
             } Then {
                 resultMessagePayload(CommandHandlerResult.Failure("Recruit creatures cannot exceed available creatures"))
@@ -341,7 +341,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
                         armyId = armyId,
                         quantity = Quantity(1),
                         expectedCost = costPerTroop
-                    )
+                    ), gameMetadata
                 )
             } Then {
                 resultMessagePayload(CommandHandlerResult.Success)
@@ -389,7 +389,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
                         armyId = armyId,
                         quantity = Quantity(1),
                         expectedCost = wrongExpectedCost
-                    )
+                    ), gameMetadata
                 )
             } Then {
                 resultMessagePayload(CommandHandlerResult.Failure("Recruit cost cannot differ than expected cost"))
@@ -419,7 +419,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
                             armyId = armyId,
                             quantity = Quantity(1),
                             expectedCost = costPerTroop
-                        )
+                        ), gameMetadata
                     )
                 } Then {
                     resultMessagePayload(CommandHandlerResult.Success)
@@ -474,7 +474,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
                             armyId = armyId,
                             quantity = Quantity(1),
                             expectedCost = costPerTroop
-                        )
+                        ), gameMetadata
                     )
                 } Then {
                     resultMessagePayload(CommandHandlerResult.Failure("Army cannot contain more than 7 different creature types"))
@@ -508,7 +508,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
                             armyId = armyId,
                             quantity = Quantity(1),
                             expectedCost = costPerTroop
-                        )
+                        ), gameMetadata
                     )
                 } Then {
                     resultMessagePayload(CommandHandlerResult.Success)
@@ -570,7 +570,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
                             armyId = armyId,
                             quantity = Quantity(2),
                             expectedCost = Resources.of(ResourceType.GOLD to 6000, ResourceType.GEMS to 2)
-                        )
+                        ), gameMetadata
                     )
                 } Then {
                     resultMessagePayload(CommandHandlerResult.Success)

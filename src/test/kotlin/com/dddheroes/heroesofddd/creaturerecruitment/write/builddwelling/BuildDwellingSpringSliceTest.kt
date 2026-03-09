@@ -58,7 +58,7 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(
             Given {
                 event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
             } When {
-                command(BuildDwelling(dwellingId, creatureId, costPerTroop))
+                command(BuildDwelling(dwellingId, creatureId, costPerTroop), gameMetadata)
             } Then {
                 resultMessagePayload(CommandHandlerResult.Success)
                 noEvents()
