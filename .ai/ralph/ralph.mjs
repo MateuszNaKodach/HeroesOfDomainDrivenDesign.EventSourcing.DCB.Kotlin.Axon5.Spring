@@ -512,14 +512,6 @@ If no planned slices exist, output: <slices>[]</slices>`;
 
 // ── Status Table ────────────────────────────────────────────
 
-function pad(str, len) {
-    return str.length >= len ? str : str + " ".repeat(len - str.length);
-}
-
-function padLeft(str, len) {
-    return str.length >= len ? str : " ".repeat(len - str.length) + str;
-}
-
 function printStatusTable(registry, loopStartTime, queueSize = 0) {
     const active = Object.keys(registry.activeSlices).length;
     const completed = registry.completedIterations;
@@ -527,14 +519,22 @@ function printStatusTable(registry, loopStartTime, queueSize = 0) {
     const totalTokens = registry.history.reduce((sum, h) => sum + (h.tokens?.total || 0), 0);
     const stalledCount = registry.history.filter(h => h.result === "stalled").length;
 
-    // Collect all rows: [icon, label, branch, duration, status, tokens]
-    const rows = [];
+    console.log();
+    console.log(`  🤖 Ralph │ ${completed}/${registry.maxIterations} done │ ${active}/${maxWorktrees} active │ ${elapsedStr} │ finalize: ${finalizeMode} │ parent: ${registry.parentBranch}`);
+
+    // Build table rows
+    const tableRows = [];
 
     for (const [, info] of Object.entries(registry.activeSlices)) {
         const dur = elapsed(new Date(info.startedAt).getTime());
-        const icon = info.status === "stalled" ? "❓" : "🔨";
-        const status = info.status === "stalled" ? "STALLED" : "implementing";
-        rows.push([icon, info.sliceLabel, info.branch, dur, status, ""]);
+        tableRows.push({
+            "": info.status === "stalled" ? "❓" : "🔨",
+            Slice: info.sliceLabel,
+            Branch: info.branch,
+            Time: dur,
+            Status: info.status === "stalled" ? "STALLED" : "implementing",
+            Tokens: "",
+        });
     }
 
     for (const h of registry.history.slice(-10)) {
@@ -558,57 +558,27 @@ function printStatusTable(registry, loopStartTime, queueSize = 0) {
             icon = "⚠️";
             status = h.result;
         }
-        const tokens = h.tokens?.total ? `${formatTokens(h.tokens.total)}` : "";
-        rows.push([icon, h.label, h.branch || "", h.duration || "?", status, tokens]);
+        tableRows.push({
+            "": icon,
+            Slice: h.label,
+            Branch: h.branch || "",
+            Time: h.duration || "?",
+            Status: status,
+            Tokens: h.tokens?.total ? formatTokens(h.tokens.total) : "",
+        });
     }
 
-    // Calculate column widths
-    const colLabel = Math.max(5, ...rows.map(r => r[1].length));
-    const colBranch = Math.max(6, ...rows.map(r => r[2].length));
-    const colDur = Math.max(4, ...rows.map(r => r[3].length));
-    const colStatus = Math.max(6, ...rows.map(r => r[4].length));
-    const colTokens = Math.max(6, ...rows.map(r => r[5].length));
-    const tableW = 4 + 2 + colLabel + 3 + colBranch + 3 + colDur + 3 + colStatus + 3 + colTokens + 2;
-    const borderW = Math.max(tableW, 76);
-    const border = "═".repeat(borderW);
-
-    const lines = [];
-    lines.push("");
-    lines.push(border);
-    lines.push(`  Ralph Status │ Completed: ${completed}/${registry.maxIterations} │ Active: ${active}/${maxWorktrees} worktrees │ Elapsed: ${elapsedStr}`);
-    lines.push(`  Finalize: ${finalizeMode} │ Parent: ${registry.parentBranch}`);
-    lines.push("─".repeat(borderW));
-
-    if (rows.length > 0) {
-        // Header
-        lines.push(`  ${"  "}  ${pad("Slice", colLabel)}   ${pad("Branch", colBranch)}   ${padLeft("Time",
-                                                                                                   colDur)}   ${pad(
-                "Status",
-                colStatus)}   ${padLeft("Tokens", colTokens)}`);
-        lines.push("  " + "─".repeat(borderW - 4));
-
-        for (const [icon, label, branch, dur, status, tokens] of rows) {
-            lines.push(`  ${icon}  ${pad(label, colLabel)}   ${pad(branch, colBranch)}   ${padLeft(dur,
-                                                                                                   colDur)}   ${pad(
-                    status,
-                    colStatus)}   ${padLeft(tokens, colTokens)}`);
-        }
+    if (tableRows.length > 0) {
+        console.table(tableRows);
     } else {
-        lines.push("  (no slices yet)");
+        console.log("  (no slices yet)");
     }
 
-    lines.push("─".repeat(borderW));
     const parts = [`Queue: ${queueSize}`];
-    if (stalledCount > 0) {
-        parts.push(`Stalled: ${stalledCount}`);
-    }
-    if (totalTokens > 0) {
-        parts.push(`Total tokens: ${formatTokens(totalTokens)}`);
-    }
-    lines.push(`  ${parts.join(" │ ")}`);
-    lines.push(border);
-
-    console.log(lines.join("\n"));
+    if (stalledCount > 0) parts.push(`Stalled: ${stalledCount}`);
+    if (totalTokens > 0) parts.push(`Total tokens: ${formatTokens(totalTokens)}`);
+    console.log(`  ${parts.join(" │ ")}`);
+    console.log();
 }
 
 // ── Worker: spawn Claude in a worktree ──────────────────────
