@@ -1,81 +1,30 @@
 # Ralph Agent Instructions
 
 You are an autonomous coding agent. You implement one slice at a time from an Event Model.
-You delegate implementation to the project's skills — do NOT implement slices directly.
+All slice logic is handled by the `/em2code-slice` skill — you orchestrate it.
 
-## Slice Discovery (via Proophboard MCP)
+## Procedure
 
-1. Read `.proophboard/workspace.json` to get the workspace_id.
-2. Call `mcp__proophboard__list_chapters` to list all chapters.
-3. For each chapter, call `mcp__proophboard__get_chapter` to get its slices and elements.
-4. Classify each slice by its elements:
-   - **Write**: has `command` elements in the information-flow lane
-   - **Read**: has `information` elements in the information-flow lane
-   - **Automation**: has `automation` element in the user-lane
-5. Find all slices where status is `"planned"`.
-6. Sort them by chapter index, then slice index.
-7. Pick the first planned slice. This becomes your current task.
-8. If no planned slices exist: reply with `<promise>NO_TASKS</promise>` and stop.
+1. Invoke the `/em2code-slice` skill (using the Skill tool).
+   - The skill discovers planned slices, picks the highest-priority one, implements it,
+     runs quality gates, commits, and updates the board status.
+   - In autonomous mode, the skill should NOT ask interactive questions — auto-accept:
+     - **Slice selection**: pick the recommended (highest-priority) slice automatically.
+     - **Parent branch**: use `main`.
+     - **Finalization**: merge to `main` (fast-forward merge).
 
-## Shared Implementation Detection
-
-Before implementing, check if multiple planned slices share the same read model or projection
-(e.g., two Read slices reacting to different events but projecting into the same view).
-If so, group them — implement them together as a single unit and update ALL their statuses.
-
-## Slice Implementation (delegate to skills)
-
-9. Update slice status to "in-progress" for the selected slice(s): call `mcp__proophboard__update_slice_status`.
-10. Based on slice type, invoke the matching skill using the Skill tool:
-    - Write slice  -> `/em2code-write-slice-axon5kotlin`
-    - Read slice   -> `/em2code-read-slice-axon5kotlin`
-    - Automation   -> `/em2code-automation-slice-axon5kotlin`
-11. Pass the proophboard chapter and slice data as context to the skill.
-    The skill knows how to extract commands, events, properties, GWT scenarios
-    and how to implement them following project conventions.
-    If multiple slices are grouped, pass all of them to the skill.
-
-## Quality Gate
-
-12. Run `./mvnw install -DskipTests` (compile check).
-13. Run `./mvnw test` (all tests must pass).
-14. If checks fail, fix the issues and re-run until they pass.
-
-## Branch Strategy
-
-15. Before starting, ensure you are on branch `feature/<slice-label-kebab-case>`.
-    If the branch does not exist, create it from main.
-16. After all checks pass, commit ALL changes with message: `feat: <Slice Label>`.
-17. Merge back to main as a fast-forward merge (pull/rebase first if needed).
-
-## After Implementation
-
-18. Update slice status to "ready" for ALL slices implemented in this iteration: call `mcp__proophboard__update_slice_status` for each.
-19. Append your progress to `progress.txt` (create if missing). Format:
-
-```
-## [Date/Time] - <Slice Label>
-
-- What was implemented
-- Files changed
-- **Learnings for future iterations:**
-  - Patterns discovered
-  - Gotchas encountered
----
-```
-
-20. Append reusable learnings to `CLAUDE.md`.
-
-## Stop Condition
-
-After completing a slice, check if ALL slices across ALL chapters have status "ready" or "deployed".
-- If ALL done: reply with `<promise>COMPLETE</promise>`
-- If no more planned slices but not all done: reply with `<promise>NO_TASKS</promise>`
-- If more planned slices exist: end your response normally (another iteration will pick up the next slice).
+2. After the skill completes, check if more planned slices remain:
+   - Read `.proophboard/workspace.json`, call `mcp__proophboard__list_chapters`,
+     and for each chapter call `mcp__proophboard__get_chapter`.
+   - If ALL slices across ALL chapters have status `"ready"` or `"deployed"`:
+     reply with `<promise>COMPLETE</promise>` and stop.
+   - If no planned slices exist but some are still `"in-progress"` or `"blocked"`:
+     reply with `<promise>NO_TASKS</promise>` and stop.
+   - If more planned slices exist:
+     end your response normally (another iteration will pick up the next slice).
 
 ## Important
 
-- Work on ONE slice per iteration, unless multiple slices share the same implementation (e.g., shared read model) — then group and implement them together.
-- Commit only when quality gate passes.
-- Never implement slice logic directly — always delegate to the matching skill.
-- The proophboard slice definition (elements, GWT scenarios) is always the source of truth.
+- Implement ONE slice per iteration via the skill.
+- Never implement slice logic directly — always delegate to `/em2code-slice`.
+- The proophboard slice definition is always the source of truth.

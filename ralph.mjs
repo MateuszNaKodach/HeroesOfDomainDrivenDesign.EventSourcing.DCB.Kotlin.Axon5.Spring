@@ -11,7 +11,7 @@
 // Checks output for signal strings to decide: stop / continue / wait.
 
 import {spawn} from "node:child_process";
-import {appendFileSync, existsSync, readFileSync, writeFileSync} from "node:fs";
+import {readFileSync} from "node:fs";
 import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
 
@@ -30,16 +30,9 @@ function parseFlag(flag, fallback) {
 const maxIterations = parseFlag("--iterations", 10);
 
 const PROMPT_FILE = join(scriptDir, "prompt.md");
-const PROGRESS_FILE = join(scriptDir, "progress.txt");
 
 const now = () => new Date().toISOString().replace("T", " ").replace(/\.\d+Z$/, "");
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-// ── Progress file init ───────────────────────────────────────
-
-if (!existsSync(PROGRESS_FILE)) {
-    writeFileSync(PROGRESS_FILE, `# Ralph Progress Log\nStarted: ${now()}\n---\n`);
-}
 
 // ── Run Claude ───────────────────────────────────────────────
 
@@ -96,7 +89,6 @@ function runClaude() {
             const text = extractTextFromStreamJson(raw);
             if (text) {
                 process.stdout.write(text);
-                appendFileSync(PROGRESS_FILE, text);
                 output += text;
             }
         };
@@ -128,8 +120,6 @@ for (let i = 1; i <= maxIterations; i++) {
     console.log("=".repeat(60));
     console.log();
     console.log(`>>> Running Claude at ${now()}`);
-    appendFileSync(PROGRESS_FILE, `>>> Iteration ${i}\n`);
-
     // ── Run Claude safely ────────────────────────────────────
     let claudeSkip = false;
 
@@ -142,7 +132,6 @@ for (let i = 1; i <= maxIterations; i++) {
                 console.log();
                 console.log("Ralph completed all tasks!");
                 console.log(`Completed at iteration ${i} of ${maxIterations}`);
-                appendFileSync(PROGRESS_FILE, `Completed: ${now()}\n`);
                 process.exit(0);
             }
 
@@ -180,5 +169,4 @@ for (let i = 1; i <= maxIterations; i++) {
 
 console.log();
 console.log(`Warning: Ralph reached max iterations (${maxIterations}) without completing all tasks.`);
-console.log(`Check ${PROGRESS_FILE} for status.`);
 process.exit(1);
