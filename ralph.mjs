@@ -35,6 +35,28 @@ const STATE_FILE = join(scriptDir, ".ai", "temp", "ralph-state.json");
 const now = () => new Date().toISOString().replace("T", " ").replace(/\.\d+Z$/, "");
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+function elapsed(startTime) {
+    const diff = Date.now() - startTime;
+    const mins = Math.floor(diff / 60000);
+    const secs = Math.floor((diff % 60000) / 1000);
+    return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+}
+
+// ── Logging ─────────────────────────────────────────────────
+
+const log = {
+    banner: (msg) => console.log(`\n${"═".repeat(60)}\n  ${msg}\n${"═".repeat(60)}`),
+    info: (msg) => console.log(`  ℹ️  ${msg}`),
+    start: (msg) => console.log(`  🚀 ${msg}`),
+    done: (msg) => console.log(`  ✅ ${msg}`),
+    warn: (msg) => console.log(`  ⚠️  ${msg}`),
+    error: (msg) => console.log(`  ❌ ${msg}`),
+    wait: (msg) => console.log(`  ⏳ ${msg}`),
+    skip: (msg) => console.log(`  ⏭️  ${msg}`),
+    complete: (msg) => console.log(`  🎉 ${msg}`),
+    iteration: (msg) => console.log(`  🔄 ${msg}`),
+};
+
 // ── State persistence (crash recovery) ──────────────────────
 
 function saveState(iteration, status) {
@@ -101,7 +123,7 @@ function extractTextFromStreamJson(chunk) {
 function runClaude(iteration) {
     return new Promise((resolve) => {
         const basePrompt = readFileSync(PROMPT_FILE, "utf8");
-        const prompt = `${basePrompt}\n\n---\nRalph iteration ${iteration} of ${maxIterations} | Started: ${state?.startedAt ?? now()}`;
+        const prompt = `${basePrompt}\n\n---\n🔄 Ralph iteration ${iteration} of ${maxIterations} | Started: ${state?.startedAt ?? now()}`;
         const child = spawn("claude", [
             "--print",
             "--dangerously-skip-permissions",
@@ -142,23 +164,29 @@ function runClaude(iteration) {
 
 // ── Main loop ────────────────────────────────────────────────
 
-// ── Resume from crash if state exists ────────────────────────
-
 const startIteration = state?.status === "running" ? state.iteration : 1;
+const loopStartTime = Date.now();
+
 if (startIteration > 1) {
-    console.log(`Resuming Ralph from iteration ${startIteration} (previous run interrupted)`);
+    log.banner(`🔁 Resuming Ralph — iteration ${startIteration} of ${maxIterations}`);
+    log.info(`Previous run interrupted at ${state?.updatedAt ?? "unknown"}`);
+    log.info(`Original start: ${state?.startedAt ?? "unknown"}`);
 } else {
-    console.log(`Starting Ralph - Max iterations: ${maxIterations}`);
+    log.banner(`🤖 Ralph Loop — ${maxIterations} iterations max`);
+    log.info(`Prompt: ${PROMPT_FILE}`);
+    log.info(`State:  ${STATE_FILE}`);
+    log.info(`Time:   ${now()}`);
 }
 
 for (let i = startIteration; i <= maxIterations; i++) {
-    console.log();
-    console.log("=".repeat(60));
-    console.log(`  Ralph Iteration ${i} of ${maxIterations}`);
-    console.log("=".repeat(60));
-    console.log();
-    console.log(`>>> Running Claude at ${now()}`);
+    const iterStartTime = Date.now();
+
+    log.banner(`🔄 Iteration ${i} of ${maxIterations}`);
+    log.start(`Spawning Claude at ${now()}`);
+    log.info(`Progress: ${i - 1} iterations done, ${maxIterations - i + 1} remaining`);
+
     saveState(i, "running");
+
     // ── Run Claude safely ────────────────────────────────────
     let claudeSkip = false;
 
@@ -169,15 +197,16 @@ for (let i = startIteration; i <= maxIterations; i++) {
             // ── Check signals ────────────────────────────────
             if (output.includes("<promise>COMPLETE</promise>")) {
                 console.log();
-                console.log("Ralph completed all tasks!");
-                console.log(`Completed at iteration ${i} of ${maxIterations}`);
+                log.complete(`All slices implemented!`);
+                log.done(`Finished at iteration ${i} of ${maxIterations}`);
+                log.info(`Total time: ${elapsed(loopStartTime)}`);
                 clearState();
                 process.exit(0);
             }
 
             if (output.includes("<promise>NO_TASKS</promise>")) {
                 console.log();
-                console.log("No tasks available. Waiting 30 seconds...");
+                log.wait(`No planned slices available — waiting 30s before retry...`);
                 await sleep(30 * 1000);
             }
 
@@ -187,15 +216,16 @@ for (let i = startIteration; i <= maxIterations; i++) {
         // Non-zero exit
         if (output.includes("No messages returned")) {
             console.log();
-            console.log("Warning: Claude returned no messages (transient). Skipping iteration...");
+            log.skip(`Claude returned no messages (transient) — skipping iteration`);
             claudeSkip = true;
             break;
         }
 
         console.log();
-        console.log("Warning: Claude exited with an error. Possibly spending limit reached.");
-        console.log("Waiting 5 minutes before retry...");
+        log.error(`Claude exited with code ${code}`);
+        log.wait(`Possibly rate-limited — waiting 5 minutes before retry...`);
         await sleep(5 * 60 * 1000);
+        log.iteration(`Retrying iteration ${i}...`);
     }
 
     if (claudeSkip) {
@@ -203,11 +233,15 @@ for (let i = startIteration; i <= maxIterations; i++) {
     }
 
     console.log();
-    console.log(`Iteration ${i} complete. Continuing...`);
+    log.done(`Iteration ${i} complete (${elapsed(iterStartTime)})`);
+    log.info(`Total elapsed: ${elapsed(loopStartTime)}`);
+    log.wait(`Pausing 2s before next iteration...`);
     await sleep(2000);
 }
 
 console.log();
-console.log(`Warning: Ralph reached max iterations (${maxIterations}) without completing all tasks.`);
+log.banner(`⛔ Ralph reached max iterations (${maxIterations})`);
+log.warn(`Not all slices completed — check proophboard for status`);
+log.info(`Total time: ${elapsed(loopStartTime)}`);
 clearState();
 process.exit(1);
