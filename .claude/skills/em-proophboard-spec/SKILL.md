@@ -117,13 +117,13 @@ Before creating anything, **plan the full chapter structure**:
 
 ### Add a Write Slice (Command → Event)
 1. `get_chapter` to find lane IDs
-2. `add_slice` with descriptive label at the right index
+2. `add_slice` with descriptive label at the right index and `status: "blocked"` (specification in progress)
 3. `add_element` — `automation` or `ui` in the `user-lane`
 4. `add_element` — `command` in the `information-flow` lane, same slice
 5. `add_element` — `event` in the `system` lane, same slice
 
 ### Add a Read Slice (Event → Information)
-1. `add_slice` with descriptive label at the right index (after the write slice whose events feed it)
+1. `add_slice` with descriptive label at the right index (after the write slice whose events feed it) and `status: "blocked"` (specification in progress)
 2. `add_element` — `information` in the `information-flow` lane
 3. `add_element` — `ui` or `automation` in the `user-lane` (what consumes this info)
 
@@ -388,12 +388,30 @@ Example of details for a command element:
 - JSON Schema should match the intended data structure (value classes unwrap to their raw type)
 - When updating details, always pass the **complete new content** to `update_element_details` — partial string replacements cause conflicts on proophboard
 
+### Specification Lifecycle
+
+New slices follow a two-phase flow:
+
+1. **During specification**: Create the slice with `status: "blocked"`. The slice documentation (set via `update_slice_details`) should start with a blockquote note:
+   ```
+   > **Blocked**: Specification in progress. This slice is not ready for implementation yet.
+   ```
+   This signals to anyone viewing the board that the slice is still being defined.
+
+2. **After user accepts specification**: Once the user confirms the slice specification is complete:
+   - Update the slice status from `blocked` to `planned` using `update_slice_status`
+   - Remove the `> **Blocked**: ...` note from the slice documentation (rewrite via `update_slice_details` without it)
+
 ### Track Implementation Progress
 
 Update slice status to reflect code implementation state:
 ```
-planned → in-progress → ready → deployed
+blocked → planned → in-progress → ready → deployed
 ```
+- `blocked` — initial status for slices under specification (not yet ready for implementation)
+- `planned` — specification accepted, ready for implementation
+- `in-progress` / `ready` / `deployed` — code implementation states
+
 Use `update_slice_status` with both `old_status` and `new_status`.
 
 Derive implementation tasks from the event model — **one task per slice**. Update progress on proophboard using slice status as implementation proceeds.

@@ -1,5 +1,7 @@
 <!-- IMPORTANT: `··` in :::element blocks marks where two trailing spaces MUST be added. Replace `··` with real spaces when writing to proophboard. -->
 
+> **Blocked**: Specification in progress. This slice is not ready for implementation yet.
+
 ## Business Rules
 
 <!-- WILL BE DERIVED FROM GWT Scenarios -->
