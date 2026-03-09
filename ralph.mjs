@@ -7,6 +7,7 @@
 //   node ralph.mjs --iterations 5           # 5 iterations
 //
 // Spawns Claude Code CLI in a loop, piping prompt.md to stdin each iteration.
+// Output is streamed in real-time via --output-format stream-json.
 // Checks output for signal strings to decide: stop / continue / wait.
 
 import {spawn} from "node:child_process";
@@ -42,30 +43,77 @@ if (!existsSync(PROGRESS_FILE)) {
 
 // ── Run Claude ───────────────────────────────────────────────
 
+function extractTextFromStreamJson(chunk) {
+    // stream-json emits newline-delimited JSON objects
+    // We extract text content from assistant messages
+    const lines = chunk.split("\n").filter(Boolean);
+    let text = "";
+    for (const line of lines) {
+        try {
+            const obj = JSON.parse(line);
+            // assistant message content
+            if (obj.type === "assistant" && obj.message?.content) {
+                for (const block of obj.message.content) {
+                    if (block.type === "text") {
+                        text += block.text;
+                    }
+                }
+            }
+            // content_block_delta for streaming chunks
+            if (obj.type === "content_block_delta" && obj.delta?.text) {
+                text += obj.delta.text;
+            }
+            // result message at the end
+            if (obj.type === "result" && obj.result) {
+                text += obj.result;
+            }
+        } catch {
+            // Not JSON — pass through raw
+            text += line;
+        }
+    }
+    return text;
+}
+
 function runClaude() {
     return new Promise((resolve) => {
         const prompt = readFileSync(PROMPT_FILE, "utf8");
-        const child = spawn("claude", ["--dangerously-skip-permissions"], {
+        const child = spawn("claude", [
+            "--print",
+            "--dangerously-skip-permissions",
+            "--output-format", "stream-json",
+        ], {
             cwd: scriptDir,
             stdio: ["pipe", "pipe", "pipe"],
         });
 
         let output = "";
+        let rawOutput = "";
 
-        const onData = (chunk) => {
+        const onStdout = (chunk) => {
+            const raw = chunk.toString();
+            rawOutput += raw;
+            const text = extractTextFromStreamJson(raw);
+            if (text) {
+                process.stdout.write(text);
+                appendFileSync(PROGRESS_FILE, text);
+                output += text;
+            }
+        };
+
+        const onStderr = (chunk) => {
             const text = chunk.toString();
-            process.stdout.write(text);
-            appendFileSync(PROGRESS_FILE, text);
+            process.stderr.write(text);
             output += text;
         };
 
         child.stdin.write(prompt);
         child.stdin.end();
 
-        child.stdout.on("data", onData);
-        child.stderr.on("data", onData);
+        child.stdout.on("data", onStdout);
+        child.stderr.on("data", onStderr);
 
-        child.on("close", (code) => resolve({code: code ?? 1, output}));
+        child.on("close", (code) => resolve({code: code ?? 1, output, rawOutput}));
     });
 }
 
