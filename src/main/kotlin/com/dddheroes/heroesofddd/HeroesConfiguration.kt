@@ -57,6 +57,7 @@ internal class AxonFrameworkConfiguration {
     }
 
     @Bean
+    @Suppress("DEPRECATION")
     fun clock(): Clock {
         val clock = Clock.systemUTC()
         GenericEventMessage.clock = clock

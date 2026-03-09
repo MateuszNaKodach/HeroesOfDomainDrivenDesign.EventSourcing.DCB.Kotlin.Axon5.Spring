@@ -1,6 +1,8 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling
 
 import com.dddheroes.heroesofddd.EventTags
+import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
+import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.application.CommandHandlerResult
@@ -61,11 +63,10 @@ private fun decide(command: BuildDwelling, state: State): List<HeroesEvent> {
     )
 }
 
-private fun evolve(state: State, event: DwellingEvent): State {
-    return when (event) {
-        is DwellingBuilt -> state.copy(isBuilt = true)
-        else -> state
-    }
+private fun evolve(state: State, event: DwellingEvent): State = when (event) {
+    is DwellingBuilt -> state.copy(isBuilt = true)
+    is AvailableCreaturesChanged -> state
+    is CreatureRecruited -> state
 }
 
 ////////////////////////////////////////////

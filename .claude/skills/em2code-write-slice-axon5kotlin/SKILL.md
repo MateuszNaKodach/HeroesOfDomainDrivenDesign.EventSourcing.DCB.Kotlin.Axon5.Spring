@@ -140,8 +140,7 @@ match their type pattern. Annotate with `@Command(namespace = "<BoundedContext>"
 **decide()**: Private standalone function. Takes `(command, state)`, returns event(s). No side effects. Enforce rules
 here: throw `IllegalStateException` for violations, return `emptyList()` for idempotent no-ops.
 
-**evolve()**: Private standalone function. Takes `(state, event)`, returns new State. Uses `when` + `state.copy()`.
-Handles ALL event types this slice needs for state reconstruction.
+**evolve()**: Private standalone function. Takes `(state, event)`, returns new State. Uses `when (event: SealedType)` over the sealed interface — **never `else ->`**. **Before writing `evolve()`, enumerate ALL subtypes of the sealed interface and decide for each one whether it affects this slice's state.** Every subtype must appear as an explicit branch, even as a no-op (`is SomeEvent -> state`) — this documents the conscious decision "this event exists but doesn't affect my state here." This ensures compile-time safety: adding a new event to the sealed interface breaks every slice using that type, forcing a deliberate update. **`@EventSourcingHandler` is ONLY added for events that actually mutate state** — no-op branches (`-> state`) must NOT have a corresponding handler. **When any branch mutates state, add a test for that transition.** **Cross-module slices** (subscribing to events from multiple bounded contexts via non-sealed `HeroesEvent`) require special attention: the compiler cannot enforce exhaustiveness, so every subscribed event type and its state impact must be reviewed manually when adding new events to any of the participating modules.
 
 **Entity**: Private class wrapping `val state: State`. Constructor with `@EntityCreator` returns `initialState`. Each
 `@EventSourcingHandler` returns new entity instance via `evolve()`. In `@EventCriteriaBuilder` methods,

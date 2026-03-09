@@ -129,6 +129,7 @@ class AxonGatewaysMock(
      */
     fun currentTimeIs(instant: Instant): Instant {
         Mockito.`when`(clock.instant()).thenReturn(instant)
+        @Suppress("DEPRECATION")
         GenericEventMessage.clock = Clock.fixed(instant, ZoneOffset.UTC)
         return instant
     }

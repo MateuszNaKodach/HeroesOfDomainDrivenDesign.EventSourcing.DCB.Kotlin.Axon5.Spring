@@ -2,6 +2,7 @@ package com.dddheroes.heroesofddd.creaturerecruitment.write.increaseavailablecre
 
 import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
+import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.application.CommandHandlerResult
@@ -72,7 +73,7 @@ private fun evolve(state: State, event: DwellingEvent): State = when (event) {
     is AvailableCreaturesChanged ->
         state.copy(availableCreatures = event.changedTo)
 
-    else -> state
+    is CreatureRecruited -> state
 }
 
 ////////////////////////////////////////////

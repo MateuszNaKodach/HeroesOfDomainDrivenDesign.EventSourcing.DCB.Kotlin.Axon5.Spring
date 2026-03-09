@@ -125,6 +125,20 @@ files. The source is available at:
 ### Game-scoped singletons in REST API
 When a bounded context has exactly one instance per game (e.g., Calendar, Astrologers), do NOT expose its domain ID as a path variable. Use a fixed path segment (e.g., `/calendar/` not `/calendars/{calendarId}/`) and derive the domain ID from `gameId` inside the controller (`CalendarId(gameId)`).
 
+### Exhaustive `when (event)` in evolve()
+- **When adding a new slice**, look at ALL events in the bounded context's sealed interface and
+  decide for each one: does this event affect my slice's state? Every event needs an explicit branch.
+- **Always** use `when (event: SealedType)` in `evolve()` — never `else ->`.
+- List EVERY sealed subtype explicitly. No-op branches (`is SomeEvent -> state`) are required
+  to document a conscious decision: "this event exists but doesn't affect my state here."
+- This forces a compile error when a new event is added to the sealed interface,
+  requiring a deliberate decision in every existing slice that uses it.
+- **`@EventSourcingHandler` is ONLY added for events that mutate state** — branches that
+  return `state` unchanged must NOT have a corresponding handler.
+- **When a branch mutates state, add a test for that state transition.**
+- For cross-module slices over non-sealed `HeroesEvent`: use overloaded `evolve()` functions
+  (one per concrete event type) instead of a `when` expression.
+
 ### Spring
 - Prefer constructor injection over field injection, even in tests.
 

@@ -110,8 +110,6 @@ private fun evolve(state: State, event: CalendarEvent): State = when (event) {
         currentWeek = null,
         currentDay = null
     )
-
-    else -> state
 }
 
 ////////////////////////////////////////////
