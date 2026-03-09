@@ -11,7 +11,7 @@
 // Checks output for signal strings to decide: stop / continue / wait.
 
 import {spawn} from "node:child_process";
-import {readFileSync} from "node:fs";
+import {existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync} from "node:fs";
 import {dirname, join} from "node:path";
 import {fileURLToPath} from "node:url";
 
@@ -30,9 +30,39 @@ function parseFlag(flag, fallback) {
 const maxIterations = parseFlag("--iterations", 10);
 
 const PROMPT_FILE = join(scriptDir, "prompt.md");
+const STATE_FILE = join(scriptDir, ".ai", "temp", "ralph-state.json");
 
 const now = () => new Date().toISOString().replace("T", " ").replace(/\.\d+Z$/, "");
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// ── State persistence (crash recovery) ──────────────────────
+
+function saveState(iteration, status) {
+    const dir = dirname(STATE_FILE);
+    if (!existsSync(dir)) mkdirSync(dir, {recursive: true});
+    writeFileSync(STATE_FILE, JSON.stringify({
+        iteration,
+        maxIterations,
+        status,
+        startedAt: state?.startedAt ?? now(),
+        updatedAt: now(),
+    }, null, 2));
+}
+
+function loadState() {
+    if (!existsSync(STATE_FILE)) return null;
+    try {
+        return JSON.parse(readFileSync(STATE_FILE, "utf8"));
+    } catch {
+        return null;
+    }
+}
+
+function clearState() {
+    if (existsSync(STATE_FILE)) unlinkSync(STATE_FILE);
+}
+
+let state = loadState();
 
 // ── Run Claude ───────────────────────────────────────────────
 
@@ -68,9 +98,10 @@ function extractTextFromStreamJson(chunk) {
     return text;
 }
 
-function runClaude() {
+function runClaude(iteration) {
     return new Promise((resolve) => {
-        const prompt = readFileSync(PROMPT_FILE, "utf8");
+        const basePrompt = readFileSync(PROMPT_FILE, "utf8");
+        const prompt = `${basePrompt}\n\n---\nRalph iteration ${iteration} of ${maxIterations} | Started: ${state?.startedAt ?? now()}`;
         const child = spawn("claude", [
             "--print",
             "--dangerously-skip-permissions",
@@ -111,20 +142,28 @@ function runClaude() {
 
 // ── Main loop ────────────────────────────────────────────────
 
-console.log(`Starting Ralph - Max iterations: ${maxIterations}`);
+// ── Resume from crash if state exists ────────────────────────
 
-for (let i = 1; i <= maxIterations; i++) {
+const startIteration = state?.status === "running" ? state.iteration : 1;
+if (startIteration > 1) {
+    console.log(`Resuming Ralph from iteration ${startIteration} (previous run interrupted)`);
+} else {
+    console.log(`Starting Ralph - Max iterations: ${maxIterations}`);
+}
+
+for (let i = startIteration; i <= maxIterations; i++) {
     console.log();
     console.log("=".repeat(60));
     console.log(`  Ralph Iteration ${i} of ${maxIterations}`);
     console.log("=".repeat(60));
     console.log();
     console.log(`>>> Running Claude at ${now()}`);
+    saveState(i, "running");
     // ── Run Claude safely ────────────────────────────────────
     let claudeSkip = false;
 
     while (true) {
-        const {code, output} = await runClaude();
+        const {code, output} = await runClaude(i);
 
         if (code === 0) {
             // ── Check signals ────────────────────────────────
@@ -132,6 +171,7 @@ for (let i = 1; i <= maxIterations; i++) {
                 console.log();
                 console.log("Ralph completed all tasks!");
                 console.log(`Completed at iteration ${i} of ${maxIterations}`);
+                clearState();
                 process.exit(0);
             }
 
@@ -169,4 +209,5 @@ for (let i = 1; i <= maxIterations; i++) {
 
 console.log();
 console.log(`Warning: Ralph reached max iterations (${maxIterations}) without completing all tasks.`);
+clearState();
 process.exit(1);
