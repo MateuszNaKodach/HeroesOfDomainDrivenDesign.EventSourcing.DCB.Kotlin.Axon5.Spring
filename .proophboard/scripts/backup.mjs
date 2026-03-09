@@ -124,20 +124,69 @@ function collectStorageRefs(value, refs = new Set()) {
   return refs;
 }
 
-// Rewrites storage: refs to ./images/... (relative to the chapter's own directory)
-function rewriteStorageRefs(value) {
-  if (typeof value === 'string') {
-    return value.replace(STORAGE_REF_RE, (_, p) => `./images/${p}`);
+// ── Markdown + image extraction per item ──────────────────────────────────────
+
+const MARKDOWN_FIELDS = ['description', 'details'];
+
+// For a single element or slice: extracts non-empty markdown fields into
+// {itemDir}/description.md and {itemDir}/details.md, downloads referenced images
+// into {itemDir}/images/, rewrites storage: refs to ./images/... in the .md files,
+// and returns the updated item object with field values replaced by relative paths
+// (relative to chapterDir, e.g. "./elements/{id}/description.md").
+async function extractItem(item, itemDir, relBase) {
+  const updated = { ...item };
+  let hasContent = false;
+
+  for (const field of MARKDOWN_FIELDS) {
+    if (typeof item[field] === 'string' && item[field].trim()) {
+      hasContent = true;
+      const mdContent = item[field].replace(STORAGE_REF_RE, (_, p) => `./images/${p}`);
+      await ensureDir(itemDir);
+      await fs.writeFile(path.join(itemDir, `${field}.md`), mdContent, 'utf8');
+      updated[field] = `./${relBase}/${item.id}/${field}.md`;
+    }
   }
-  if (Array.isArray(value)) {
-    return value.map(rewriteStorageRefs);
+
+  if (hasContent) {
+    // Download images referenced in this item's markdown fields
+    const storageRefs = new Set();
+    for (const field of MARKDOWN_FIELDS) {
+      if (typeof item[field] === 'string') collectStorageRefs(item[field], storageRefs);
+    }
+    if (storageRefs.size > 0) {
+      const imagesDir = path.join(itemDir, 'images');
+      await Promise.all(
+        [...storageRefs].map(async (storagePath) => {
+          try {
+            const buf = await apiBuffer(`/storage/images/${storagePath}`);
+            await writeBuffer(path.join(imagesDir, storagePath), buf);
+          } catch (err) {
+            console.error(`  ✗ Image ${storagePath}: ${err.message}`);
+          }
+        })
+      );
+    }
   }
-  if (value !== null && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.entries(value).map(([k, v]) => [k, rewriteStorageRefs(v)])
-    );
-  }
-  return value;
+
+  return updated;
+}
+
+// Extracts markdown + images for all elements and slices in a chapter.
+// Returns updated chapter data with field values replaced by relative file refs.
+async function extractChapterDocs(data, chapterDir) {
+  const updatedElements = await Promise.all(
+    (data.elements ?? []).map((el) =>
+      extractItem(el, path.join(chapterDir, 'elements', el.id), 'elements')
+    )
+  );
+
+  const updatedSlices = await Promise.all(
+    (data.slices ?? []).map((sl) =>
+      extractItem(sl, path.join(chapterDir, 'slices', sl.id), 'slices')
+    )
+  );
+
+  return { data: { ...data, elements: updatedElements, slices: updatedSlices } };
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
@@ -159,35 +208,20 @@ async function main() {
   // 2. Download each chapter in parallel — GET /chapters/{chapter_id}
   // Each chapter goes into chapters/{slug}/ with its own images/ subdirectory.
   console.log(`Downloading ${chapters.length} chapter(s)…`);
-  let totalImagesCount = 0;
 
   const chapterResults = await Promise.all(
     chapters.map(async (ch) => {
       const slug = toSlug(ch.name);
       const chapterDir = path.join(CHAPTERS_DIR, slug);
-      const imagesDir = path.join(chapterDir, 'images');
 
       try {
-        const data = await apiJson(`/chapters/${ch.id}`);
+        const raw = await apiJson(`/chapters/${ch.id}`);
 
-        // Collect and download images for this chapter
-        const storageRefs = collectStorageRefs(data);
-        if (storageRefs.size > 0) {
-          await Promise.all(
-            [...storageRefs].map(async (storagePath) => {
-              try {
-                const buf = await apiBuffer(`/storage/images/${storagePath}`);
-                await writeBuffer(path.join(imagesDir, storagePath), buf);
-                totalImagesCount++;
-              } catch (err) {
-                console.error(`  ✗ Image ${storagePath} (${ch.name}): ${err.message}`);
-              }
-            })
-          );
-        }
+        // Extract markdown fields (description/details) into elements/{id}/ and slices/{id}/,
+        // download per-item images, rewrite storage: refs to ./images/... in .md files.
+        const { data } = await extractChapterDocs(raw, chapterDir);
 
-        // Rewrite storage: refs to ./images/... and save
-        await writeJson(path.join(chapterDir, 'index.json'), rewriteStorageRefs(data));
+        await writeJson(path.join(chapterDir, 'index.json'), data);
         return { ok: true, id: ch.id, slug, name: ch.name };
       } catch (err) {
         console.error(`  ✗ Chapter "${ch.name}" (${slug}): ${err.message}`);
@@ -204,7 +238,6 @@ async function main() {
     workspace_id,
     workspace_name,
     chapters_count: successCount,
-    images_count: totalImagesCount,
   });
 
   // 4. Summary
@@ -213,7 +246,6 @@ async function main() {
   console.log(`  Workspace : ${workspace_name}`);
   console.log(`  Chapters  : ${successCount}/${chapters.length}`);
   chapterResults.forEach((r) => console.log(`    ${r.ok ? '✓' : '✗'} ${r.slug}`));
-  console.log(`  Images    : ${totalImagesCount}`);
   console.log(`  Timestamp : ${backedUpAt}`);
   console.log(`  Output    : ${BACKUP_DIR}`);
 }

@@ -1,0 +1,35 @@
+## Example
+
+```json
+{
+  "armyId": "hero-catherine-army",
+  "creatureId": "angel",
+  "quantity": 3
+}
+```
+
+## JSON Schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "armyId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier of the army"
+    },
+    "creatureId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Creature type to remove"
+    },
+    "quantity": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of troops to remove"
+    }
+  },
+  "required": ["armyId", "creatureId", "quantity"]
+}
+```
