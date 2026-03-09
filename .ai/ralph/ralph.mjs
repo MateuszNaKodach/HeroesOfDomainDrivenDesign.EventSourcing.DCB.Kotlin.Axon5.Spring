@@ -64,7 +64,7 @@ const REGISTRY_FILE = join(repoRoot, ".ai", "temp", "ralph-registry.json");
 const TEMP_DIR = join(repoRoot, ".ai", "temp");
 const WORKTREES_DIR = join(repoRoot, ".claude", "worktrees");
 
-const now = () => new Date().toISOString().replace("T", " ").replace(/\.\d+Z$/, "");
+const now = () => new Date().toISOString().replace("T", " ").replace(/\.\d+Z$/, "Z");
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function elapsed(startTime) {
@@ -163,6 +163,10 @@ function getParentBranch() {
 function createWorktree(worktreePath, parentBranch, branchName) {
     const absPath = resolve(repoRoot, worktreePath);
     if (!existsSync(dirname(absPath))) mkdirSync(dirname(absPath), { recursive: true });
+    // Prune stale worktree entries (e.g., after crash left a registered but missing directory)
+    try {
+        execSync(`git worktree prune`, { cwd: repoRoot, encoding: "utf8", stdio: "pipe" });
+    } catch { /* ignore */ }
     execSync(`git worktree add "${absPath}" -b "${branchName}" "${parentBranch}"`, {
         cwd: repoRoot,
         encoding: "utf8",
@@ -288,10 +292,14 @@ function extractTokensFromStreamJson(rawOutput) {
         try {
             const obj = JSON.parse(line);
             if (obj.type === "result" && obj.usage) {
+                const input = (obj.usage.input_tokens || 0)
+                    + (obj.usage.cache_read_input_tokens || 0)
+                    + (obj.usage.cache_creation_input_tokens || 0);
+                const output = obj.usage.output_tokens || 0;
                 return {
-                    input: obj.usage.input_tokens || 0,
-                    output: obj.usage.output_tokens || 0,
-                    total: (obj.usage.input_tokens || 0) + (obj.usage.output_tokens || 0),
+                    input,
+                    output,
+                    total: input + output,
                 };
             }
         } catch { /* ignore */ }
