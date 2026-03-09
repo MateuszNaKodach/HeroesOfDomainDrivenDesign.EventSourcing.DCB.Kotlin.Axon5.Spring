@@ -16,10 +16,19 @@
 // Flags: --max-iterations, --max-worktrees, --stream, --finalize (pr|merge|none),
 //        --discover (every|once), --fresh
 
-import { spawn, execSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync, readdirSync, rmSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import {execSync, spawn} from "node:child_process";
+import {
+    appendFileSync,
+    existsSync,
+    mkdirSync,
+    readdirSync,
+    readFileSync,
+    rmSync,
+    unlinkSync,
+    writeFileSync
+} from "node:fs";
+import {dirname, join, resolve} from "node:path";
+import {fileURLToPath} from "node:url";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(scriptDir, "..", "..");
@@ -503,54 +512,101 @@ If no planned slices exist, output: <slices>[]</slices>`;
 
 // ── Status Table ────────────────────────────────────────────
 
-function printStatusTable(registry, loopStartTime) {
+function pad(str, len) {
+    return str.length >= len ? str : str + " ".repeat(len - str.length);
+}
+
+function padLeft(str, len) {
+    return str.length >= len ? str : " ".repeat(len - str.length) + str;
+}
+
+function printStatusTable(registry, loopStartTime, queueSize = 0) {
     const active = Object.keys(registry.activeSlices).length;
     const completed = registry.completedIterations;
     const elapsedStr = elapsed(loopStartTime);
+    const totalTokens = registry.history.reduce((sum, h) => sum + (h.tokens?.total || 0), 0);
+    const stalledCount = registry.history.filter(h => h.result === "stalled").length;
+
+    // Collect all rows: [icon, label, branch, duration, status, tokens]
+    const rows = [];
+
+    for (const [, info] of Object.entries(registry.activeSlices)) {
+        const dur = elapsed(new Date(info.startedAt).getTime());
+        const icon = info.status === "stalled" ? "❓" : "🔨";
+        const status = info.status === "stalled" ? "STALLED" : "implementing";
+        rows.push([icon, info.sliceLabel, info.branch, dur, status, ""]);
+    }
+
+    for (const h of registry.history.slice(-10)) {
+        let icon, status;
+        if (h.result === "completed") {
+            icon = "✅";
+            if (finalizeMode === "pr" && h.prNumber) {
+                status = `→ PR #${h.prNumber}`;
+            } else if (finalizeMode === "merge") {
+                status = "→ merged";
+            } else {
+                status = "→ on branch";
+            }
+        } else if (h.result === "blocked") {
+            icon = "🚫";
+            status = "BLOCKED";
+        } else if (h.result === "stalled") {
+            icon = "❓";
+            status = "STALLED";
+        } else {
+            icon = "⚠️";
+            status = h.result;
+        }
+        const tokens = h.tokens?.total ? `${formatTokens(h.tokens.total)}` : "";
+        rows.push([icon, h.label, h.branch || "", h.duration || "?", status, tokens]);
+    }
+
+    // Calculate column widths
+    const colLabel = Math.max(5, ...rows.map(r => r[1].length));
+    const colBranch = Math.max(6, ...rows.map(r => r[2].length));
+    const colDur = Math.max(4, ...rows.map(r => r[3].length));
+    const colStatus = Math.max(6, ...rows.map(r => r[4].length));
+    const colTokens = Math.max(6, ...rows.map(r => r[5].length));
+    const tableW = 4 + 2 + colLabel + 3 + colBranch + 3 + colDur + 3 + colStatus + 3 + colTokens + 2;
+    const borderW = Math.max(tableW, 76);
+    const border = "═".repeat(borderW);
 
     const lines = [];
     lines.push("");
-    lines.push("══════════════════════════════════════════════════════════════════════════");
-    lines.push(`  Ralph Status | Completed: ${completed}/${registry.maxIterations} | Active: ${active}/${maxWorktrees} worktrees | Elapsed: ${elapsedStr}`);
-    lines.push(`  Finalize: ${finalizeMode} | Parent: ${registry.parentBranch}`);
-    lines.push("══════════════════════════════════════════════════════════════════════════");
+    lines.push(border);
+    lines.push(`  Ralph Status │ Completed: ${completed}/${registry.maxIterations} │ Active: ${active}/${maxWorktrees} worktrees │ Elapsed: ${elapsedStr}`);
+    lines.push(`  Finalize: ${finalizeMode} │ Parent: ${registry.parentBranch}`);
+    lines.push("─".repeat(borderW));
 
-    // Active slices
-    for (const [id, info] of Object.entries(registry.activeSlices)) {
-        const dur = elapsed(new Date(info.startedAt).getTime());
-        const icon = info.status === "stalled" ? "❓" : "🔨";
-        const suffix = info.status === "stalled" ? `STALLED` : info.status;
-        lines.push(`  ${icon} "${info.sliceLabel}"  ${info.branch}  [${dur}]  ${suffix}`);
-    }
+    if (rows.length > 0) {
+        // Header
+        lines.push(`  ${"  "}  ${pad("Slice", colLabel)}   ${pad("Branch", colBranch)}   ${padLeft("Time",
+                                                                                                   colDur)}   ${pad(
+                "Status",
+                colStatus)}   ${padLeft("Tokens", colTokens)}`);
+        lines.push("  " + "─".repeat(borderW - 4));
 
-    // History (recent)
-    for (const h of registry.history.slice(-10)) {
-        let icon, suffix;
-        if (h.result === "completed") {
-            icon = "✅";
-            if (finalizeMode === "pr" && h.prNumber) suffix = `→ PR #${h.prNumber}`;
-            else if (finalizeMode === "merge") suffix = "→ merged";
-            else suffix = "→ on branch";
-        } else if (h.result === "blocked") {
-            icon = "🚫";
-            suffix = "BLOCKED";
-        } else if (h.result === "stalled") {
-            icon = "❓";
-            suffix = "STALLED";
-        } else {
-            icon = "⚠️";
-            suffix = h.result;
+        for (const [icon, label, branch, dur, status, tokens] of rows) {
+            lines.push(`  ${icon}  ${pad(label, colLabel)}   ${pad(branch, colBranch)}   ${padLeft(dur,
+                                                                                                   colDur)}   ${pad(
+                    status,
+                    colStatus)}   ${padLeft(tokens, colTokens)}`);
         }
-        const tokens = h.tokens?.total ? `${formatTokens(h.tokens.total)} tokens` : "";
-        lines.push(`  ${icon} "${h.label}"  ${h.branch || ""}  [${h.duration || "?"}]  ${suffix}  ${tokens}`);
+    } else {
+        lines.push("  (no slices yet)");
     }
 
-    lines.push("══════════════════════════════════════════════════════════════════════════");
-
-    const totalTokens = registry.history.reduce((sum, h) => sum + (h.tokens?.total || 0), 0);
-    const stalledCount = Object.values(registry.activeSlices).filter(s => s.status === "stalled").length;
-    lines.push(`  Queue: planned slices remaining | Stalled: ${stalledCount} | Total tokens: ${formatTokens(totalTokens)}`);
-    lines.push("══════════════════════════════════════════════════════════════════════════");
+    lines.push("─".repeat(borderW));
+    const parts = [`Queue: ${queueSize}`];
+    if (stalledCount > 0) {
+        parts.push(`Stalled: ${stalledCount}`);
+    }
+    if (totalTokens > 0) {
+        parts.push(`Total tokens: ${formatTokens(totalTokens)}`);
+    }
+    lines.push(`  ${parts.join(" │ ")}`);
+    lines.push(border);
 
     console.log(lines.join("\n"));
 }
@@ -666,12 +722,24 @@ ${finalizeMode === "none" ? `- Leave changes on the feature branch. Do not merge
     let output = "";
     let rawOutput = "";
 
-    // Ensure log directory exists
+    // Ensure log directory exists and truncate log file
     if (!existsSync(dirname(logFile))) mkdirSync(dirname(logFile), { recursive: true });
-    writeFileSync(logFile, ""); // truncate
+    writeFileSync(logFile, "");
 
-    const appendLog = (text) => {
-        try { writeFileSync(logFile, readFileSync(logFile, "utf8") + text); } catch { /* ignore */ }
+    // Progress file inside the worktree — Claude output streamed here in real-time
+    const progressFile = join(absWorktreePath, ".ai", "temp", "claude-output.md");
+    const progressDir = dirname(progressFile);
+    if (!existsSync(progressDir)) {
+        mkdirSync(progressDir, {recursive: true});
+    }
+    writeFileSync(progressFile, `# Claude Output — ${slice.label}\n\nStarted: ${now()}\n\n---\n\n`);
+
+    const appendToFiles = (text) => {
+        try {
+            appendFileSync(logFile, text);
+            appendFileSync(progressFile, text);
+        } catch { /* ignore */
+        }
     };
 
     child.stdout.on("data", (chunk) => {
@@ -680,7 +748,7 @@ ${finalizeMode === "none" ? `- Leave changes on the feature branch. Do not merge
         const text = extractTextFromStreamJson(raw);
         if (text) {
             output += text;
-            appendLog(text);
+            appendToFiles(text);
             if (streamOutput) {
                 const prefixed = text.split("\n").map(l => l ? `  [${kebab}] ${l}` : "").join("\n");
                 process.stdout.write(prefixed);
@@ -691,7 +759,7 @@ ${finalizeMode === "none" ? `- Leave changes on the feature branch. Do not merge
     child.stderr.on("data", (chunk) => {
         const text = chunk.toString();
         output += text;
-        appendLog(text);
+        appendToFiles(text);
     });
 
     const promise = new Promise((resolve) => {
@@ -815,7 +883,10 @@ async function runParallelMode() {
     const completedIds = new Set(registry.history.map(h => h.sliceId));
     queue = queue.filter(s => !completedIds.has(s.id));
 
-    log.info(`Found ${queue.length} planned slices`);
+    log.info(`Found ${queue.length} planned slices:`);
+    for (const s of queue) {
+        log.info(`  → "${s.label}" (${s.type}) [${s.chapter}] id=${s.id}`);
+    }
 
     if (queue.length === 0) {
         log.complete("No planned slices found — nothing to do!");
@@ -829,7 +900,7 @@ async function runParallelMode() {
     // Heartbeat interval
     const heartbeatInterval = setInterval(() => {
         if (activeWorkers.size > 0) {
-            printStatusTable(registry, loopStartTime);
+            printStatusTable(registry, loopStartTime, queue.length);
         }
     }, 60000);
 
@@ -844,7 +915,10 @@ async function runParallelMode() {
                 const freshSlices = newSlices.filter(s => !completedIds.has(s.id) && !activeIds.has(s.id));
                 if (freshSlices.length > 0) {
                     queue.push(...freshSlices);
-                    log.info(`Discovered ${freshSlices.length} new planned slices`);
+                    log.info(`Discovered ${freshSlices.length} new planned slices:`);
+                    for (const s of freshSlices) {
+                        log.info(`  → "${s.label}" (${s.type}) [${s.chapter}] id=${s.id}`);
+                    }
                 } else {
                     log.info("No new planned slices found");
                 }
@@ -882,7 +956,7 @@ async function runParallelMode() {
                 saveRegistry(registry);
                 activeWorkers.set(slice.id, worker);
 
-                printStatusTable(registry, loopStartTime);
+                printStatusTable(registry, loopStartTime, queue.length);
             }
 
             if (activeWorkers.size === 0) {
@@ -937,7 +1011,7 @@ async function runParallelMode() {
                 });
                 registry.completedIterations++;
                 saveRegistry(registry);
-                printStatusTable(registry, loopStartTime);
+                printStatusTable(registry, loopStartTime, queue.length);
                 continue;
             }
 
@@ -1033,7 +1107,7 @@ async function runParallelMode() {
             }
 
             saveRegistry(registry);
-            printStatusTable(registry, loopStartTime);
+            printStatusTable(registry, loopStartTime, queue.length);
         }
     } finally {
         clearInterval(heartbeatInterval);
@@ -1041,7 +1115,7 @@ async function runParallelMode() {
 
     // Final summary
     console.log();
-    printStatusTable(registry, loopStartTime);
+    printStatusTable(registry, loopStartTime, queue.length);
 
     const allCompleted = registry.history.every(h => h.result === "completed");
     if (allCompleted && registry.history.length > 0) {
