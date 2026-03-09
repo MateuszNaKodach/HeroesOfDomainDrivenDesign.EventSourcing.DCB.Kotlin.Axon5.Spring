@@ -54,6 +54,26 @@ The slice is a self-contained unit of work — trust that and stay focused.
 
 Before implementing, check if other planned slices share the same read model or projection as the selected one (e.g., two Read slices reacting to different events but projecting into the same view). If so, inform the user and suggest grouping them. Implement grouped slices together as a single unit.
 
+## Progress Tracking (Session Recovery)
+
+Write a progress file to `.ai/temp/<feature-branch-name>/progress.md` so a new session can resume if interrupted. Create it after Step 3 (when slice and parent branch are known), update it as steps complete.
+
+Format:
+```markdown
+# Slice: <Slice Label>
+- **Type**: Write | Read | Automation
+- **Chapter**: <chapter name>
+- **Slice ID**: <proophboard slice ID>
+- **Parent branch**: <parent-branch>
+- **Feature branch**: feature/<slice-label-kebab-case>
+- **Current step**: <step number and name>
+- **Status**: in-progress | quality-gate | committing | finalizing
+```
+
+**On resume**: If `.ai/temp/feature-<name>/progress.md` exists for the current branch, read it and continue from the recorded step instead of starting over. Ask the user to confirm before resuming.
+
+**Cleanup**: Delete the progress file (and its directory) after successful finalization in Step 7.
+
 ## Step 3: Determine Parent Branch
 
 1. Check the current git branch.
