@@ -119,6 +119,20 @@ Format:
     - **Open a pull request** — push the branch and create a PR targeting `<base-branch>` via `gh pr create`
     - **Leave on branch** — do nothing further, leave changes on the feature branch
 
+## Conflict Resolution (Rebase)
+
+When merging or rebasing onto the parent branch, conflicts may occur — especially when multiple slices were implemented in parallel. The most common conflicts are:
+
+- **Event/command classes** — two slices introduced the same event or command (e.g., both need `DwellingBuilt`). One branch created the file, the other also created it. Resolution: keep the version that matches the proophboard event definition (source of truth). If both are identical, just accept either.
+- **Sealed interface files** — e.g., `DwellingEvent.kt` got a new event added by both branches. Resolution: merge both additions — the sealed interface should list all events from both slices.
+- **Exhaustive `when` blocks** — after merging new events into a sealed interface, any `when` expression over that interface (e.g., in `evolve()`) will fail to compile because the new event type from the other branch isn't handled. Resolution: add the missing branch to the `when`. Check `evolve()` functions and any other exhaustive matches in the same bounded context.
+- **EventTags.kt** — both slices added a new tag constant. Resolution: keep both constants.
+- **Feature flag configs** (`application.yaml`, `application-test.yaml`, `additional-spring-configuration-metadata.json`) — both slices added entries. Resolution: keep all entries from both sides.
+
+**Resolution principle**: The proophboard Event Model is the source of truth. When in doubt about property names, types, or structure — check the slice definition on the board, not the conflicting code.
+
+**After resolving conflicts**: Re-run the quality gate (compile + tests) before finalizing.
+
 ## Important
 
 - Work on ONE slice per invocation, unless multiple slices share the same implementation (e.g., shared read model) — then group and implement them together.
