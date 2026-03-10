@@ -27,7 +27,7 @@ node .ai/ralph/ralph.mjs --fresh --max-worktrees 3
 
 | Argument | Default | Description |
 |----------|---------|-------------|
-| `--max-iterations N` | `10` | Total slice implementations before stopping |
+| `--max-iterations N` | `10` | Max **total slices** to process (not rounds — see below) |
 | `--iterations N` | `10` | Alias for `--max-iterations` (backward compat) |
 | `--max-worktrees N` | `1` | Max concurrent parallel slices. `1` = sequential mode |
 | `--stream` | off | Stream Claude output to console with `[slice-name]` prefix |
@@ -35,6 +35,17 @@ node .ai/ralph/ralph.mjs --fresh --max-worktrees 3
 | `--discover every\|once` | `every` | When to re-discover planned slices from proophboard |
 | `--fresh` | off | Wipe all previous state before starting |
 | `--conflict-commit separate\|squash` | `separate` | How to commit conflict resolution (separate commit vs squash into slice commit) |
+
+## `--max-iterations` Semantics
+
+`--max-iterations` limits the **total number of slices** processed, not the number of "rounds." In parallel mode, each spawned worktree counts as one iteration. Example:
+
+```
+--max-iterations 1 --max-worktrees 3  → processes only 1 slice (not 3)
+--max-iterations 6 --max-worktrees 3  → processes up to 6 slices (2 full rounds of 3)
+```
+
+The guard is: `completedIterations + activeWorkers < maxIterations`. So with `--max-iterations 1`, only 1 worker is ever spawned regardless of `--max-worktrees`.
 
 ## Modes
 
@@ -102,7 +113,7 @@ When an agent signals `SLICE_DONE`, the slice is added to a persistent `readyQue
    - `merge`: fast-forward merge into parent + push to remote
    - `pr`: force-push rebased branch + `gh pr create`
    - `none`: leave branch as-is
-6. **Cleanup** — delete branch (if merge mode)
+6. **Cleanup** — delete local + remote branch (if merge mode); remote branch is also deleted for failed/blocked/stalled slices to prevent stale refs
 
 ### Slice Discovery
 
@@ -121,8 +132,8 @@ No race conditions — the Node.js orchestrator is the sole assigner. The `activ
 
 | Mode | Behaviour |
 |------|-----------|
-| `pr` | Orchestrator rebases + pushes branch, creates PR via `gh pr create` |
-| `merge` | Orchestrator rebases + fast-forward merges to parent branch, pushes, deletes feature branch |
+| `pr` | Pushes base branch to remote (ensures it exists), rebases + force-pushes feature branch, creates PR via `gh pr create`. Remote branch kept for the PR. |
+| `merge` | Rebases + fast-forward merges to parent branch, pushes parent to remote, deletes **both local and remote** feature branch (prevents duplicate commits from stale pre-rebase SHAs). |
 | `none` | Changes left on the feature branch — user decides later |
 
 ### Conflict Commit Modes
