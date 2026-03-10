@@ -853,12 +853,26 @@ function attemptRebase(branch, parentBranch) {
     gitExec(`git checkout ${branch}`);
     try {
         gitExec(`git rebase ${parentBranch}`);
-        return { success: true };
-    } catch {
+        return { success: true, conflicts: false };
+    } catch (e) {
+        // Check if there are actual merge conflicts (unmerged files)
+        let hasConflicts = false;
         try {
-            gitExec(`git rebase --abort`);
+            const status = gitExec(`git status --porcelain`);
+            // Unmerged entries start with U, or have both sides modified (AA, DD, UU, etc.)
+            hasConflicts = status.split("\n").some(line => /^(U.|.U|AA|DD)/.test(line));
         } catch { /* ignore */ }
-        return { success: false };
+
+        if (hasConflicts) {
+            log.info(`Rebase paused with conflicts — aborting for Claude resolution`);
+            try { gitExec(`git rebase --abort`); } catch { /* ignore */ }
+            return { success: false, conflicts: true };
+        }
+
+        // Not a conflict — some other rebase error
+        log.warn(`Rebase failed (non-conflict): ${e.message?.slice(0, 300)}`);
+        try { gitExec(`git rebase --abort`); } catch { /* ignore */ }
+        return { success: false, conflicts: false };
     }
 }
 
@@ -890,15 +904,21 @@ The proophboard Event Model is the source of truth for property names, types, an
 
 4. After resolving each file: \`git add <file>\`
 5. Continue: \`git rebase --continue\`
+   - The rebase continue creates the commit with the resolved conflicts automatically.
 6. If more conflicts appear, repeat steps 2-5.
-7. After rebase completes, run \`./mvnw test\` to verify.
-${conflictCommitMode === "separate" ? `8. If tests pass, create a separate conflict resolution commit:
-   \`git commit -m "🚫 git(conflict): slice '${item.label}' rebase conflicts resolved\n\nResolved conflicts from rebasing onto ${registry.parentBranch}."\`
-` : `8. If tests pass, amend the slice commit to include conflict resolution:
-   \`git commit --amend --no-edit\`
-`}
-9. Output \`<promise>CONFLICTS_RESOLVED</promise>\` if successful.
-10. If you cannot resolve: \`git rebase --abort\` and output \`<promise>CONFLICTS_FAILED</promise>\`.`;
+7. After rebase completes successfully, run \`./mvnw test\` to verify everything works.
+8. If tests FAIL after rebase (e.g., missing \`when\` branches, compilation errors from merged sealed interfaces):
+   - Fix the issues (add missing branches, fix imports, etc.)
+   - Stage fixes: \`git add <fixed-files>\`
+${conflictCommitMode === "separate" ? `   - Create a separate conflict resolution commit:
+     \`git commit -m "🚫 git(conflict): slice '${item.label}' — post-rebase fixes
+
+     Fixed compilation/test issues after rebasing onto ${registry.parentBranch}."\`
+` : `   - Amend the slice commit: \`git commit --amend --no-edit\`
+`}   - Re-run \`./mvnw test\` to confirm fix.
+9. If tests PASS after rebase — great, no extra commit needed.
+10. Output \`<promise>CONFLICTS_RESOLVED</promise>\` if successful (rebase done + tests pass).
+11. If you cannot resolve: \`git rebase --abort\` and output \`<promise>CONFLICTS_FAILED</promise>\`.`;
 
         const child = spawn("claude", [
             "--print",
@@ -984,12 +1004,16 @@ async function finalizeSlice(item, registry) {
         // 4. Rebase feature branch onto parent
         const rebaseResult = attemptRebase(branch, parentBranch);
         if (!rebaseResult.success) {
-            log.warn(`Rebase of "${branch}" onto "${parentBranch}" has conflicts — invoking Claude...`);
-            const conflictResult = await resolveConflictsWithClaude(item, registry);
-            if (!conflictResult.success) {
-                throw new Error(`Conflict resolution failed for "${label}"`);
+            if (rebaseResult.conflicts) {
+                log.warn(`Rebase of "${branch}" onto "${parentBranch}" has conflicts — invoking Claude...`);
+                const conflictResult = await resolveConflictsWithClaude(item, registry);
+                if (!conflictResult.success) {
+                    throw new Error(`Conflict resolution failed for "${label}"`);
+                }
+                log.done(`Conflicts resolved for "${label}"`);
+            } else {
+                throw new Error(`Rebase failed for "${label}" (non-conflict error)`);
             }
-            log.done(`Conflicts resolved for "${label}"`);
         }
 
         // 5. Finalize based on mode
@@ -1079,7 +1103,11 @@ async function finalizeSlice(item, registry) {
 async function processReadyQueueLoop(registry, loopStartTime, doneSignal) {
     while (true) {
         if (registry.readyQueue.length > 0) {
-            const item = registry.readyQueue.shift();
+            const item = registry.readyQueue[0];
+
+            // Set finalizingSlice BEFORE removing from queue so item is always visible in status table
+            registry.finalizingSlice = item;
+            registry.readyQueue.shift();
             saveRegistry(registry);
 
             log.queue(`Processing ready queue: "${item.label}" (${registry.readyQueue.length} remaining)`);
