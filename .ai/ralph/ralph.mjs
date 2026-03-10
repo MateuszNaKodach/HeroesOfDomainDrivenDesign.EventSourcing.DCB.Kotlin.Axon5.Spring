@@ -940,6 +940,8 @@ async function finalizeSlice(item, registry) {
         // 6. Cleanup (worktree already removed in step 1)
         if (finalizeMode === "merge") {
             deleteBranch(branch);
+            // Delete remote branch — worker pushed it pre-rebase, so it has a stale commit
+            try { gitExec(`git push origin --delete ${branch}`); } catch { /* ignore */ }
         }
         // Ensure we're back on parent branch
         try {
@@ -1153,7 +1155,10 @@ function retireWorker(activeWorkers, registry, sliceId) {
 
 function cleanupWorkerBranch(worktreePath, branchName) {
     if (worktreePath) removeWorktree(worktreePath);
-    if (branchName) deleteBranch(branchName);
+    if (branchName) {
+        deleteBranch(branchName);
+        try { gitExec(`git push origin --delete ${branchName}`); } catch { /* ignore if not on remote */ }
+    }
 }
 
 function handleWorkerResult(result, registry, activeWorkers, queue, completedIds, completedBranches) {
