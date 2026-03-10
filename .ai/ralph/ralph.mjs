@@ -453,7 +453,9 @@ function discoverSlices() {
     return new Promise((resolve) => {
         const prompt = `Read proophboard via MCP. Read .proophboard/workspace.json to get workspace_id, then call mcp__proophboard__list_chapters, then for each chapter call mcp__proophboard__get_chapter.
 
-Output ONLY a JSON array of planned slices (status = "planned") wrapped in <slices>...</slices> tags. Format:
+IMPORTANT: Only include slices whose status is EXACTLY "planned". Do NOT include slices with status "ready", "deployed", "in-progress", or "blocked" — those are already done or not available.
+
+Output ONLY a JSON array of planned slices wrapped in <slices>...</slices> tags. Format:
 [{"id":"slice-id","label":"Slice Label","chapter":"Chapter Name","type":"write|read|automation","priority":1}]
 
 Priority rules:
@@ -462,7 +464,7 @@ Priority rules:
 - Automations and read slices that depend on already-implemented events rank next
 - Within equal priority, prefer lower chapter+slice index
 
-If no planned slices exist, output: <slices>[]</slices>`;
+If no slices have status "planned", output: <slices>[]</slices>`;
 
         const child = spawn("claude", [
             "--print",
@@ -853,9 +855,23 @@ async function runParallelMode() {
         log.info(`Recovered ${recoveredSlices.length} slices from crash`);
     }
 
-    // Filter out already-completed slices
+    // Filter out already-completed slices (by ID and by branch name)
     const completedIds = new Set(registry.history.map(h => h.sliceId));
-    queue = queue.filter(s => !completedIds.has(s.id));
+    const completedBranches = new Set(registry.history.map(h => h.branch));
+    queue = queue.filter(s => !completedIds.has(s.id) && !completedBranches.has(`feature/${toKebab(s.label)}`));
+
+    // Deduplicate by branch name — slices with the same label map to the same branch,
+    // so they must be implemented together as a single unit
+    const seenBranches = new Set();
+    queue = queue.filter(s => {
+        const branch = `feature/${toKebab(s.label)}`;
+        if (seenBranches.has(branch)) {
+            log.skip(`"${s.label}" (id=${s.id}) deduped — same branch as another queued slice`);
+            return false;
+        }
+        seenBranches.add(branch);
+        return true;
+    });
 
     log.info(`Found ${queue.length} planned slices:`);
     for (const s of queue) {
@@ -886,11 +902,24 @@ async function runParallelMode() {
                 log.info("Re-discovering slices from proophboard...");
                 const newSlices = await discoverSlices();
                 const activeIds = new Set(Object.keys(registry.activeSlices));
-                const freshSlices = newSlices.filter(s => !completedIds.has(s.id) && !activeIds.has(s.id));
-                if (freshSlices.length > 0) {
-                    queue.push(...freshSlices);
-                    log.info(`Discovered ${freshSlices.length} new planned slices:`);
-                    for (const s of freshSlices) {
+                const activeBranches = new Set(Object.values(registry.activeSlices).map(s => s.branch));
+                const freshSlices = newSlices.filter(s => {
+                    const branch = `feature/${toKebab(s.label)}`;
+                    return !completedIds.has(s.id) && !activeIds.has(s.id)
+                        && !completedBranches.has(branch) && !activeBranches.has(branch);
+                });
+                // Deduplicate by branch name within fresh slices
+                const freshBranches = new Set();
+                const dedupedFresh = freshSlices.filter(s => {
+                    const branch = `feature/${toKebab(s.label)}`;
+                    if (freshBranches.has(branch)) return false;
+                    freshBranches.add(branch);
+                    return true;
+                });
+                if (dedupedFresh.length > 0) {
+                    queue.push(...dedupedFresh);
+                    log.info(`Discovered ${dedupedFresh.length} new planned slices:`);
+                    for (const s of dedupedFresh) {
                         log.info(`  → "${s.label}" (${s.type}) [${s.chapter}] id=${s.id}`);
                     }
                 } else {
@@ -902,9 +931,19 @@ async function runParallelMode() {
             while (activeWorkers.size < maxWorktrees && queue.length > 0 && registry.completedIterations + activeWorkers.size < maxIterations) {
                 const slice = queue.shift();
 
-                // Skip if already active
+                // Skip if already active (by ID or by branch name)
+                const candidateBranch = `feature/${toKebab(slice.label)}`;
                 if (registry.activeSlices[slice.id]) {
                     log.skip(`"${slice.label}" already active — skipping`);
+                    continue;
+                }
+                if (completedBranches.has(candidateBranch)) {
+                    log.skip(`"${slice.label}" branch already completed — skipping`);
+                    continue;
+                }
+                const activeBranchSet = new Set(Object.values(registry.activeSlices).map(s => s.branch));
+                if (activeBranchSet.has(candidateBranch)) {
+                    log.skip(`"${slice.label}" branch already active in another worker — skipping`);
                     continue;
                 }
 
@@ -939,9 +978,21 @@ async function runParallelMode() {
                     log.info("All workers done, queue empty — re-discovering...");
                     const newSlices = await discoverSlices();
                     const activeIds = new Set(Object.keys(registry.activeSlices));
-                    const freshSlices = newSlices.filter(s => !completedIds.has(s.id) && !activeIds.has(s.id));
-                    if (freshSlices.length > 0) {
-                        queue.push(...freshSlices);
+                    const activeBranches2 = new Set(Object.values(registry.activeSlices).map(s => s.branch));
+                    const freshSlices = newSlices.filter(s => {
+                        const branch = `feature/${toKebab(s.label)}`;
+                        return !completedIds.has(s.id) && !activeIds.has(s.id)
+                            && !completedBranches.has(branch) && !activeBranches2.has(branch);
+                    });
+                    const freshBranches2 = new Set();
+                    const dedupedFresh2 = freshSlices.filter(s => {
+                        const branch = `feature/${toKebab(s.label)}`;
+                        if (freshBranches2.has(branch)) return false;
+                        freshBranches2.add(branch);
+                        return true;
+                    });
+                    if (dedupedFresh2.length > 0) {
+                        queue.push(...dedupedFresh2);
                         continue;
                     }
                 }
@@ -1010,6 +1061,7 @@ async function runParallelMode() {
                     });
 
                     completedIds.add(sliceId);
+                    completedBranches.add(branchName);
                     activeWorkers.delete(sliceId);
                     delete registry.activeSlices[sliceId];
                     registry.completedIterations++;
@@ -1032,6 +1084,7 @@ async function runParallelMode() {
                         tokens,
                     });
 
+                    completedBranches.add(branchName);
                     activeWorkers.delete(sliceId);
                     delete registry.activeSlices[sliceId];
                     registry.completedIterations++;
@@ -1052,6 +1105,7 @@ async function runParallelMode() {
                     });
 
                     completedIds.add(sliceId);
+                    completedBranches.add(branchName);
                     activeWorkers.delete(sliceId);
                     delete registry.activeSlices[sliceId];
                     registry.completedIterations++;
