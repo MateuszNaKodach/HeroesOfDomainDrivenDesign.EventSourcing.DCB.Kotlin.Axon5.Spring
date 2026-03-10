@@ -90,14 +90,19 @@ Each worktree is dedicated to one slice and lives only for the duration of that 
 
 When an agent signals `SLICE_DONE`, the slice is added to a persistent `readyQueue` in the registry. A concurrent finalization loop processes entries one at a time:
 
-1. **Squash** — collapse feature branch commits to a single commit
-2. **Rebase** — rebase the single commit onto the (updated) parent branch
-3. **Conflict resolution** — if rebase conflicts, spawn a lightweight Claude agent to resolve them
-4. **Finalize** — based on `--finalize` mode:
+1. **Remove worktree** — free the branch lock so finalization can checkout it
+2. **Squash** — collapse feature branch commits to a single commit
+3. **Rebase** — rebase the single commit onto the (updated) parent branch
+4. **Rebase resolution** — if rebase fails, spawn a lightweight Claude agent:
+   - **Conflicts**: resolve merge conflicts using project-specific rules (sealed interfaces, `when` blocks, EventTags)
+   - **Non-conflict failures**: diagnose (dirty state, lock files, etc.), fix, and retry
+   - Output logged to `.ai/temp/ralph-rebase-<slice>.log`
+   - Post-rebase: run `./mvnw test`, create fix commit only if tests fail
+5. **Finalize** — based on `--finalize` mode:
    - `merge`: fast-forward merge into parent + push to remote
    - `pr`: force-push rebased branch + `gh pr create`
    - `none`: leave branch as-is
-5. **Cleanup** — remove worktree, delete branch (if merge mode)
+6. **Cleanup** — delete branch (if merge mode)
 
 ### Slice Discovery
 
@@ -122,21 +127,26 @@ No race conditions — the Node.js orchestrator is the sole assigner. The `activ
 
 ### Conflict Commit Modes
 
-| Mode | Behaviour |
-|------|-----------|
-| `separate` (default) | Conflict resolution is a separate descriptive commit |
-| `squash` | Conflict resolution is squashed into the slice commit (amend) |
+Controls how post-rebase test fixes are committed (only applies when tests fail after rebase — if tests pass, no extra
+commit is created):
 
-### Output per Worker
+| Mode                 | Behaviour                                                    |
+|----------------------|--------------------------------------------------------------|
+| `separate` (default) | Post-rebase fixes are a separate descriptive commit          |
+| `squash`             | Post-rebase fixes are squashed into the slice commit (amend) |
 
-Claude output is streamed in real-time to two places:
+### Output & Logs
 
-| Destination | Path |
-|-------------|------|
-| Orchestrator log | `.ai/temp/ralph-<slice-kebab>.log` |
-| Worktree progress file | `<worktree>/.ai/temp/claude-output.md` |
+Claude output is streamed in real-time:
 
-With `--stream`, output is also interleaved on the console prefixed with `[slice-name]`.
+| Destination            | Path                                      |
+|------------------------|-------------------------------------------|
+| Worker log             | `.ai/temp/ralph-<slice-kebab>.log`        |
+| Worktree progress file | `<worktree>/.ai/temp/claude-output.md`    |
+| Rebase resolution log  | `.ai/temp/ralph-rebase-<slice-kebab>.log` |
+
+With `--stream`, output is also interleaved on the console prefixed with `[slice-name]` (workers) or
+`[conflict-<slice>]` / `[rebase-<slice>]` (rebase resolution).
 
 ## Status Table
 
@@ -157,12 +167,14 @@ Printed on worktree start, completion, error, every 60 s heartbeat, and final su
 
 ## Signals
 
-| Signal | Mode | Meaning |
-|--------|------|---------|
-| `<promise>SLICE_DONE:<id></promise>` | Parallel | Slice implemented, committed, and pushed |
-| `<promise>SLICE_BLOCKED:<id></promise>` | Parallel | Slice cannot be implemented |
-| `<promise>COMPLETE</promise>` | Sequential | All slices done |
-| `<promise>NO_TASKS</promise>` | Sequential | No planned slices available |
+| Signal                                  | Context             | Meaning                                  |
+|-----------------------------------------|---------------------|------------------------------------------|
+| `<promise>SLICE_DONE:<id></promise>`    | Worker (parallel)   | Slice implemented, committed, and pushed |
+| `<promise>SLICE_BLOCKED:<id></promise>` | Worker (parallel)   | Slice cannot be implemented              |
+| `<promise>COMPLETE</promise>`           | Worker (sequential) | All slices done                          |
+| `<promise>NO_TASKS</promise>`           | Worker (sequential) | No planned slices available              |
+| `<promise>REBASE_RESOLVED</promise>`    | Rebase resolution   | Rebase completed + tests pass            |
+| `<promise>REBASE_FAILED</promise>`      | Rebase resolution   | Rebase could not be completed            |
 
 ## Slice Statuses
 
@@ -192,20 +204,24 @@ On startup with an existing registry, Ralph checks:
 
 3. **Ready queue items** — processed normally by the finalization pipeline
 
+The registry file is **preserved after completion** (not deleted) — it serves as a run log and enables disaster recovery
+if the process is restarted.
+
 The `em2code-slice` skill has its own progress recovery via `.ai/temp/feature-*/progress.md`.
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `eventmodeling-loop.sh` | Shell entry point with project defaults |
-| `.ai/ralph/ralph.mjs` | Orchestrator script |
-| `.ai/ralph/prompt.md` | Base prompt injected into every Claude agent |
-| `.ai/temp/ralph-registry.json` | Active slices, ready queue, history (parallel mode) |
-| `.ai/temp/ralph-state.json` | Iteration state (sequential mode) |
-| `.ai/temp/ralph-<slice>.log` | Per-slice Claude output log |
-| `<worktree>/.ai/temp/claude-output.md` | Live Claude output inside each worktree |
-| `.claude/worktrees/ralph-*/` | Per-slice git worktrees (gitignored) |
+| File                                   | Purpose                                             |
+|----------------------------------------|-----------------------------------------------------|
+| `eventmodeling-loop.sh`                | Shell entry point with project defaults             |
+| `.ai/ralph/ralph.mjs`                  | Orchestrator script                                 |
+| `.ai/ralph/prompt.md`                  | Base prompt injected into every Claude agent        |
+| `.ai/temp/ralph-registry.json`         | Active slices, ready queue, history (parallel mode) |
+| `.ai/temp/ralph-state.json`            | Iteration state (sequential mode)                   |
+| `.ai/temp/ralph-<slice>.log`           | Per-slice Claude worker output log                  |
+| `.ai/temp/ralph-rebase-<slice>.log`    | Rebase resolution Claude output log                 |
+| `<worktree>/.ai/temp/claude-output.md` | Live Claude output inside each worktree             |
+| `.claude/worktrees/ralph-*/`           | Per-slice git worktrees (gitignored)                |
 
 ## Fresh Start
 
