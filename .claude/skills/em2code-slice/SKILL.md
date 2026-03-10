@@ -131,7 +131,11 @@ When merging or rebasing onto the parent branch, conflicts may occur — especia
 
 **Resolution principle**: The proophboard Event Model is the source of truth. When in doubt about property names, types, or structure — check the slice definition on the board, not the conflicting code.
 
+**Rebase conflict workflow**: Resolve conflicts using `git add <resolved-files> && git rebase --continue`. Do NOT create additional merge commits — conflict resolution must be part of the rebased commit itself.
+
 **After resolving conflicts**: Re-run the quality gate (compile + tests) before finalizing.
+
+**Clean state before finalization**: After merging to the parent branch, verify `git status` is clean. If any uncommitted or untracked files remain (e.g., from conflict resolution artifacts), stage them and use `/commit` to create a proper commit before signaling completion.
 
 ## Important
 

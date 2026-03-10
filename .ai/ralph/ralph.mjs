@@ -199,6 +199,62 @@ function deleteBranch(branchName) {
     } catch { /* ignore if branch doesn't exist */ }
 }
 
+/**
+ * Check the parent branch for uncommitted changes and commit them via Claude /commit skill.
+ * This catches leftover files from conflict resolution or incomplete finalization.
+ */
+async function commitUncommittedFiles(parentBranch, sliceLabel) {
+    try {
+        // Make sure we're on the parent branch
+        const currentBranch = execSync("git branch --show-current", { cwd: repoRoot, encoding: "utf8" }).trim();
+        if (currentBranch !== parentBranch) {
+            log.info(`Not on parent branch (on ${currentBranch}), switching to ${parentBranch} to check for uncommitted files`);
+            execSync(`git checkout "${parentBranch}"`, { cwd: repoRoot, encoding: "utf8", stdio: "pipe" });
+        }
+
+        const status = execSync("git status --porcelain", { cwd: repoRoot, encoding: "utf8" }).trim();
+        if (!status) return; // Working tree clean
+
+        log.warn(`Uncommitted files detected on ${parentBranch} after "${sliceLabel}":\n${status}`);
+
+        // Use Claude /commit skill to create a proper commit
+        log.info(`Spawning Claude to commit leftover files via /commit skill...`);
+        const commitPrompt = `There are uncommitted files left after "${sliceLabel}" slice finalization (likely from conflict resolution during rebase). Stage all changes and use /commit to create a proper commit. Do NOT ask questions — just commit.`;
+
+        const { code } = await new Promise((resolve) => {
+            const child = spawn("claude", [
+                "--print",
+                "--dangerously-skip-permissions",
+                "--output-format", "stream-json",
+            ], {
+                cwd: repoRoot,
+                stdio: ["pipe", "pipe", "pipe"],
+            });
+
+            child.stdin.write(commitPrompt);
+            child.stdin.end();
+
+            let output = "";
+            child.stdout.on("data", (chunk) => { output += chunk.toString(); });
+            child.stderr.on("data", () => {});
+            child.on("close", (code) => resolve({ code, output }));
+        });
+
+        if (code === 0) {
+            log.done(`Committed leftover files on ${parentBranch} via /commit skill`);
+        } else {
+            log.warn(`Claude /commit failed (code ${code}), falling back to manual commit`);
+            execSync("git add -A", { cwd: repoRoot, encoding: "utf8", stdio: "pipe" });
+            execSync(`git commit -m "🔧 chore: commit uncommitted files after ${sliceLabel} slice finalization"`, {
+                cwd: repoRoot, encoding: "utf8", stdio: "pipe",
+            });
+            log.done(`Committed leftover files on ${parentBranch} (fallback)`);
+        }
+    } catch (e) {
+        log.warn(`Failed to commit uncommitted files: ${e.message}`);
+    }
+}
+
 function isProcessAlive(pid) {
     try {
         process.kill(pid, 0);
@@ -427,6 +483,9 @@ async function runSequentialMode() {
         }
 
         if (claudeSkip) continue;
+
+        // After each iteration, commit any leftover uncommitted files
+        await commitUncommittedFiles(getParentBranch(), `iteration ${i}`);
 
         console.log();
         log.done(`Iteration ${i} complete (${elapsed(iterStartTime)})`);
@@ -673,7 +732,8 @@ ${lockedSlices || "- (none)"}
 ${finalizeMode === "pr" ? `- Create a PR via \`gh pr create\` targeting \`${parentBranch}\`.` : ""}
 ${finalizeMode === "merge" ? `- Rebase onto \`${parentBranch}\`, then fast-forward merge (\`git checkout ${parentBranch} && git merge --ff-only ${branchName}\`).` : ""}
 ${finalizeMode === "none" ? `- Leave changes on the feature branch. Do not merge or create a PR.` : ""}
-- If rebase has conflicts, resolve them (em2code-slice conflict resolution rules).
+- If rebase has conflicts, resolve them using \`git add <files> && git rebase --continue\` (NO extra merge commits — the conflict resolution is part of the rebased commit).
+- **CRITICAL: Before outputting SLICE_DONE, verify \`git status\` on \`${parentBranch}\` is clean (no uncommitted or untracked files). If anything is uncommitted, stage and use \`/commit\` to commit it properly.**
 - After successful finalization, output \`<promise>SLICE_DONE:${slice.id}</promise>\`.
 - If blocked (cannot implement), output \`<promise>SLICE_BLOCKED:${slice.id}</promise>\`.
 - Do NOT output \`<promise>COMPLETE</promise>\` — only the orchestrator determines that.
@@ -1069,7 +1129,11 @@ async function runParallelMode() {
                     // Cleanup worktree (unless finalize=none)
                     if (finalizeMode !== "none") {
                         removeWorktree(worktreePath);
-                        if (finalizeMode === "merge") deleteBranch(branchName);
+                        if (finalizeMode === "merge") {
+                            // Commit any leftover uncommitted files (e.g., from conflict resolution)
+                            await commitUncommittedFiles(parentBranch, slice.label);
+                            deleteBranch(branchName);
+                        }
                     }
 
                 } else if (output.includes(`<promise>SLICE_BLOCKED:${sliceId}</promise>`)) {
@@ -1112,6 +1176,9 @@ async function runParallelMode() {
 
                     if (finalizeMode !== "none") {
                         removeWorktree(worktreePath);
+                        if (finalizeMode === "merge") {
+                            await commitUncommittedFiles(parentBranch, slice.label);
+                        }
                     }
                 }
             } else {
