@@ -6,4 +6,4 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-exec node "$SCRIPT_DIR/.ai/ralph/ralph.mjs" --max-worktrees 3 --max-iterations 10 --finalize none --discover every "$@"
+exec node "$SCRIPT_DIR/.ai/ralph/ralph.mjs" --max-worktrees 3 --max-iterations 10 --finalize merge --discover every "$@"
