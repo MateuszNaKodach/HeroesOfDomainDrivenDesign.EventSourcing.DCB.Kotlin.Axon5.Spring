@@ -69,6 +69,11 @@
       "name": "slices.astrologers.read.getweeksymbol.enabled",
       "type": "java.lang.Boolean",
       "description": "Enable/disable the GetWeekSymbol read slice in the Astrologers bounded context."
+    },
+    {
+      "name": "slices.calendar.read.viewcurrentday.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable/disable the ViewCurrentDay read slice in the Calendar bounded context."
     }
   ]
 }

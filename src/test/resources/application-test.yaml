@@ -37,3 +37,5 @@ slices:
     enabled: false
   astrologers.read.getweeksymbol:
     enabled: false
+  calendar.read.viewcurrentday:
+    enabled: false

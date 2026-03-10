@@ -84,3 +84,5 @@ slices:
     enabled: true
   astrologers.read.getweeksymbol:
     enabled: true
+  calendar.read.viewcurrentday:
+    enabled: true
