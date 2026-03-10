@@ -108,8 +108,7 @@ const log = {
 // ── State persistence (crash recovery — sequential mode) ──────
 
 function saveState(iteration, status) {
-    const dir = dirname(STATE_FILE);
-    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    mkdirSync(dirname(STATE_FILE), { recursive: true });
     writeFileSync(STATE_FILE, JSON.stringify({
         iteration,
         maxIterations,
@@ -150,8 +149,7 @@ function loadRegistry() {
 }
 
 function saveRegistry(registry) {
-    const dir = dirname(REGISTRY_FILE);
-    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    mkdirSync(dirname(REGISTRY_FILE), { recursive: true });
     writeFileSync(REGISTRY_FILE, JSON.stringify(registry, null, 2));
 }
 
@@ -178,36 +176,24 @@ function gitExec(cmd, opts = {}) {
     }).trim();
 }
 
+function pruneWorktrees() {
+    try { gitExec("git worktree prune"); } catch { /* ignore */ }
+}
+
 function createWorktree(worktreePath, parentBranch, branchName) {
     const absPath = resolve(repoRoot, worktreePath);
-    if (!existsSync(dirname(absPath))) mkdirSync(dirname(absPath), { recursive: true });
-    // Prune stale worktree entries (e.g., after crash left a registered but missing directory)
-    try {
-        execSync(`git worktree prune`, { cwd: repoRoot, encoding: "utf8", stdio: "pipe" });
-    } catch { /* ignore */ }
-    execSync(`git worktree add "${absPath}" -b "${branchName}" "${parentBranch}"`, {
-        cwd: repoRoot,
-        encoding: "utf8",
-        stdio: "pipe",
-    });
+    mkdirSync(dirname(absPath), { recursive: true });
+    gitExec(`git worktree add "${absPath}" -b "${branchName}" "${parentBranch}"`);
 }
 
 function removeWorktree(worktreePath) {
     const absPath = resolve(repoRoot, worktreePath);
     try {
-        execSync(`git worktree remove --force "${absPath}"`, {
-            cwd: repoRoot,
-            encoding: "utf8",
-            stdio: "pipe",
-        });
-    } catch {
-        // If worktree removal fails, try to clean up manually
-        if (existsSync(absPath)) {
-            rmSync(absPath, { recursive: true, force: true });
-        }
-        try {
-            execSync("git worktree prune", { cwd: repoRoot, encoding: "utf8", stdio: "pipe" });
-        } catch { /* ignore */ }
+        gitExec(`git worktree remove --force "${absPath}"`);
+    } catch (e) {
+        log.warn(`git worktree remove failed: ${e.message?.slice(0, 200)} — cleaning up manually`);
+        if (existsSync(absPath)) rmSync(absPath, { recursive: true, force: true });
+        pruneWorktrees();
     }
 }
 
@@ -338,48 +324,68 @@ function detectAskUserQuestion(rawOutput) {
     return null;
 }
 
+// ── Shared Claude CLI spawner ────────────────────────────────
+
+function spawnClaude({ prompt, cwd = repoRoot, logFiles = [], streamPrefix, passStderr = false }) {
+    const child = spawn("claude", [
+        "--print", "--dangerously-skip-permissions",
+        "--output-format", "stream-json", "--verbose",
+    ], { cwd, stdio: ["pipe", "pipe", "pipe"] });
+
+    let output = "";
+    let rawOutput = "";
+
+    child.stdin.write(prompt);
+    child.stdin.end();
+
+    for (const f of logFiles) {
+        mkdirSync(dirname(f), { recursive: true });
+    }
+
+    const appendLogs = logFiles.length > 0
+        ? (text) => { for (const f of logFiles) try { appendFileSync(f, text); } catch { /* ignore */ } }
+        : () => {};
+
+    child.stdout.on("data", (chunk) => {
+        const raw = chunk.toString();
+        rawOutput += raw;
+        const text = extractTextFromStreamJson(raw);
+        if (text) {
+            output += text;
+            appendLogs(text);
+            if (streamPrefix && streamOutput) {
+                const prefixed = text.split("\n").map(l => l ? `  [${streamPrefix}] ${l}` : "").join("\n");
+                process.stdout.write(prefixed);
+            } else if (passStderr) {
+                process.stdout.write(text);
+            }
+        }
+    });
+
+    child.stderr.on("data", (chunk) => {
+        const text = chunk.toString();
+        appendLogs(text);
+        if (passStderr) {
+            process.stderr.write(text);
+            output += text;
+        }
+    });
+
+    const promise = new Promise((resolve) => {
+        child.on("close", (code) => resolve({ code: code ?? 1, output, rawOutput }));
+    });
+
+    return { child, promise };
+}
+
 // ══════════════════════════════════════════════════════════════
 // ██ SEQUENTIAL MODE (legacy, maxWorktrees === 1)
 // ══════════════════════════════════════════════════════════════
 
 function runClaudeSequential(iteration) {
-    return new Promise((resolve) => {
-        const basePrompt = readFileSync(PROMPT_FILE, "utf8");
-        const prompt = `${basePrompt}\n\n---\n🔄 Ralph iteration ${iteration} of ${maxIterations} | Started: ${state?.startedAt ?? now()}`;
-        const child = spawn("claude", [
-            "--print",
-            "--dangerously-skip-permissions",
-            "--output-format", "stream-json",
-            "--verbose",
-        ], {
-            cwd: repoRoot,
-            stdio: ["pipe", "pipe", "pipe"],
-        });
-
-        let output = "";
-        let rawOutput = "";
-
-        child.stdin.write(prompt);
-        child.stdin.end();
-
-        child.stdout.on("data", (chunk) => {
-            const raw = chunk.toString();
-            rawOutput += raw;
-            const text = extractTextFromStreamJson(raw);
-            if (text) {
-                process.stdout.write(text);
-                output += text;
-            }
-        });
-
-        child.stderr.on("data", (chunk) => {
-            const text = chunk.toString();
-            process.stderr.write(text);
-            output += text;
-        });
-
-        child.on("close", (code) => resolve({ code: code ?? 1, output, rawOutput }));
-    });
+    const basePrompt = readFileSync(PROMPT_FILE, "utf8");
+    const prompt = `${basePrompt}\n\n---\n🔄 Ralph iteration ${iteration} of ${maxIterations} | Started: ${state?.startedAt ?? now()}`;
+    return spawnClaude({ prompt, passStderr: true }).promise;
 }
 
 async function runSequentialMode() {
@@ -429,17 +435,8 @@ async function runSequentialMode() {
                     await sleep(30 * 1000);
                 }
 
-                // Sequential finalization: push to remote after agent commits
-                if (finalizeMode === "merge") {
-                    try {
-                        log.finalize(`Pushing ${parentBranch} to remote...`);
-                        gitExec(`git push origin ${parentBranch}`);
-                        log.done(`Pushed ${parentBranch} to remote`);
-                    } catch (e) {
-                        log.warn(`Push failed (non-fatal): ${e.message?.slice(0, 200)}`);
-                    }
-                } else if (finalizeMode === "pr") {
-                    // In sequential mode on parent branch, PR doesn't apply — just push
+                // Sequential finalization: push to remote after agent commits (skip only for "none")
+                if (finalizeMode !== "none") {
                     try {
                         log.finalize(`Pushing ${parentBranch} to remote...`);
                         gitExec(`git push origin ${parentBranch}`);
@@ -489,9 +486,8 @@ async function runSequentialMode() {
 
 // ── Slice Discovery ─────────────────────────────────────────
 
-function discoverSlices() {
-    return new Promise((resolve) => {
-        const prompt = `Read proophboard via MCP. Read .proophboard/workspace.json to get workspace_id, then call mcp__proophboard__list_chapters, then for each chapter call mcp__proophboard__get_chapter.
+async function discoverSlices() {
+    const prompt = `Read proophboard via MCP. Read .proophboard/workspace.json to get workspace_id, then call mcp__proophboard__list_chapters, then for each chapter call mcp__proophboard__get_chapter.
 
 IMPORTANT: Only include slices whose status is EXACTLY "planned". Do NOT include slices with status "ready", "deployed", "in-progress", or "blocked" — those are already done or not available.
 
@@ -506,54 +502,25 @@ Priority rules:
 
 If no slices have status "planned", output: <slices>[]</slices>`;
 
-        const child = spawn("claude", [
-            "--print",
-            "--dangerously-skip-permissions",
-            "--output-format", "stream-json",
-            "--verbose",
-        ], {
-            cwd: repoRoot,
-            stdio: ["pipe", "pipe", "pipe"],
-        });
+    const { code, output } = await spawnClaude({ prompt }).promise;
 
-        let rawOutput = "";
-        let output = "";
+    if (code !== 0) {
+        log.error(`Discovery Claude exited with code ${code}`);
+        return [];
+    }
 
-        child.stdin.write(prompt);
-        child.stdin.end();
+    const match = output.match(/<slices>([\s\S]*?)<\/slices>/);
+    if (!match) {
+        log.warn("Discovery returned no <slices> block");
+        return [];
+    }
 
-        child.stdout.on("data", (chunk) => {
-            const raw = chunk.toString();
-            rawOutput += raw;
-            const text = extractTextFromStreamJson(raw);
-            if (text) output += text;
-        });
-
-        child.stderr.on("data", () => { /* suppress */ });
-
-        child.on("close", (code) => {
-            if (code !== 0) {
-                log.error(`Discovery Claude exited with code ${code}`);
-                resolve([]);
-                return;
-            }
-
-            const match = output.match(/<slices>([\s\S]*?)<\/slices>/);
-            if (!match) {
-                log.warn("Discovery returned no <slices> block");
-                resolve([]);
-                return;
-            }
-
-            try {
-                const slices = JSON.parse(match[1].trim());
-                resolve(slices);
-            } catch (e) {
-                log.error(`Failed to parse discovered slices: ${e.message}`);
-                resolve([]);
-            }
-        });
-    });
+    try {
+        return JSON.parse(match[1].trim());
+    } catch (e) {
+        log.error(`Failed to parse discovered slices: ${e.message}`);
+        return [];
+    }
 }
 
 // ── Status Table ────────────────────────────────────────────
@@ -681,23 +648,21 @@ function spawnWorker(slice, registry, parentBranch) {
     const absWorktreePath = resolve(repoRoot, worktreePath);
     const logFile = join(TEMP_DIR, `ralph-${kebab}.log`);
 
-    // Create worktree
+    // Create worktree (retry once if stale branch exists)
     try {
         createWorktree(worktreePath, parentBranch, branchName);
     } catch (e) {
-        if (e.message?.includes("already exists")) {
-            // Stale branch from a previous run — delete it and start fresh
-            log.warn(`Branch "${branchName}" already exists — deleting stale branch and retrying`);
-            removeWorktree(worktreePath);
-            deleteBranch(branchName);
-            try {
-                createWorktree(worktreePath, parentBranch, branchName);
-            } catch (e2) {
-                log.error(`Failed to create worktree for "${slice.label}": ${e2.message}`);
-                return null;
-            }
-        } else {
+        if (!e.message?.includes("already exists")) {
             log.error(`Failed to create worktree for "${slice.label}": ${e.message}`);
+            return null;
+        }
+        log.warn(`Branch "${branchName}" already exists — deleting stale branch and retrying`);
+        removeWorktree(worktreePath);
+        deleteBranch(branchName);
+        try {
+            createWorktree(worktreePath, parentBranch, branchName);
+        } catch (e2) {
+            log.error(`Failed to create worktree for "${slice.label}": ${e2.message}`);
             return null;
         }
     }
@@ -709,6 +674,13 @@ function spawnWorker(slice, registry, parentBranch) {
         return null;
     }
 
+    // Initialize log files — main log (truncated) + progress file (with header)
+    const progressFile = join(absWorktreePath, ".ai", "temp", "claude-output.md");
+    mkdirSync(dirname(logFile), { recursive: true });
+    mkdirSync(dirname(progressFile), { recursive: true });
+    writeFileSync(logFile, "");
+    writeFileSync(progressFile, `# Claude Output — ${slice.label}\n\nStarted: ${now()}\n\n---\n\n`);
+
     // Build prompt with assignment
     const basePrompt = readFileSync(PROMPT_FILE, "utf8");
     const lockedSlices = Object.entries(registry.activeSlices)
@@ -716,7 +688,7 @@ function spawnWorker(slice, registry, parentBranch) {
         .map(([id, info]) => `- "${info.sliceLabel}" (${id}) — another worktree`)
         .join("\n");
 
-    const assignment = `
+    const fullPrompt = `${basePrompt}\n
 ---
 ## Worktree Assignment (Ralph Orchestrator)
 
@@ -742,88 +714,19 @@ ${lockedSlices || "- (none)"}
 - Do NOT output \`<promise>COMPLETE</promise>\` — only the orchestrator determines that.
 `;
 
-    const fullPrompt = `${basePrompt}\n${assignment}`;
-
-    // Spawn Claude
-    const child = spawn("claude", [
-        "--print",
-        "--dangerously-skip-permissions",
-        "--output-format", "stream-json",
-        "--verbose",
-    ], {
+    // Spawn Claude — log to both the main log file and the worktree progress file
+    const { child, promise: claudePromise } = spawnClaude({
+        prompt: fullPrompt,
         cwd: absWorktreePath,
-        stdio: ["pipe", "pipe", "pipe"],
+        logFiles: [logFile, progressFile],
+        streamPrefix: kebab,
     });
 
-    child.stdin.write(fullPrompt);
-    child.stdin.end();
+    const promise = claudePromise.then(result => ({
+        ...result, slice, worktreePath, branchName,
+    }));
 
-    let output = "";
-    let rawOutput = "";
-
-    // Ensure log directory exists and truncate log file
-    if (!existsSync(dirname(logFile))) mkdirSync(dirname(logFile), { recursive: true });
-    writeFileSync(logFile, "");
-
-    // Progress file inside the worktree — Claude output streamed here in real-time
-    const progressFile = join(absWorktreePath, ".ai", "temp", "claude-output.md");
-    const progressDir = dirname(progressFile);
-    if (!existsSync(progressDir)) {
-        mkdirSync(progressDir, {recursive: true});
-    }
-    writeFileSync(progressFile, `# Claude Output — ${slice.label}\n\nStarted: ${now()}\n\n---\n\n`);
-
-    const appendToFiles = (text) => {
-        try {
-            appendFileSync(logFile, text);
-            appendFileSync(progressFile, text);
-        } catch { /* ignore */
-        }
-    };
-
-    child.stdout.on("data", (chunk) => {
-        const raw = chunk.toString();
-        rawOutput += raw;
-        const text = extractTextFromStreamJson(raw);
-        if (text) {
-            output += text;
-            appendToFiles(text);
-            if (streamOutput) {
-                const prefixed = text.split("\n").map(l => l ? `  [${kebab}] ${l}` : "").join("\n");
-                process.stdout.write(prefixed);
-            }
-        }
-    });
-
-    child.stderr.on("data", (chunk) => {
-        const text = chunk.toString();
-        output += text;
-        appendToFiles(text);
-    });
-
-    const promise = new Promise((resolve) => {
-        child.on("close", (code) => {
-            resolve({
-                code: code ?? 1,
-                output,
-                rawOutput,
-                slice,
-                worktreePath,
-                branchName,
-                kebab,
-            });
-        });
-    });
-
-    return {
-        child,
-        promise,
-        slice,
-        worktreePath,
-        branchName,
-        kebab,
-        pid: child.pid,
-    };
+    return { pid: child.pid, promise, worktreePath, branchName };
 }
 
 // ── Finalization Pipeline ────────────────────────────────────
@@ -876,18 +779,15 @@ function attemptRebase(branch, parentBranch) {
     }
 }
 
-function resolveRebaseWithClaude(item, registry, rebaseResult) {
-    return new Promise((resolve) => {
-        const isConflict = rebaseResult.conflicts;
-        const logLabel = isConflict ? "conflict resolution" : "rebase failure resolution";
-        log.finalize(`Spawning Claude for ${logLabel} on "${item.label}"...`);
+async function resolveRebaseWithClaude(item, registry, rebaseResult) {
+    const isConflict = rebaseResult.conflicts;
+    const logLabel = isConflict ? "conflict resolution" : "rebase failure resolution";
+    log.finalize(`Spawning Claude for ${logLabel} on "${item.label}"...`);
 
-        // Ensure we're on the feature branch
-        try {
-            gitExec(`git checkout ${item.branch}`);
-        } catch { /* may already be on branch */ }
+    // Ensure we're on the feature branch
+    try { gitExec(`git checkout ${item.branch}`); } catch { /* may already be on branch */ }
 
-        const conflictInstructions = `
+    const conflictInstructions = `
 ## Your Task: Resolve rebase conflicts
 
 1. Start the rebase: \`git rebase ${registry.parentBranch}\`
@@ -908,7 +808,7 @@ The proophboard Event Model is the source of truth for property names, types, an
    - The rebase continue creates the commit with the resolved conflicts automatically.
 6. If more conflicts appear, repeat steps 2-5.`;
 
-        const failureInstructions = `
+    const failureInstructions = `
 ## Your Task: Diagnose and fix rebase failure
 
 The rebase of \`${item.branch}\` onto \`${registry.parentBranch}\` failed with a non-conflict error.
@@ -922,7 +822,7 @@ The rebase was already aborted.
 3. Retry the rebase: \`git rebase ${registry.parentBranch}\`
 4. If the rebase produces conflicts, resolve them using the same rules as above.`;
 
-        const postRebaseInstructions = `
+    const postRebaseInstructions = `
 ## After Rebase Completes
 
 7. Run \`./mvnw test\` to verify everything works.
@@ -942,66 +842,28 @@ ${conflictCommitMode === "separate" ? `   - Create a separate fix commit:
 - Output \`<promise>REBASE_RESOLVED</promise>\` if successful (rebase done + tests pass).
 - If you cannot resolve: \`git rebase --abort\` and output \`<promise>REBASE_FAILED</promise>\`.`;
 
-        const prompt = `You are fixing a git rebase issue for slice "${item.label}" (${item.type}).
+    const prompt = `You are fixing a git rebase issue for slice "${item.label}" (${item.type}).
 
 ${isConflict ? conflictInstructions : failureInstructions}
 ${postRebaseInstructions}`;
 
-        const child = spawn("claude", [
-            "--print",
-            "--dangerously-skip-permissions",
-            "--output-format", "stream-json",
-            "--verbose",
-        ], {
-            cwd: repoRoot,
-            stdio: ["pipe", "pipe", "pipe"],
-        });
+    const kebab = toKebab(item.label);
+    const rebaseLogFile = join(TEMP_DIR, `ralph-rebase-${kebab}.log`);
 
-        let output = "";
-        let rawOutput = "";
+    const { code, output } = await spawnClaude({
+        prompt,
+        logFiles: [rebaseLogFile],
+        streamPrefix: `${isConflict ? "conflict" : "rebase"}-${kebab}`,
+    }).promise;
 
-        // Log rebase resolution output to file
-        const rebaseLogFile = join(TEMP_DIR, `ralph-rebase-${toKebab(item.label)}.log`);
-        if (!existsSync(dirname(rebaseLogFile))) mkdirSync(dirname(rebaseLogFile), { recursive: true });
-        writeFileSync(rebaseLogFile, `# Rebase Resolution — ${item.label} (${isConflict ? "conflicts" : "failure"})\n\nStarted: ${now()}\n\n---\n\n`);
+    if (code === 0 && output.includes("<promise>REBASE_RESOLVED</promise>")) {
+        log.done(`Rebase ${logLabel} succeeded for "${item.label}"`);
+        return { success: true };
+    }
 
-        child.stdin.write(prompt);
-        child.stdin.end();
-
-        const streamPrefix = isConflict ? "conflict" : "rebase";
-
-        child.stdout.on("data", (chunk) => {
-            const raw = chunk.toString();
-            rawOutput += raw;
-            const text = extractTextFromStreamJson(raw);
-            if (text) {
-                output += text;
-                try { appendFileSync(rebaseLogFile, text); } catch { /* ignore */ }
-                if (streamOutput) {
-                    const prefixed = text.split("\n").map(l => l ? `  [${streamPrefix}-${toKebab(item.label)}] ${l}` : "").join("\n");
-                    process.stdout.write(prefixed);
-                }
-            }
-        });
-
-        child.stderr.on("data", (chunk) => {
-            try { appendFileSync(rebaseLogFile, chunk.toString()); } catch { /* ignore */ }
-        });
-
-        child.on("close", (code) => {
-            if (code === 0 && output.includes("<promise>REBASE_RESOLVED</promise>")) {
-                log.done(`Rebase ${logLabel} succeeded for "${item.label}"`);
-                resolve({ success: true });
-            } else {
-                log.error(`Rebase ${logLabel} failed for "${item.label}" (exit code: ${code})`);
-                // Ensure rebase is aborted
-                try {
-                    gitExec(`git rebase --abort`);
-                } catch { /* ignore */ }
-                resolve({ success: false });
-            }
-        });
-    });
+    log.error(`Rebase ${logLabel} failed for "${item.label}" (exit code: ${code})`);
+    try { gitExec(`git rebase --abort`); } catch { /* ignore */ }
+    return { success: false };
 }
 
 async function finalizeSlice(item, registry) {
@@ -1253,7 +1115,7 @@ async function rediscoverSlices(registry, completedIds, completedBranches) {
     return fresh;
 }
 
-function isSliceAvailable(slice, registry, completedBranches) {
+function isSliceAvailable(slice, registry, completedBranches, occupiedBranches) {
     const branch = sliceBranch(slice);
     if (registry.activeSlices[slice.id]) {
         log.skip(`"${slice.label}" already active — skipping`);
@@ -1263,7 +1125,6 @@ function isSliceAvailable(slice, registry, completedBranches) {
         log.skip(`"${slice.label}" branch already completed — skipping`);
         return false;
     }
-    const occupiedBranches = collectOccupiedBranches(registry);
     if (occupiedBranches.has(branch)) {
         log.skip(`"${slice.label}" branch already occupied — skipping`);
         return false;
@@ -1360,6 +1221,9 @@ async function runParallelMode() {
     log.info(`Parent branch: ${parentBranch}`);
     log.info(`Time: ${now()}`);
 
+    // Prune stale worktree entries once at startup (e.g., after crash)
+    pruneWorktrees();
+
     // Load or create registry
     let registry = loadRegistry();
     let recoveredSlices = [];
@@ -1434,9 +1298,10 @@ async function runParallelMode() {
             }
 
             // Spawn workers up to maxWorktrees
+            const occupied = collectOccupiedBranches(registry);
             while (activeWorkers.size < maxWorktrees && queue.length > 0 && registry.completedIterations + activeWorkers.size < maxIterations) {
                 const slice = queue.shift();
-                if (!isSliceAvailable(slice, registry, completedBranches)) continue;
+                if (!isSliceAvailable(slice, registry, completedBranches, occupied)) continue;
 
                 log.start(`Spawning worktree for "${slice.label}" (${slice.type})`);
                 const worker = spawnWorker(slice, registry, parentBranch);
