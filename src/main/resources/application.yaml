@@ -76,6 +76,8 @@ slices:
     enabled: true
   calendar.write.finishday:
     enabled: true
+  armies.write.removecreaturefromarmy:
+    enabled: true
   armies.read.getarmycreatures:
     enabled: true
   astrologers.read.getweeksymbol:
