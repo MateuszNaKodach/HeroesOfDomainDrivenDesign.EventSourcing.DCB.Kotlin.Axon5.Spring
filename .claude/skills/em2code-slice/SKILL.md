@@ -102,7 +102,7 @@ Format:
 
 ## Step 6: Commit
 
-8. Invoke the `/commit` skill. The commit type MUST be `feat` and the scope should reflect the slice label (e.g., `feat: <Slice Label>`).
+8. Invoke the `/commit` skill. The commit type MUST be `feat` and the scope should reflect the slice.
 
 ## Step 7: Finalize
 
