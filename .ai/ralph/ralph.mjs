@@ -919,6 +919,8 @@ async function finalizeSlice(item, registry) {
                 log.warn(`Push failed: ${e.message?.slice(0, 200)}`);
             }
         } else if (finalizeMode === "pr") {
+            // Ensure base branch exists on remote (PR creation requires it)
+            try { gitExec(`git push -u origin ${parentBranch}`); } catch { /* ignore if already up to date */ }
             try {
                 gitExec(`git push -u origin ${branch} --force-with-lease`);
             } catch {
