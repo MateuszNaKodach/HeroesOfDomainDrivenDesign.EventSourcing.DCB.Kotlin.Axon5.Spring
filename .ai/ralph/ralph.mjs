@@ -840,7 +840,8 @@ function squashBranch(branch, parentBranch) {
     const mergeBase = gitExec(`git merge-base ${parentBranch} ${branch}`);
 
     // Get first commit message from the feature branch
-    const firstMsg = gitExec(`git log --format=%B ${mergeBase}..${branch} --reverse | head -1`);
+    const allMsgs = gitExec(`git log --format=%s ${mergeBase}..${branch} --reverse`);
+    const firstMsg = allMsgs.split("\n")[0]?.trim();
     const commitMsg = firstMsg || `feat: ${branch}`;
 
     gitExec(`git reset --soft ${mergeBase}`);
@@ -912,6 +913,11 @@ ${conflictCommitMode === "separate" ? `8. If tests pass, create a separate confl
         let output = "";
         let rawOutput = "";
 
+        // Log conflict resolution output to file
+        const conflictLogFile = join(TEMP_DIR, `ralph-conflict-${toKebab(item.label)}.log`);
+        if (!existsSync(dirname(conflictLogFile))) mkdirSync(dirname(conflictLogFile), { recursive: true });
+        writeFileSync(conflictLogFile, `# Conflict Resolution — ${item.label}\n\nStarted: ${now()}\n\n---\n\n`);
+
         child.stdin.write(conflictPrompt);
         child.stdin.end();
 
@@ -921,6 +927,7 @@ ${conflictCommitMode === "separate" ? `8. If tests pass, create a separate confl
             const text = extractTextFromStreamJson(raw);
             if (text) {
                 output += text;
+                try { appendFileSync(conflictLogFile, text); } catch { /* ignore */ }
                 if (streamOutput) {
                     const prefixed = text.split("\n").map(l => l ? `  [conflict-${toKebab(item.label)}] ${l}` : "").join("\n");
                     process.stdout.write(prefixed);
@@ -928,7 +935,9 @@ ${conflictCommitMode === "separate" ? `8. If tests pass, create a separate confl
             }
         });
 
-        child.stderr.on("data", () => { /* suppress */ });
+        child.stderr.on("data", (chunk) => {
+            try { appendFileSync(conflictLogFile, chunk.toString()); } catch { /* ignore */ }
+        });
 
         child.on("close", (code) => {
             if (code === 0 && output.includes("<promise>CONFLICTS_RESOLVED</promise>")) {
@@ -955,7 +964,13 @@ async function finalizeSlice(item, registry) {
     saveRegistry(registry);
 
     try {
-        // 1. Ensure main repo is on parent branch and up to date
+        // 1. Remove worktree FIRST — it locks the branch and prevents checkout
+        if (worktreePath) {
+            log.info(`Removing worktree for "${label}" before finalization...`);
+            removeWorktree(worktreePath);
+        }
+
+        // 2. Ensure main repo is on parent branch and up to date
         gitExec(`git checkout ${parentBranch}`);
         try {
             gitExec(`git pull --ff-only origin ${parentBranch}`);
@@ -963,10 +978,10 @@ async function finalizeSlice(item, registry) {
             log.warn(`Pull --ff-only failed (non-fatal) — continuing with local state`);
         }
 
-        // 2. Squash feature branch to single commit
+        // 3. Squash feature branch to single commit
         squashBranch(branch, parentBranch);
 
-        // 3. Rebase feature branch onto parent
+        // 4. Rebase feature branch onto parent
         const rebaseResult = attemptRebase(branch, parentBranch);
         if (!rebaseResult.success) {
             log.warn(`Rebase of "${branch}" onto "${parentBranch}" has conflicts — invoking Claude...`);
@@ -977,7 +992,7 @@ async function finalizeSlice(item, registry) {
             log.done(`Conflicts resolved for "${label}"`);
         }
 
-        // 4. Finalize based on mode
+        // 5. Finalize based on mode
         let prNumber = null;
         if (finalizeMode === "merge") {
             gitExec(`git checkout ${parentBranch}`);
@@ -1008,10 +1023,7 @@ async function finalizeSlice(item, registry) {
             log.info(`"${label}" left on branch "${branch}"`);
         }
 
-        // 5. Cleanup
-        if (worktreePath) {
-            removeWorktree(worktreePath);
-        }
+        // 6. Cleanup (worktree already removed in step 1)
         if (finalizeMode === "merge") {
             deleteBranch(branch);
         }
@@ -1020,7 +1032,7 @@ async function finalizeSlice(item, registry) {
             gitExec(`git checkout ${parentBranch}`);
         } catch { /* ignore */ }
 
-        // 6. Move to history
+        // 7. Move to history
         registry.history.push({
             sliceId: item.sliceId,
             label: item.label,
@@ -1507,8 +1519,7 @@ async function runParallelMode() {
 
     log.info(`Total time: ${elapsed(loopStartTime)}`);
 
-    // Cleanup
-    clearRegistry();
+    // Keep registry for disaster recovery — do NOT clearRegistry()
     process.exit(allCompleted ? 0 : 1);
 }
 
