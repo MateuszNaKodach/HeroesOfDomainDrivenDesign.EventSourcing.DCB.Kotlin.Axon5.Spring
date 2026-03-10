@@ -78,6 +78,8 @@ slices:
     enabled: true
   armies.write.removecreaturefromarmy:
     enabled: true
+  armies.write.addcreaturetoarmy:
+    enabled: true
   armies.read.getarmycreatures:
     enabled: true
   astrologers.read.getweeksymbol:
