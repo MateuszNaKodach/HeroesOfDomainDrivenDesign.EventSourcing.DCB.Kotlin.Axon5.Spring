@@ -927,7 +927,10 @@ async function finalizeSlice(item, registry) {
                 gitExec(`git push -u origin ${branch} --force`);
             }
             try {
-                const prOutput = gitExec(`gh pr create --title "feat: ${label}" --body "Implemented by Ralph orchestrator." --base ${parentBranch} --head ${branch}`);
+                // Use the slice commit message as PR title (matches the squashed commit)
+                const commitMsg = gitExec(`git log -1 --format=%s ${branch}`);
+                const prTitle = commitMsg || `feat: ${label}`;
+                const prOutput = gitExec(`gh pr create --title "${prTitle.replace(/"/g, '\\"')}" --body "Implemented by Ralph orchestrator." --base ${parentBranch} --head ${branch}`);
                 const prMatch = prOutput.match(/pull\/(\d+)/);
                 if (prMatch) prNumber = parseInt(prMatch[1], 10);
                 log.done(`Created PR for "${label}"${prNumber ? ` (#${prNumber})` : ""}`);
