@@ -9,12 +9,14 @@
 //   node .ai/ralph/ralph.mjs --max-worktrees 2 --stream         # parallel with streaming
 //   node .ai/ralph/ralph.mjs --fresh --max-worktrees 3          # wipe state, then parallel
 //
-// Sequential mode (--max-worktrees 1, default): identical to legacy behavior.
+// Sequential mode (--max-worktrees 1, default): agent commits on parent branch, orchestrator pushes.
 // Parallel mode (--max-worktrees > 1): per-slice git worktrees, concurrent Claude agents.
 //   Each worktree gets ./mvnw install -DskipTests before Claude starts.
+//   Agents only commit+push. Orchestrator owns a finalization queue that processes done slices
+//   one by one (squash → rebase → ff-merge/PR/none).
 //
 // Flags: --max-iterations, --max-worktrees, --stream, --finalize (pr|merge|none),
-//        --discover (every|once), --fresh
+//        --discover (every|once), --fresh, --conflict-commit (separate|squash)
 
 import {execSync, spawn} from "node:child_process";
 import {
@@ -57,6 +59,7 @@ const streamOutput = hasFlag("--stream");
 const finalizeMode = parseStringFlag("--finalize", "pr");
 const discoverMode = parseStringFlag("--discover", "every");
 const freshStart = hasFlag("--fresh");
+const conflictCommitMode = parseStringFlag("--conflict-commit", "separate");
 
 const PROMPT_FILE = join(scriptDir, "prompt.md");
 const STATE_FILE = join(repoRoot, ".ai", "temp", "ralph-state.json");
@@ -98,6 +101,8 @@ const log = {
     complete: (msg) => console.log(`  🎉 ${msg}`),
     iteration: (msg) => console.log(`  🔄 ${msg}`),
     stall: (msg) => console.log(`  ❓ ${msg}`),
+    finalize: (msg) => console.log(`  🔀 ${msg}`),
+    queue: (msg) => console.log(`  📦 ${msg}`),
 };
 
 // ── State persistence (crash recovery — sequential mode) ──────
@@ -134,7 +139,11 @@ let state = loadState();
 function loadRegistry() {
     if (!existsSync(REGISTRY_FILE)) return null;
     try {
-        return JSON.parse(readFileSync(REGISTRY_FILE, "utf8"));
+        const reg = JSON.parse(readFileSync(REGISTRY_FILE, "utf8"));
+        // Migrate old format: add readyQueue and finalizingSlice if missing
+        if (!reg.readyQueue) reg.readyQueue = [];
+        if (!("finalizingSlice" in reg)) reg.finalizingSlice = null;
+        return reg;
     } catch {
         return null;
     }
@@ -158,6 +167,15 @@ function getParentBranch() {
     } catch {
         return "main";
     }
+}
+
+function gitExec(cmd, opts = {}) {
+    return execSync(cmd, {
+        cwd: opts.cwd || repoRoot,
+        encoding: "utf8",
+        stdio: "pipe",
+        ...opts,
+    }).trim();
 }
 
 function createWorktree(worktreePath, parentBranch, branchName) {
@@ -367,6 +385,7 @@ function runClaudeSequential(iteration) {
 async function runSequentialMode() {
     const startIteration = state?.status === "running" ? state.iteration : 1;
     const loopStartTime = Date.now();
+    const parentBranch = getParentBranch();
 
     if (startIteration > 1) {
         log.banner(`🔁 Resuming Ralph — iteration ${startIteration} of ${maxIterations}`);
@@ -376,6 +395,7 @@ async function runSequentialMode() {
         log.banner(`🤖 Ralph Loop — ${maxIterations} iterations max (sequential)`);
         log.info(`Prompt: ${PROMPT_FILE}`);
         log.info(`State:  ${STATE_FILE}`);
+        log.info(`Finalize: ${finalizeMode} | Parent: ${parentBranch}`);
         log.info(`Time:   ${now()}`);
     }
 
@@ -407,6 +427,26 @@ async function runSequentialMode() {
                     console.log();
                     log.wait(`No planned slices available — waiting 30s before retry...`);
                     await sleep(30 * 1000);
+                }
+
+                // Sequential finalization: push to remote after agent commits
+                if (finalizeMode === "merge") {
+                    try {
+                        log.finalize(`Pushing ${parentBranch} to remote...`);
+                        gitExec(`git push origin ${parentBranch}`);
+                        log.done(`Pushed ${parentBranch} to remote`);
+                    } catch (e) {
+                        log.warn(`Push failed (non-fatal): ${e.message?.slice(0, 200)}`);
+                    }
+                } else if (finalizeMode === "pr") {
+                    // In sequential mode on parent branch, PR doesn't apply — just push
+                    try {
+                        log.finalize(`Pushing ${parentBranch} to remote...`);
+                        gitExec(`git push origin ${parentBranch}`);
+                        log.done(`Pushed ${parentBranch} to remote`);
+                    } catch (e) {
+                        log.warn(`Push failed (non-fatal): ${e.message?.slice(0, 200)}`);
+                    }
                 }
 
                 break;
@@ -524,6 +564,7 @@ function printStatusTable(registry, loopStartTime, queueSize = 0) {
     const elapsedStr = elapsed(loopStartTime);
     const totalTokens = registry.history.reduce((sum, h) => sum + (h.tokens?.total || 0), 0);
     const stalledCount = registry.history.filter(h => h.result === "stalled").length;
+    const readyQueueSize = registry.readyQueue.length;
 
     console.log();
     console.log(`  🤖 Ralph │ ${completed}/${registry.maxIterations} done │ ${active}/${maxWorktrees} active │ ${elapsedStr} │ finalize: ${finalizeMode} │ parent: ${registry.parentBranch}`);
@@ -540,6 +581,30 @@ function printStatusTable(registry, loopStartTime, queueSize = 0) {
             Time: dur,
             Status: info.status === "stalled" ? "STALLED" : "implementing",
             Tokens: "",
+        });
+    }
+
+    // Show ready queue entries
+    for (const item of registry.readyQueue) {
+        tableRows.push({
+            "": "📦",
+            Slice: item.label,
+            Branch: item.branch,
+            Time: item.duration || "?",
+            Status: "queued-for-finalization",
+            Tokens: item.tokens?.total ? formatTokens(item.tokens.total) : "",
+        });
+    }
+
+    // Show currently finalizing slice
+    if (registry.finalizingSlice) {
+        tableRows.push({
+            "": "🔀",
+            Slice: registry.finalizingSlice.label,
+            Branch: registry.finalizingSlice.branch,
+            Time: registry.finalizingSlice.duration || "?",
+            Status: "finalizing",
+            Tokens: registry.finalizingSlice.tokens?.total ? formatTokens(registry.finalizingSlice.tokens.total) : "",
         });
     }
 
@@ -581,6 +646,8 @@ function printStatusTable(registry, loopStartTime, queueSize = 0) {
     }
 
     const parts = [`Queue: ${queueSize}`];
+    if (readyQueueSize > 0) parts.push(`Ready: ${readyQueueSize}`);
+    if (registry.finalizingSlice) parts.push(`Finalizing: 1`);
     if (stalledCount > 0) parts.push(`Stalled: ${stalledCount}`);
     if (totalTokens > 0) parts.push(`Total tokens: ${formatTokens(totalTokens)}`);
     console.log(`  ${parts.join(" │ ")}`);
@@ -668,14 +735,10 @@ Pick THIS slice in \`/em2code-slice\` — pass the slice ID as argument. Do not 
 ${lockedSlices || "- (none)"}
 
 ### Finalization
-- **Mode: ${finalizeMode}**
-- **Parent branch**: ${parentBranch}
-${finalizeMode === "pr" ? `- Create a PR via \`gh pr create\` targeting \`${parentBranch}\`.` : ""}
-${finalizeMode === "merge" ? `- Rebase onto \`${parentBranch}\`, then fast-forward merge (\`git checkout ${parentBranch} && git merge --ff-only ${branchName}\`).` : ""}
-${finalizeMode === "none" ? `- Leave changes on the feature branch. Do not merge or create a PR.` : ""}
-- If rebase has conflicts, resolve them (em2code-slice conflict resolution rules).
-- After successful finalization, output \`<promise>SLICE_DONE:${slice.id}</promise>\`.
-- If blocked (cannot implement), output \`<promise>SLICE_BLOCKED:${slice.id}</promise>\`.
+- **Commit and push only.** After quality gate and commit: \`git push -u origin ${branchName}\`
+- Do NOT merge, rebase, or create PRs. The orchestrator handles that.
+- After successful push: \`<promise>SLICE_DONE:${slice.id}</promise>\`
+- If blocked: \`<promise>SLICE_BLOCKED:${slice.id}</promise>\`
 - Do NOT output \`<promise>COMPLETE</promise>\` — only the orchestrator determines that.
 `;
 
@@ -763,11 +826,287 @@ ${finalizeMode === "none" ? `- Leave changes on the feature branch. Do not merge
     };
 }
 
+// ── Finalization Pipeline ────────────────────────────────────
+
+function squashBranch(branch, parentBranch) {
+    const commitCount = parseInt(gitExec(`git rev-list --count ${parentBranch}..${branch}`), 10);
+    if (commitCount <= 1) {
+        log.info(`Branch "${branch}" has ${commitCount} commit(s) — no squash needed`);
+        return;
+    }
+
+    log.info(`Squashing ${commitCount} commits on "${branch}" into 1...`);
+    gitExec(`git checkout ${branch}`);
+    const mergeBase = gitExec(`git merge-base ${parentBranch} ${branch}`);
+
+    // Get first commit message from the feature branch
+    const firstMsg = gitExec(`git log --format=%B ${mergeBase}..${branch} --reverse | head -1`);
+    const commitMsg = firstMsg || `feat: ${branch}`;
+
+    gitExec(`git reset --soft ${mergeBase}`);
+    gitExec(`git commit -m "${commitMsg.replace(/"/g, '\\"')}"`);
+    log.done(`Squashed to 1 commit: "${commitMsg}"`);
+}
+
+function attemptRebase(branch, parentBranch) {
+    gitExec(`git checkout ${branch}`);
+    try {
+        gitExec(`git rebase ${parentBranch}`);
+        return { success: true };
+    } catch {
+        try {
+            gitExec(`git rebase --abort`);
+        } catch { /* ignore */ }
+        return { success: false };
+    }
+}
+
+function resolveConflictsWithClaude(item, registry) {
+    return new Promise((resolve) => {
+        log.finalize(`Spawning Claude for conflict resolution on "${item.label}"...`);
+
+        // Start the rebase again (will pause at conflicts)
+        try {
+            gitExec(`git checkout ${item.branch}`);
+        } catch { /* may already be on branch */ }
+
+        const conflictPrompt = `You are resolving git rebase conflicts for slice "${item.label}" (${item.type}).
+
+## Instructions
+
+1. Start the rebase: \`git rebase ${registry.parentBranch}\`
+2. Check \`git status\` to see conflicting files.
+3. Resolve each conflict following these rules:
+
+### Conflict Resolution Rules
+- **Event/command classes** — two slices introduced the same event or command. Keep the version that matches the proophboard event definition (source of truth). If both are identical, accept either.
+- **Sealed interface files** — e.g., \`DwellingEvent.kt\` got new events from both branches. Merge both additions — the sealed interface should list all events.
+- **Exhaustive \`when\` blocks** — after merging new events into a sealed interface, any \`when\` expression over that interface needs the missing branch added.
+- **EventTags.kt** — both slices added tag constants. Keep both.
+- **Feature flag configs** — both slices added entries. Keep all from both sides.
+
+The proophboard Event Model is the source of truth for property names, types, and structure.
+
+4. After resolving each file: \`git add <file>\`
+5. Continue: \`git rebase --continue\`
+6. If more conflicts appear, repeat steps 2-5.
+7. After rebase completes, run \`./mvnw test\` to verify.
+${conflictCommitMode === "separate" ? `8. If tests pass, create a separate conflict resolution commit:
+   \`git commit -m "🚫 git(conflict): slice '${item.label}' rebase conflicts resolved\n\nResolved conflicts from rebasing onto ${registry.parentBranch}."\`
+` : `8. If tests pass, amend the slice commit to include conflict resolution:
+   \`git commit --amend --no-edit\`
+`}
+9. Output \`<promise>CONFLICTS_RESOLVED</promise>\` if successful.
+10. If you cannot resolve: \`git rebase --abort\` and output \`<promise>CONFLICTS_FAILED</promise>\`.`;
+
+        const child = spawn("claude", [
+            "--print",
+            "--dangerously-skip-permissions",
+            "--output-format", "stream-json",
+            "--verbose",
+        ], {
+            cwd: repoRoot,
+            stdio: ["pipe", "pipe", "pipe"],
+        });
+
+        let output = "";
+        let rawOutput = "";
+
+        child.stdin.write(conflictPrompt);
+        child.stdin.end();
+
+        child.stdout.on("data", (chunk) => {
+            const raw = chunk.toString();
+            rawOutput += raw;
+            const text = extractTextFromStreamJson(raw);
+            if (text) {
+                output += text;
+                if (streamOutput) {
+                    const prefixed = text.split("\n").map(l => l ? `  [conflict-${toKebab(item.label)}] ${l}` : "").join("\n");
+                    process.stdout.write(prefixed);
+                }
+            }
+        });
+
+        child.stderr.on("data", () => { /* suppress */ });
+
+        child.on("close", (code) => {
+            if (code === 0 && output.includes("<promise>CONFLICTS_RESOLVED</promise>")) {
+                resolve({ success: true });
+            } else {
+                // Ensure rebase is aborted
+                try {
+                    gitExec(`git rebase --abort`);
+                } catch { /* ignore */ }
+                resolve({ success: false });
+            }
+        });
+    });
+}
+
+async function finalizeSlice(item, registry) {
+    const { branch, worktreePath, label } = item;
+    const parentBranch = registry.parentBranch;
+
+    log.finalize(`Finalizing "${label}" (branch: ${branch})...`);
+
+    // Set as currently finalizing
+    registry.finalizingSlice = item;
+    saveRegistry(registry);
+
+    try {
+        // 1. Ensure main repo is on parent branch and up to date
+        gitExec(`git checkout ${parentBranch}`);
+        try {
+            gitExec(`git pull --ff-only origin ${parentBranch}`);
+        } catch {
+            log.warn(`Pull --ff-only failed (non-fatal) — continuing with local state`);
+        }
+
+        // 2. Squash feature branch to single commit
+        squashBranch(branch, parentBranch);
+
+        // 3. Rebase feature branch onto parent
+        const rebaseResult = attemptRebase(branch, parentBranch);
+        if (!rebaseResult.success) {
+            log.warn(`Rebase of "${branch}" onto "${parentBranch}" has conflicts — invoking Claude...`);
+            const conflictResult = await resolveConflictsWithClaude(item, registry);
+            if (!conflictResult.success) {
+                throw new Error(`Conflict resolution failed for "${label}"`);
+            }
+            log.done(`Conflicts resolved for "${label}"`);
+        }
+
+        // 4. Finalize based on mode
+        let prNumber = null;
+        if (finalizeMode === "merge") {
+            gitExec(`git checkout ${parentBranch}`);
+            gitExec(`git merge --ff-only ${branch}`);
+            log.done(`Fast-forward merged "${branch}" into "${parentBranch}"`);
+            try {
+                gitExec(`git push origin ${parentBranch}`);
+                log.done(`Pushed "${parentBranch}" to remote`);
+            } catch (e) {
+                log.warn(`Push failed: ${e.message?.slice(0, 200)}`);
+            }
+        } else if (finalizeMode === "pr") {
+            try {
+                gitExec(`git push -u origin ${branch} --force-with-lease`);
+            } catch {
+                gitExec(`git push -u origin ${branch} --force`);
+            }
+            try {
+                const prOutput = gitExec(`gh pr create --title "feat: ${label}" --body "Implemented by Ralph orchestrator." --base ${parentBranch} --head ${branch}`);
+                const prMatch = prOutput.match(/pull\/(\d+)/);
+                if (prMatch) prNumber = parseInt(prMatch[1], 10);
+                log.done(`Created PR for "${label}"${prNumber ? ` (#${prNumber})` : ""}`);
+            } catch (e) {
+                log.warn(`PR creation failed: ${e.message?.slice(0, 200)}`);
+            }
+        } else {
+            // none — leave branch as-is
+            log.info(`"${label}" left on branch "${branch}"`);
+        }
+
+        // 5. Cleanup
+        if (worktreePath) {
+            removeWorktree(worktreePath);
+        }
+        if (finalizeMode === "merge") {
+            deleteBranch(branch);
+        }
+        // Ensure we're back on parent branch
+        try {
+            gitExec(`git checkout ${parentBranch}`);
+        } catch { /* ignore */ }
+
+        // 6. Move to history
+        registry.history.push({
+            sliceId: item.sliceId,
+            label: item.label,
+            branch: item.branch,
+            result: "completed",
+            prNumber,
+            duration: item.duration,
+            tokens: item.tokens,
+        });
+        registry.completedIterations++;
+        registry.finalizingSlice = null;
+        saveRegistry(registry);
+
+        log.done(`Finalized "${label}" (${registry.completedIterations}/${registry.maxIterations})`);
+        return { success: true, prNumber };
+
+    } catch (e) {
+        log.error(`Finalization failed for "${label}": ${e.message}`);
+        // Ensure we're back on parent branch
+        try {
+            gitExec(`git rebase --abort`);
+        } catch { /* ignore */ }
+        try {
+            gitExec(`git checkout ${parentBranch}`);
+        } catch { /* ignore */ }
+
+        registry.history.push({
+            sliceId: item.sliceId,
+            label: item.label,
+            branch: item.branch,
+            result: "finalization-failed",
+            error: e.message,
+            duration: item.duration,
+            tokens: item.tokens,
+        });
+        registry.completedIterations++;
+        registry.finalizingSlice = null;
+        saveRegistry(registry);
+
+        return { success: false };
+    }
+}
+
+async function processReadyQueueLoop(registry, loopStartTime, doneSignal) {
+    while (true) {
+        if (registry.readyQueue.length > 0) {
+            const item = registry.readyQueue.shift();
+            saveRegistry(registry);
+
+            log.queue(`Processing ready queue: "${item.label}" (${registry.readyQueue.length} remaining)`);
+            printStatusTable(registry, loopStartTime, 0);
+
+            await finalizeSlice(item, registry);
+
+            printStatusTable(registry, loopStartTime, 0);
+        } else if (doneSignal.value && !registry.finalizingSlice) {
+            // All workers done, queue empty, nothing finalizing — exit
+            break;
+        } else {
+            // Wait before polling again
+            await sleep(2000);
+        }
+    }
+}
+
 // ── Crash Recovery (parallel mode) ──────────────────────────
 
 function recoverFromCrash(registry) {
     const recovered = [];
     const toRemove = [];
+
+    // Handle interrupted finalization
+    if (registry.finalizingSlice) {
+        log.warn(`Found interrupted finalization for "${registry.finalizingSlice.label}" — recovering...`);
+        try {
+            gitExec(`git rebase --abort`);
+        } catch { /* ignore */ }
+        try {
+            gitExec(`git checkout ${registry.parentBranch}`);
+        } catch { /* ignore */ }
+        // Move back to front of ready queue
+        registry.readyQueue.unshift(registry.finalizingSlice);
+        registry.finalizingSlice = null;
+        saveRegistry(registry);
+        log.done(`Moved interrupted slice back to ready queue`);
+    }
 
     for (const [id, info] of Object.entries(registry.activeSlices)) {
         if (isProcessAlive(info.pid)) {
@@ -819,6 +1158,7 @@ async function runParallelMode() {
 
     log.banner(`🤖 Ralph Loop — ${maxIterations} iterations max | ${maxWorktrees} parallel worktrees`);
     log.info(`Finalize: ${finalizeMode} | Discover: ${discoverMode} | Stream: ${streamOutput}`);
+    log.info(`Conflict commit: ${conflictCommitMode}`);
     log.info(`Parent branch: ${parentBranch}`);
     log.info(`Time: ${now()}`);
 
@@ -826,7 +1166,7 @@ async function runParallelMode() {
     let registry = loadRegistry();
     let recoveredSlices = [];
 
-    if (registry && Object.keys(registry.activeSlices).length > 0) {
+    if (registry && (Object.keys(registry.activeSlices).length > 0 || registry.finalizingSlice || registry.readyQueue.length > 0)) {
         log.info("Found existing registry — checking for crash recovery...");
         recoveredSlices = recoverFromCrash(registry);
         registry.maxIterations = maxIterations;
@@ -840,6 +1180,8 @@ async function runParallelMode() {
             maxIterations,
             completedIterations: 0,
             activeSlices: {},
+            readyQueue: [],
+            finalizingSlice: null,
             history: [],
         };
         saveRegistry(registry);
@@ -878,7 +1220,7 @@ async function runParallelMode() {
         log.info(`  → "${s.label}" (${s.type}) [${s.chapter}] id=${s.id}`);
     }
 
-    if (queue.length === 0) {
+    if (queue.length === 0 && registry.readyQueue.length === 0) {
         log.complete("No planned slices found — nothing to do!");
         clearRegistry();
         process.exit(0);
@@ -887,9 +1229,15 @@ async function runParallelMode() {
     // Active workers map: sliceId → { child, promise, ... }
     const activeWorkers = new Map();
 
+    // Done signal for finalization loop
+    const doneSignal = { value: false };
+
+    // Start finalization pipeline concurrently
+    const finalizationPromise = processReadyQueueLoop(registry, loopStartTime, doneSignal);
+
     // Heartbeat interval
     const heartbeatInterval = setInterval(() => {
-        if (activeWorkers.size > 0) {
+        if (activeWorkers.size > 0 || registry.readyQueue.length > 0 || registry.finalizingSlice) {
             printStatusTable(registry, loopStartTime, queue.length);
         }
     }, 60000);
@@ -903,10 +1251,13 @@ async function runParallelMode() {
                 const newSlices = await discoverSlices();
                 const activeIds = new Set(Object.keys(registry.activeSlices));
                 const activeBranches = new Set(Object.values(registry.activeSlices).map(s => s.branch));
+                // Also exclude slices in readyQueue
+                const readyBranches = new Set(registry.readyQueue.map(r => r.branch));
                 const freshSlices = newSlices.filter(s => {
                     const branch = `feature/${toKebab(s.label)}`;
                     return !completedIds.has(s.id) && !activeIds.has(s.id)
-                        && !completedBranches.has(branch) && !activeBranches.has(branch);
+                        && !completedBranches.has(branch) && !activeBranches.has(branch)
+                        && !readyBranches.has(branch);
                 });
                 // Deduplicate by branch name within fresh slices
                 const freshBranches = new Set();
@@ -946,6 +1297,11 @@ async function runParallelMode() {
                     log.skip(`"${slice.label}" branch already active in another worker — skipping`);
                     continue;
                 }
+                // Also skip if in ready queue
+                if (registry.readyQueue.some(r => r.branch === candidateBranch)) {
+                    log.skip(`"${slice.label}" branch already in ready queue — skipping`);
+                    continue;
+                }
 
                 log.start(`Spawning worktree for "${slice.label}" (${slice.type})`);
 
@@ -979,10 +1335,12 @@ async function runParallelMode() {
                     const newSlices = await discoverSlices();
                     const activeIds = new Set(Object.keys(registry.activeSlices));
                     const activeBranches2 = new Set(Object.values(registry.activeSlices).map(s => s.branch));
+                    const readyBranches2 = new Set(registry.readyQueue.map(r => r.branch));
                     const freshSlices = newSlices.filter(s => {
                         const branch = `feature/${toKebab(s.label)}`;
                         return !completedIds.has(s.id) && !activeIds.has(s.id)
-                            && !completedBranches.has(branch) && !activeBranches2.has(branch);
+                            && !completedBranches.has(branch) && !activeBranches2.has(branch)
+                            && !readyBranches2.has(branch);
                     });
                     const freshBranches2 = new Set();
                     const dedupedFresh2 = freshSlices.filter(s => {
@@ -1043,34 +1401,25 @@ async function runParallelMode() {
             if (code === 0) {
                 // Check signals
                 if (output.includes(`<promise>SLICE_DONE:${sliceId}</promise>`)) {
-                    log.done(`"${slice.label}" completed! (${duration})`);
+                    log.done(`"${slice.label}" committed+pushed! (${duration}) — queued for finalization`);
 
-                    // Extract PR number if present
-                    let prNumber = null;
-                    const prMatch = output.match(/pull\/(\d+)/);
-                    if (prMatch) prNumber = parseInt(prMatch[1], 10);
-
-                    registry.history.push({
+                    // Enqueue for finalization instead of finalizing inline
+                    registry.readyQueue.push({
                         sliceId,
                         label: slice.label,
+                        chapter: slice.chapter,
+                        type: slice.type,
                         branch: branchName,
-                        result: "completed",
-                        prNumber,
-                        duration,
+                        worktreePath,
                         tokens,
+                        duration,
+                        completedAt: now(),
                     });
 
-                    completedIds.add(sliceId);
-                    completedBranches.add(branchName);
                     activeWorkers.delete(sliceId);
                     delete registry.activeSlices[sliceId];
-                    registry.completedIterations++;
-
-                    // Cleanup worktree (unless finalize=none)
-                    if (finalizeMode !== "none") {
-                        removeWorktree(worktreePath);
-                        if (finalizeMode === "merge") deleteBranch(branchName);
-                    }
+                    // Do NOT increment completedIterations — happens after finalization
+                    // Do NOT remove worktree — cleaned up after finalization
 
                 } else if (output.includes(`<promise>SLICE_BLOCKED:${sliceId}</promise>`)) {
                     log.warn(`"${slice.label}" is BLOCKED`);
@@ -1092,27 +1441,23 @@ async function runParallelMode() {
                     deleteBranch(branchName);
 
                 } else {
-                    // Completed without signal — treat as done (best effort)
-                    log.warn(`"${slice.label}" finished without SLICE_DONE signal — treating as completed`);
+                    // Completed without signal — treat as done (best effort), enqueue
+                    log.warn(`"${slice.label}" finished without SLICE_DONE signal — enqueuing for finalization`);
 
-                    registry.history.push({
+                    registry.readyQueue.push({
                         sliceId,
                         label: slice.label,
+                        chapter: slice.chapter,
+                        type: slice.type,
                         branch: branchName,
-                        result: "completed",
-                        duration,
+                        worktreePath,
                         tokens,
+                        duration,
+                        completedAt: now(),
                     });
 
-                    completedIds.add(sliceId);
-                    completedBranches.add(branchName);
                     activeWorkers.delete(sliceId);
                     delete registry.activeSlices[sliceId];
-                    registry.completedIterations++;
-
-                    if (finalizeMode !== "none") {
-                        removeWorktree(worktreePath);
-                    }
                 }
             } else {
                 // Non-zero exit
@@ -1140,6 +1485,11 @@ async function runParallelMode() {
     } finally {
         clearInterval(heartbeatInterval);
     }
+
+    // Signal finalization loop to drain and exit
+    doneSignal.value = true;
+    log.info("Waiting for finalization queue to drain...");
+    await finalizationPromise;
 
     // Final summary
     console.log();

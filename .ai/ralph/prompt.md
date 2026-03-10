@@ -43,12 +43,10 @@ When running in parallel mode, the Ralph orchestrator assigns you a specific sli
 
 - **Pick only the assigned slice** — do NOT scan proophboard for others.
 - **Pass the slice ID** to `/em2code-slice` as an argument so it skips discovery.
-- **Finalization mode** is specified in the assignment — follow it exactly:
-  - `pr`: Create a PR via `gh pr create` targeting the parent branch.
-  - `merge`: Rebase onto parent branch, then fast-forward merge.
-  - `none`: Leave changes on the feature branch.
-- **After finalization**, output the appropriate signal:
-  - `<promise>SLICE_DONE:<slice-id></promise>` — slice implemented and finalized.
+- **Finalization**: Commit and push only (`git push -u origin <branch>`).
+  Do NOT merge, rebase, or create PRs — the orchestrator handles finalization.
+- **After commit+push**, output the appropriate signal:
+  - `<promise>SLICE_DONE:<slice-id></promise>` — slice implemented, committed, and pushed.
   - `<promise>SLICE_BLOCKED:<slice-id></promise>` — slice cannot be implemented (missing dependencies, unclear spec, etc.).
 - **Do NOT output** `<promise>COMPLETE</promise>` in parallel mode — only the orchestrator determines that.
 - **Do NOT touch** any slices listed under "Locked Slices" — they are being implemented by other worktrees.

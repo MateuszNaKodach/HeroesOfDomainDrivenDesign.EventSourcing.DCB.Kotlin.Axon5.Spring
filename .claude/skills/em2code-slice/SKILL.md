@@ -114,10 +114,12 @@ Format:
     - Testing approaches, fixture patterns, or configuration needed for that area
     - Integration details (MCP tools, Axon config, Spring beans, feature flags)
     - Only add genuinely new and useful learnings — don't duplicate what's already there
-11. Ask the user via `AskUserQuestion` how to finalize (target = **parent branch** from Step 3):
+11. **Push the branch**: `git push -u origin <branch>`
+12. In interactive mode (not Ralph), ask the user via `AskUserQuestion` how to finalize (target = **parent branch** from Step 3):
     - **Merge to `<base-branch>`** — fast-forward merge (pull/rebase first if needed), then delete the feature branch
     - **Open a pull request** — push the branch and create a PR targeting `<base-branch>` via `gh pr create`
     - **Leave on branch** — do nothing further, leave changes on the feature branch
+    In Ralph/autonomous mode, just push — the orchestrator handles the rest.
 
 ## Conflict Resolution (Rebase)
 
@@ -132,6 +134,8 @@ When merging or rebasing onto the parent branch, conflicts may occur — especia
 **Resolution principle**: The proophboard Event Model is the source of truth. When in doubt about property names, types, or structure — check the slice definition on the board, not the conflicting code.
 
 **After resolving conflicts**: Re-run the quality gate (compile + tests) before finalizing.
+
+> **Note**: In Ralph parallel mode, conflict resolution is handled by the orchestrator's finalization pipeline, not by this skill.
 
 ## Important
 
