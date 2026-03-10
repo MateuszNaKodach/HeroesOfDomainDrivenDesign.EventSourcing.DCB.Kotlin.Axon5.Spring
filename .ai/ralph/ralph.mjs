@@ -1182,31 +1182,12 @@ function recoverFromCrash(registry) {
             continue;
         }
 
-        log.warn(`Slice "${info.sliceLabel}" (PID ${info.pid}) — process dead`);
-        const absPath = resolve(repoRoot, info.worktreePath);
-
-        if (existsSync(absPath)) {
-            // Worktree exists — re-queue for re-spawn
-            log.info(`  Worktree exists — will re-spawn Claude in it`);
-            removeWorktree(info.worktreePath);
-            deleteBranch(info.branch);
-            recovered.push({
-                id,
-                label: info.sliceLabel,
-                chapter: info.chapter || "unknown",
-                type: info.type || "write",
-                priority: 0, // high priority for recovery
-            });
-        } else {
-            log.info(`  No worktree — will re-queue slice`);
-            recovered.push({
-                id,
-                label: info.sliceLabel,
-                chapter: info.chapter || "unknown",
-                type: info.type || "write",
-                priority: 0,
-            });
-        }
+        log.warn(`Slice "${info.sliceLabel}" (PID ${info.pid}) — process dead, re-queuing`);
+        cleanupWorkerBranch(
+            existsSync(resolve(repoRoot, info.worktreePath)) ? info.worktreePath : null,
+            info.branch
+        );
+        recovered.push({ id, label: info.sliceLabel, chapter: info.chapter || "unknown", type: info.type || "write", priority: 0 });
         toRemove.push(id);
     }
 
@@ -1218,6 +1199,155 @@ function recoverFromCrash(registry) {
 }
 
 // ── Main Parallel Loop ──────────────────────────────────────
+
+function sliceBranch(slice) {
+    return `feature/${toKebab(slice.label)}`;
+}
+
+function collectOccupiedBranches(registry) {
+    const branches = new Set();
+    for (const info of Object.values(registry.activeSlices)) branches.add(info.branch);
+    for (const item of registry.readyQueue) branches.add(item.branch);
+    if (registry.finalizingSlice) branches.add(registry.finalizingSlice.branch);
+    return branches;
+}
+
+function filterNewSlices(slices, registry, completedIds, completedBranches) {
+    const activeIds = new Set(Object.keys(registry.activeSlices));
+    const occupiedBranches = collectOccupiedBranches(registry);
+
+    return deduplicateByBranch(slices.filter(s => {
+        const branch = sliceBranch(s);
+        return !completedIds.has(s.id)
+            && !activeIds.has(s.id)
+            && !completedBranches.has(branch)
+            && !occupiedBranches.has(branch);
+    }));
+}
+
+function deduplicateByBranch(slices) {
+    const seen = new Set();
+    return slices.filter(s => {
+        const branch = sliceBranch(s);
+        if (seen.has(branch)) {
+            log.skip(`"${s.label}" (id=${s.id}) deduped — same branch as another queued slice`);
+            return false;
+        }
+        seen.add(branch);
+        return true;
+    });
+}
+
+async function rediscoverSlices(registry, completedIds, completedBranches) {
+    log.info("Re-discovering slices from proophboard...");
+    const newSlices = await discoverSlices();
+    const fresh = filterNewSlices(newSlices, registry, completedIds, completedBranches);
+    if (fresh.length > 0) {
+        log.info(`Discovered ${fresh.length} new planned slices:`);
+        for (const s of fresh) {
+            log.info(`  → "${s.label}" (${s.type}) [${s.chapter}] id=${s.id}`);
+        }
+    } else {
+        log.info("No new planned slices found");
+    }
+    return fresh;
+}
+
+function isSliceAvailable(slice, registry, completedBranches) {
+    const branch = sliceBranch(slice);
+    if (registry.activeSlices[slice.id]) {
+        log.skip(`"${slice.label}" already active — skipping`);
+        return false;
+    }
+    if (completedBranches.has(branch)) {
+        log.skip(`"${slice.label}" branch already completed — skipping`);
+        return false;
+    }
+    const occupiedBranches = collectOccupiedBranches(registry);
+    if (occupiedBranches.has(branch)) {
+        log.skip(`"${slice.label}" branch already occupied — skipping`);
+        return false;
+    }
+    return true;
+}
+
+function enqueueForFinalization(registry, { sliceId, slice, branchName, worktreePath, tokens, duration }) {
+    registry.readyQueue.push({
+        sliceId,
+        label: slice.label,
+        chapter: slice.chapter,
+        type: slice.type,
+        branch: branchName,
+        worktreePath,
+        tokens,
+        duration,
+        completedAt: now(),
+    });
+}
+
+function retireWorker(activeWorkers, registry, sliceId) {
+    activeWorkers.delete(sliceId);
+    delete registry.activeSlices[sliceId];
+}
+
+function cleanupWorkerBranch(worktreePath, branchName) {
+    if (worktreePath) removeWorktree(worktreePath);
+    if (branchName) deleteBranch(branchName);
+}
+
+function handleWorkerResult(result, registry, activeWorkers, queue, completedIds, completedBranches) {
+    const { id: sliceId, code, output, rawOutput, slice, worktreePath, branchName } = result;
+    const tokens = extractTokensFromStreamJson(rawOutput);
+    const duration = elapsed(new Date(registry.activeSlices[sliceId]?.startedAt || Date.now()).getTime());
+
+    // Stall detection (AskUserQuestion)
+    const askQuestion = detectAskUserQuestion(rawOutput);
+    if (askQuestion) {
+        log.stall(`"${slice.label}" STALLED — Claude asked: "${askQuestion}"`);
+        retireWorker(activeWorkers, registry, sliceId);
+        cleanupWorkerBranch(worktreePath, branchName);
+        registry.history.push({ sliceId, label: slice.label, branch: branchName, result: "stalled", reason: askQuestion, duration, tokens });
+        registry.completedIterations++;
+        return { needsSleep: false };
+    }
+
+    if (code === 0) {
+        if (output.includes(`<promise>SLICE_DONE:${sliceId}</promise>`)) {
+            log.done(`"${slice.label}" committed+pushed! (${duration}) — queued for finalization`);
+            enqueueForFinalization(registry, { sliceId, slice, branchName, worktreePath, tokens, duration });
+            retireWorker(activeWorkers, registry, sliceId);
+            // completedIterations incremented after finalization
+
+        } else if (output.includes(`<promise>SLICE_BLOCKED:${sliceId}</promise>`)) {
+            log.warn(`"${slice.label}" is BLOCKED`);
+            retireWorker(activeWorkers, registry, sliceId);
+            cleanupWorkerBranch(worktreePath, branchName);
+            completedBranches.add(branchName);
+            registry.history.push({ sliceId, label: slice.label, branch: branchName, result: "blocked", duration, tokens });
+            registry.completedIterations++;
+
+        } else {
+            log.warn(`"${slice.label}" finished without SLICE_DONE signal — enqueuing for finalization`);
+            enqueueForFinalization(registry, { sliceId, slice, branchName, worktreePath, tokens, duration });
+            retireWorker(activeWorkers, registry, sliceId);
+        }
+        return { needsSleep: false };
+    }
+
+    // Non-zero exit
+    retireWorker(activeWorkers, registry, sliceId);
+    cleanupWorkerBranch(worktreePath, branchName);
+
+    if (output.includes("No messages returned")) {
+        log.skip(`"${slice.label}" — no messages returned, re-queuing`);
+        queue.unshift(slice);
+        return { needsSleep: false };
+    }
+
+    log.error(`"${slice.label}" exited with code ${code} — waiting 5min then re-queuing`);
+    queue.unshift(slice);
+    return { needsSleep: true };
+}
 
 async function runParallelMode() {
     const loopStartTime = Date.now();
@@ -1257,31 +1387,20 @@ async function runParallelMode() {
 
     // Discovery phase
     log.start("Discovering planned slices from proophboard...");
-    let queue = await discoverSlices();
-
-    // Add recovered slices to front of queue
-    if (recoveredSlices.length > 0) {
-        queue = [...recoveredSlices, ...queue.filter(s => !recoveredSlices.find(r => r.id === s.id))];
-        log.info(`Recovered ${recoveredSlices.length} slices from crash`);
-    }
-
-    // Filter out already-completed slices (by ID and by branch name)
     const completedIds = new Set(registry.history.map(h => h.sliceId));
     const completedBranches = new Set(registry.history.map(h => h.branch));
-    queue = queue.filter(s => !completedIds.has(s.id) && !completedBranches.has(`feature/${toKebab(s.label)}`));
+    const discoveredSlices = await discoverSlices();
 
-    // Deduplicate by branch name — slices with the same label map to the same branch,
-    // so they must be implemented together as a single unit
-    const seenBranches = new Set();
-    queue = queue.filter(s => {
-        const branch = `feature/${toKebab(s.label)}`;
-        if (seenBranches.has(branch)) {
-            log.skip(`"${s.label}" (id=${s.id}) deduped — same branch as another queued slice`);
-            return false;
-        }
-        seenBranches.add(branch);
-        return true;
-    });
+    let queue = filterNewSlices(
+        recoveredSlices.length > 0
+            ? [...recoveredSlices, ...discoveredSlices.filter(s => !recoveredSlices.find(r => r.id === s.id))]
+            : discoveredSlices,
+        registry, completedIds, completedBranches
+    );
+
+    if (recoveredSlices.length > 0) {
+        log.info(`Recovered ${recoveredSlices.length} slices from crash`);
+    }
 
     log.info(`Found ${queue.length} planned slices:`);
     for (const s of queue) {
@@ -1296,14 +1415,9 @@ async function runParallelMode() {
 
     // Active workers map: sliceId → { child, promise, ... }
     const activeWorkers = new Map();
-
-    // Done signal for finalization loop
     const doneSignal = { value: false };
-
-    // Start finalization pipeline concurrently
     const finalizationPromise = processReadyQueueLoop(registry, loopStartTime, doneSignal);
 
-    // Heartbeat interval
     const heartbeatInterval = setInterval(() => {
         if (activeWorkers.size > 0 || registry.readyQueue.length > 0 || registry.finalizingSlice) {
             printStatusTable(registry, loopStartTime, queue.length);
@@ -1313,73 +1427,24 @@ async function runParallelMode() {
     try {
         while (registry.completedIterations < maxIterations && (queue.length > 0 || activeWorkers.size > 0)) {
 
-            // Re-discover if mode=every, a slot is free, and queue is empty
+            // Re-discover when a slot is free and queue is empty
             if (discoverMode === "every" && activeWorkers.size < maxWorktrees && queue.length === 0) {
-                log.info("Re-discovering slices from proophboard...");
-                const newSlices = await discoverSlices();
-                const activeIds = new Set(Object.keys(registry.activeSlices));
-                const activeBranches = new Set(Object.values(registry.activeSlices).map(s => s.branch));
-                // Also exclude slices in readyQueue
-                const readyBranches = new Set(registry.readyQueue.map(r => r.branch));
-                const freshSlices = newSlices.filter(s => {
-                    const branch = `feature/${toKebab(s.label)}`;
-                    return !completedIds.has(s.id) && !activeIds.has(s.id)
-                        && !completedBranches.has(branch) && !activeBranches.has(branch)
-                        && !readyBranches.has(branch);
-                });
-                // Deduplicate by branch name within fresh slices
-                const freshBranches = new Set();
-                const dedupedFresh = freshSlices.filter(s => {
-                    const branch = `feature/${toKebab(s.label)}`;
-                    if (freshBranches.has(branch)) return false;
-                    freshBranches.add(branch);
-                    return true;
-                });
-                if (dedupedFresh.length > 0) {
-                    queue.push(...dedupedFresh);
-                    log.info(`Discovered ${dedupedFresh.length} new planned slices:`);
-                    for (const s of dedupedFresh) {
-                        log.info(`  → "${s.label}" (${s.type}) [${s.chapter}] id=${s.id}`);
-                    }
-                } else {
-                    log.info("No new planned slices found");
-                }
+                const fresh = await rediscoverSlices(registry, completedIds, completedBranches);
+                queue.push(...fresh);
             }
 
             // Spawn workers up to maxWorktrees
             while (activeWorkers.size < maxWorktrees && queue.length > 0 && registry.completedIterations + activeWorkers.size < maxIterations) {
                 const slice = queue.shift();
-
-                // Skip if already active (by ID or by branch name)
-                const candidateBranch = `feature/${toKebab(slice.label)}`;
-                if (registry.activeSlices[slice.id]) {
-                    log.skip(`"${slice.label}" already active — skipping`);
-                    continue;
-                }
-                if (completedBranches.has(candidateBranch)) {
-                    log.skip(`"${slice.label}" branch already completed — skipping`);
-                    continue;
-                }
-                const activeBranchSet = new Set(Object.values(registry.activeSlices).map(s => s.branch));
-                if (activeBranchSet.has(candidateBranch)) {
-                    log.skip(`"${slice.label}" branch already active in another worker — skipping`);
-                    continue;
-                }
-                // Also skip if in ready queue
-                if (registry.readyQueue.some(r => r.branch === candidateBranch)) {
-                    log.skip(`"${slice.label}" branch already in ready queue — skipping`);
-                    continue;
-                }
+                if (!isSliceAvailable(slice, registry, completedBranches)) continue;
 
                 log.start(`Spawning worktree for "${slice.label}" (${slice.type})`);
-
                 const worker = spawnWorker(slice, registry, parentBranch);
                 if (!worker) {
                     log.error(`Failed to spawn worker for "${slice.label}" — skipping`);
                     continue;
                 }
 
-                // Register in activeSlices (THIS IS THE LOCK)
                 registry.activeSlices[slice.id] = {
                     sliceLabel: slice.label,
                     chapter: slice.chapter,
@@ -1392,37 +1457,19 @@ async function runParallelMode() {
                 };
                 saveRegistry(registry);
                 activeWorkers.set(slice.id, worker);
-
                 printStatusTable(registry, loopStartTime, queue.length);
             }
 
             if (activeWorkers.size === 0) {
-                // No workers and no queue — check if we should rediscover or exit
                 if (discoverMode === "every") {
                     log.info("All workers done, queue empty — re-discovering...");
-                    const newSlices = await discoverSlices();
-                    const activeIds = new Set(Object.keys(registry.activeSlices));
-                    const activeBranches2 = new Set(Object.values(registry.activeSlices).map(s => s.branch));
-                    const readyBranches2 = new Set(registry.readyQueue.map(r => r.branch));
-                    const freshSlices = newSlices.filter(s => {
-                        const branch = `feature/${toKebab(s.label)}`;
-                        return !completedIds.has(s.id) && !activeIds.has(s.id)
-                            && !completedBranches.has(branch) && !activeBranches2.has(branch)
-                            && !readyBranches2.has(branch);
-                    });
-                    const freshBranches2 = new Set();
-                    const dedupedFresh2 = freshSlices.filter(s => {
-                        const branch = `feature/${toKebab(s.label)}`;
-                        if (freshBranches2.has(branch)) return false;
-                        freshBranches2.add(branch);
-                        return true;
-                    });
-                    if (dedupedFresh2.length > 0) {
-                        queue.push(...dedupedFresh2);
+                    const fresh = await rediscoverSlices(registry, completedIds, completedBranches);
+                    if (fresh.length > 0) {
+                        queue.push(...fresh);
                         continue;
                     }
                 }
-                break; // Nothing left to do
+                break;
             }
 
             // Wait for ANY worker to finish
@@ -1430,122 +1477,9 @@ async function runParallelMode() {
                 w.promise.then(result => ({ id, ...result }))
             );
             const result = await Promise.race(racePromises);
+            const { needsSleep } = handleWorkerResult(result, registry, activeWorkers, queue, completedIds, completedBranches);
 
-            const { id: sliceId, code, output, rawOutput, slice, worktreePath, branchName, kebab } = result;
-            const tokens = extractTokensFromStreamJson(rawOutput);
-            const duration = elapsed(new Date(registry.activeSlices[sliceId]?.startedAt || Date.now()).getTime());
-
-            // Check for stall (AskUserQuestion detected)
-            const askQuestion = detectAskUserQuestion(rawOutput);
-            if (askQuestion) {
-                log.stall(`"${slice.label}" STALLED — Claude asked: "${askQuestion}"`);
-                registry.activeSlices[sliceId].status = "stalled";
-
-                // Kill and clean up
-                const worker = activeWorkers.get(sliceId);
-                if (worker?.child && !worker.child.killed) {
-                    worker.child.kill("SIGTERM");
-                }
-                activeWorkers.delete(sliceId);
-                delete registry.activeSlices[sliceId];
-                removeWorktree(worktreePath);
-                deleteBranch(branchName);
-
-                registry.history.push({
-                    sliceId,
-                    label: slice.label,
-                    branch: branchName,
-                    result: "stalled",
-                    reason: askQuestion,
-                    duration,
-                    tokens,
-                });
-                registry.completedIterations++;
-                saveRegistry(registry);
-                printStatusTable(registry, loopStartTime, queue.length);
-                continue;
-            }
-
-            if (code === 0) {
-                // Check signals
-                if (output.includes(`<promise>SLICE_DONE:${sliceId}</promise>`)) {
-                    log.done(`"${slice.label}" committed+pushed! (${duration}) — queued for finalization`);
-
-                    // Enqueue for finalization instead of finalizing inline
-                    registry.readyQueue.push({
-                        sliceId,
-                        label: slice.label,
-                        chapter: slice.chapter,
-                        type: slice.type,
-                        branch: branchName,
-                        worktreePath,
-                        tokens,
-                        duration,
-                        completedAt: now(),
-                    });
-
-                    activeWorkers.delete(sliceId);
-                    delete registry.activeSlices[sliceId];
-                    // Do NOT increment completedIterations — happens after finalization
-                    // Do NOT remove worktree — cleaned up after finalization
-
-                } else if (output.includes(`<promise>SLICE_BLOCKED:${sliceId}</promise>`)) {
-                    log.warn(`"${slice.label}" is BLOCKED`);
-
-                    registry.history.push({
-                        sliceId,
-                        label: slice.label,
-                        branch: branchName,
-                        result: "blocked",
-                        duration,
-                        tokens,
-                    });
-
-                    completedBranches.add(branchName);
-                    activeWorkers.delete(sliceId);
-                    delete registry.activeSlices[sliceId];
-                    registry.completedIterations++;
-                    removeWorktree(worktreePath);
-                    deleteBranch(branchName);
-
-                } else {
-                    // Completed without signal — treat as done (best effort), enqueue
-                    log.warn(`"${slice.label}" finished without SLICE_DONE signal — enqueuing for finalization`);
-
-                    registry.readyQueue.push({
-                        sliceId,
-                        label: slice.label,
-                        chapter: slice.chapter,
-                        type: slice.type,
-                        branch: branchName,
-                        worktreePath,
-                        tokens,
-                        duration,
-                        completedAt: now(),
-                    });
-
-                    activeWorkers.delete(sliceId);
-                    delete registry.activeSlices[sliceId];
-                }
-            } else {
-                // Non-zero exit
-                if (output.includes("No messages returned")) {
-                    log.skip(`"${slice.label}" — no messages returned, re-queuing`);
-                    activeWorkers.delete(sliceId);
-                    delete registry.activeSlices[sliceId];
-                    removeWorktree(worktreePath);
-                    deleteBranch(branchName);
-                    queue.unshift(slice); // re-queue at front
-                } else {
-                    log.error(`"${slice.label}" exited with code ${code} — waiting 5min then re-queuing`);
-                    activeWorkers.delete(sliceId);
-                    delete registry.activeSlices[sliceId];
-                    removeWorktree(worktreePath);
-                    deleteBranch(branchName);
-                    await sleep(5 * 60 * 1000);
-                    queue.unshift(slice); // re-queue at front
-                }
-            }
+            if (needsSleep) await sleep(5 * 60 * 1000);
 
             saveRegistry(registry);
             printStatusTable(registry, loopStartTime, queue.length);
