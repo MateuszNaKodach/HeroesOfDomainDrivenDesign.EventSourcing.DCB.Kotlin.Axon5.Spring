@@ -47,8 +47,7 @@ When running in parallel mode, the Ralph orchestrator assigns you a specific sli
   - `pr`: Create a PR via `gh pr create` targeting the parent branch.
   - `merge`: Rebase onto parent branch, then fast-forward merge.
   - `none`: Leave changes on the feature branch.
-- **After finalization**, verify `git status` on the parent branch is clean (no uncommitted files). If anything is uncommitted, stage and use `/commit` to commit it properly.
-- Then output the appropriate signal:
+- **After finalization**, output the appropriate signal:
   - `<promise>SLICE_DONE:<slice-id></promise>` — slice implemented and finalized.
   - `<promise>SLICE_BLOCKED:<slice-id></promise>` — slice cannot be implemented (missing dependencies, unclear spec, etc.).
 - **Do NOT output** `<promise>COMPLETE</promise>` in parallel mode — only the orchestrator determines that.
