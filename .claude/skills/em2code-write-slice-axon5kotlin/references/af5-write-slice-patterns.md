@@ -84,7 +84,8 @@ private fun decide(command: BuildDwelling, state: State): List<HeroesEvent> {
 
 private fun evolve(state: State, event: DwellingEvent): State = when (event) {
     is DwellingBuilt -> state.copy(isBuilt = true)
-    else -> state
+    is AvailableCreaturesChanged -> state  // no-op: doesn't affect BuildDwelling state
+    is CreatureRecruited -> state           // no-op: doesn't affect BuildDwelling state
 }
 
 ////////////////////////////////////////////
@@ -330,6 +331,8 @@ private fun decide(command: RecruitCreature, state: State): List<HeroesEvent> {
     )
 }
 
+// Cross-module slice: HeroesEvent is non-sealed, so `else -> state` IS allowed here.
+// The compiler cannot enforce exhaustiveness on non-sealed types, so `else` is the fallback.
 private fun evolve(state: State, event: HeroesEvent): State = when (event) {
     is DwellingBuilt -> state.copy(creatureId = event.creatureId, costPerTroop = event.costPerTroop)
     is AvailableCreaturesChanged -> state.copy(availableCreatures = event.changedTo)
@@ -344,7 +347,7 @@ private fun evolve(state: State, event: HeroesEvent): State = when (event) {
         else state.creaturesInArmy + (event.creatureId to newQty)
         state.copy(creaturesInArmy = updated)
     }
-    else -> state
+    else -> state  // allowed: HeroesEvent is non-sealed
 }
 
 ////////////////////////////////////////////

@@ -72,7 +72,7 @@ Split into: pure `decide()` function + handler component that wires decide/Event
 
 ```
 AF4: @EventSourcingHandler void evolve(Event e) { this.field = e.value(); }
-AF5: Private fun evolve(state, event): State = when(event) { is E -> state.copy(...); else -> state }
+AF5: Private fun evolve(state, event): State = when(event) { is E -> state.copy(...); is Other -> state /* explicit no-op for every sealed subtype */ }
      + @EventSourcingHandler on entity returning new entity instance
 ```
 
