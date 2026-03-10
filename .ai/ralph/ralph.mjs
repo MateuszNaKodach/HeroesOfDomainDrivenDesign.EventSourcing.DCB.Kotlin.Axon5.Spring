@@ -620,13 +620,13 @@ function spawnWorker(slice, registry, parentBranch) {
     try {
         createWorktree(worktreePath, parentBranch, branchName);
     } catch (e) {
-        // Branch may already exist from crash recovery
         if (e.message?.includes("already exists")) {
+            // Stale branch from a previous run — delete it and start fresh
+            log.warn(`Branch "${branchName}" already exists — deleting stale branch and retrying`);
+            removeWorktree(worktreePath);
+            deleteBranch(branchName);
             try {
-                const absPath = resolve(repoRoot, worktreePath);
-                execSync(`git worktree add "${absPath}" "${branchName}"`, {
-                    cwd: repoRoot, encoding: "utf8", stdio: "pipe",
-                });
+                createWorktree(worktreePath, parentBranch, branchName);
             } catch (e2) {
                 log.error(`Failed to create worktree for "${slice.label}": ${e2.message}`);
                 return null;
