@@ -343,7 +343,10 @@ function spawnClaude({ prompt, cwd = repoRoot, logFiles = [], streamPrefix, pass
     }
 
     const appendLogs = logFiles.length > 0
-        ? (text) => { for (const f of logFiles) try { appendFileSync(f, text); } catch { /* ignore */ } }
+        ? (text) => {
+            const line = text.endsWith("\n") ? text : text + "\n";
+            for (const f of logFiles) try { appendFileSync(f, line); } catch { /* ignore */ }
+        }
         : () => {};
 
     child.stdout.on("data", (chunk) => {
