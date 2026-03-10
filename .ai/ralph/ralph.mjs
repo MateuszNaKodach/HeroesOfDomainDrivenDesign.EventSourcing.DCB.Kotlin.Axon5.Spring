@@ -292,14 +292,10 @@ function extractTokensFromStreamJson(rawOutput) {
         try {
             const obj = JSON.parse(line);
             if (obj.type === "result" && obj.usage) {
-                const input = (obj.usage.input_tokens || 0)
-                    + (obj.usage.cache_read_input_tokens || 0)
-                    + (obj.usage.cache_creation_input_tokens || 0);
-                const output = obj.usage.output_tokens || 0;
                 return {
-                    input,
-                    output,
-                    total: input + output,
+                    input: obj.usage.input_tokens || 0,
+                    output: obj.usage.output_tokens || 0,
+                    total: (obj.usage.input_tokens || 0) + (obj.usage.output_tokens || 0),
                 };
             }
         } catch { /* ignore */ }
