@@ -83,6 +83,20 @@ If the Event Modeling artifact includes slice details with `## Scenarios (GWTs)`
 
 If the slice details contain `## Implementation Guidelines`, **follow them** — they describe specific technical requirements that go beyond the standard slice pattern.
 
+### Query Annotation
+
+Every query data class must have `@Query(namespace, name, version)` — mirroring the `@Event` annotation on events:
+
+```kotlin
+@Query(namespace = "{Context}", name = "{QueryName}", version = "1.0.0")
+data class GetFeature(val gameId: GameId, ...)
+```
+
+- `@Query` — import from `org.axonframework.messaging.queryhandling.annotation.Query`
+- `namespace` = bounded context name (e.g., `"CreatureRecruitment"`, `"Calendar"`)
+- `name` = query class name (e.g., `"GetAllDwellings"`)
+- `version` = `"1.0.0"` for new queries
+
 A read slice file contains all layers in a single file. **Do NOT add section comments** (Domain/Application/Presentation)
 for read slices — those are only for write slices.
 
@@ -90,6 +104,7 @@ for read slices — those are only for write slices.
 
 ```kotlin
 // Query DTO + Result DTO
+@Query(namespace = "{Context}", name = "GetFeature", version = "1.0.0")
 data class GetFeature(val gameId: GameId, ...) {
     data class Result(...)
     // Optional: nested result DTOs if read model doesn't match result 1:1
