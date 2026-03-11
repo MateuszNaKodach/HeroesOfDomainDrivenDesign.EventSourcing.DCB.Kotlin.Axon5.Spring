@@ -12,6 +12,7 @@ import org.axonframework.messaging.core.annotation.SequencingPolicy
 import org.axonframework.messaging.core.sequencing.MetadataSequencingPolicy
 import org.axonframework.messaging.eventhandling.annotation.EventHandler
 import org.axonframework.messaging.eventhandling.replay.annotation.ResetHandler
+import org.axonframework.messaging.queryhandling.annotation.Query
 import org.axonframework.messaging.queryhandling.annotation.QueryHandler
 import org.axonframework.messaging.queryhandling.gateway.QueryGateway
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.io.Serializable
 import java.util.concurrent.CompletableFuture
 
+@Query(namespace = "Astrologers", name = "GetWeekSymbol", version = "1.0.0")
 data class GetWeekSymbol(val gameId: GameId, val month: Int, val week: Int)
 
 data class WeekSymbolReadModelId(

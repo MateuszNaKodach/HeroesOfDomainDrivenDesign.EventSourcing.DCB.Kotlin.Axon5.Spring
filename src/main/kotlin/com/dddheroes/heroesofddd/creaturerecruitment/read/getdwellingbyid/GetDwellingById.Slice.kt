@@ -9,6 +9,7 @@ import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
 import org.axonframework.eventsourcing.annotation.EventSourcingHandler
 import org.axonframework.eventsourcing.annotation.reflection.EntityCreator
 import org.axonframework.extension.spring.stereotype.EventSourced
+import org.axonframework.messaging.queryhandling.annotation.Query
 import org.axonframework.messaging.queryhandling.annotation.QueryHandler
 import org.axonframework.messaging.queryhandling.gateway.QueryGateway
 import org.axonframework.modelling.annotation.InjectEntity
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.CompletableFuture
 
+@Query(namespace = "CreatureRecruitment", name = "GetDwellingById", version = "1.0.0")
 data class GetDwellingById(
     val gameId: GameId,
     @get:JvmName("getDwellingId")

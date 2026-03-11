@@ -13,6 +13,7 @@ import org.axonframework.messaging.core.annotation.SequencingPolicy
 import org.axonframework.messaging.core.sequencing.MetadataSequencingPolicy
 import org.axonframework.messaging.eventhandling.annotation.EventHandler
 import org.axonframework.messaging.eventhandling.replay.annotation.ResetHandler
+import org.axonframework.messaging.queryhandling.annotation.Query
 import org.axonframework.messaging.queryhandling.annotation.QueryHandler
 import org.axonframework.messaging.queryhandling.gateway.QueryGateway
 import org.hibernate.annotations.JdbcTypeCode
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.CompletableFuture
 
+@Query(namespace = "CreatureRecruitment", name = "GetAllDwellings", version = "1.0.0")
 data class GetAllDwellings(
     val gameId: GameId
 ) {
