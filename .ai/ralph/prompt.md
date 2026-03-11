@@ -1,7 +1,7 @@
 # Ralph Agent Instructions
 
 You are an autonomous coding agent. You implement one slice at a time from an Event Model.
-All slice logic is handled by the `/em2code-slice` skill — you orchestrate it.
+All slice logic is handled by the `/em-proophboard-code` skill — you orchestrate it.
 
 ## Autonomous Mode Rules
 
@@ -13,12 +13,12 @@ All slice logic is handled by the `/em2code-slice` skill — you orchestrate it.
 1. Check for interrupted work from a previous iteration:
    - Look for progress files in `.ai/temp/feature-*/progress.md`.
    - If one exists, the previous iteration was interrupted mid-slice.
-     Resume it by invoking `/em2code-slice` — the skill will detect the progress file and continue.
+     Resume it by invoking `/em-proophboard-code` — the skill will detect the progress file and continue.
 2. Check `git log --oneline -5` and `git branch` to understand current state.
 
 ## Procedure
 
-1. Invoke the `/em2code-slice` skill (using the Skill tool).
+1. Invoke the `/em-proophboard-code` skill (using the Skill tool).
    - The skill discovers planned slices, picks the highest-priority one, implements it,
      runs quality gates, commits, and updates the board status.
    - In autonomous mode, the skill should NOT ask interactive questions — auto-accept:
@@ -42,7 +42,7 @@ When running in parallel mode, the Ralph orchestrator assigns you a specific sli
 "Worktree Assignment" section appended to this prompt. In that case:
 
 - **Pick only the assigned slice** — do NOT scan proophboard for others.
-- **Pass the slice ID** to `/em2code-slice` as an argument so it skips discovery.
+- **Pass the slice ID** to `/em-proophboard-code` as an argument so it skips discovery.
 - **Finalization**: Commit and push only (`git push -u origin <branch>`).
   Do NOT merge, rebase, or create PRs — the orchestrator handles finalization.
 - **After commit+push**, output the appropriate signal:
@@ -63,5 +63,5 @@ You MUST only output `<promise>COMPLETE</promise>` or `<promise>NO_TASKS</promis
 ## Important
 
 - Implement ONE slice per iteration via the skill.
-- Never implement slice logic directly — always delegate to `/em2code-slice`.
+- Never implement slice logic directly — always delegate to `/em-proophboard-code`.
 - The proophboard slice definition is always the source of truth.

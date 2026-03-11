@@ -218,7 +218,7 @@ On startup with an existing registry, Ralph checks:
 The registry file is **preserved after completion** (not deleted) — it serves as a run log and enables disaster recovery
 if the process is restarted.
 
-The `em2code-slice` skill has its own progress recovery via `.ai/temp/feature-*/progress.md`.
+The `em-proophboard-code` skill has its own progress recovery via `.ai/temp/feature-*/progress.md`.
 
 ## Files
 

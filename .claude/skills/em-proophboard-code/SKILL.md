@@ -1,10 +1,10 @@
 ---
-name: em2code-slice
+name: em-proophboard-code
 description: >
   Implement a single Event Modeling slice from proophboard — discover slices via MCP, let the user
   choose which one, delegate to the matching implementation skill (write/read/automation), run quality
   gates, handle git branching, and ask the user how to finalize (merge or PR).
-  Use when: (1) user says "implement slice", "implement next slice", "/em2code-slice",
+  Use when: (1) user says "implement slice", "implement next slice", "/em-proophboard-code",
   (2) user wants to pick and implement a slice from the event model board,
   (3) user provides a slice ID or name and asks to implement it,
   (4) user says "what slices are planned" and wants to implement one.

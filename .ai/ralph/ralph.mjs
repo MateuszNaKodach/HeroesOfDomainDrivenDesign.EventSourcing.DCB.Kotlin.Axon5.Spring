@@ -704,7 +704,7 @@ There are ${Object.keys(registry.activeSlices).length} other worktrees running i
 - **Chapter**: ${slice.chapter}
 - **Type**: ${slice.type}
 
-Pick THIS slice in \`/em2code-slice\` — pass the slice ID as argument. Do not scan for others.
+Pick THIS slice in \`/em-proophboard-code\` — pass the slice ID as argument. Do not scan for others.
 
 ### Locked Slices (DO NOT TOUCH)
 ${lockedSlices || "- (none)"}
