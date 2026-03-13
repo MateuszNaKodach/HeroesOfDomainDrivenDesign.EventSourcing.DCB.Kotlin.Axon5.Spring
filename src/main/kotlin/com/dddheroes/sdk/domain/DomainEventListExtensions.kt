@@ -1,4 +1,4 @@
-package com.dddheroes.heroesofddd.shared.domain
+package com.dddheroes.sdk.domain
 
 inline fun <reified T : DomainEvent> Collection<T>.throwIfFailure(): Collection<T> {
     val failureEvents = this.filterIsInstance<FailureEvent>()

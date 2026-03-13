@@ -3,12 +3,12 @@ package com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling
 import com.dddheroes.extensions.axon.test.AxonGatewaysMock
 import com.dddheroes.extensions.axon.test.AxonGatewaysMockTest
 import com.dddheroes.extensions.webmvc.test.RestAssuredMockMvcTest
-import com.dddheroes.heroesofddd.shared.application.CommandHandlerResult.Failure
-import com.dddheroes.heroesofddd.shared.application.CommandHandlerResult.Success
 import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.PlayerId
 import com.dddheroes.heroesofddd.shared.restapi.Headers
+import com.dddheroes.sdk.application.CommandHandlerResult.Failure
+import com.dddheroes.sdk.application.CommandHandlerResult.Success
 import io.restassured.http.ContentType
 import io.restassured.module.mockmvc.kotlin.extensions.Given
 import io.restassured.module.mockmvc.kotlin.extensions.Then

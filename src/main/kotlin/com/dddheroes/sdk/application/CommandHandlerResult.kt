@@ -1,8 +1,8 @@
-package com.dddheroes.heroesofddd.shared.application
+package com.dddheroes.sdk.application
 
-import com.dddheroes.heroesofddd.shared.domain.DomainEvent
-import com.dddheroes.heroesofddd.shared.domain.DomainRuleViolatedException
-import com.dddheroes.heroesofddd.shared.domain.FailureEvent
+import com.dddheroes.sdk.domain.DomainEvent
+import com.dddheroes.sdk.domain.DomainRuleViolatedException
+import com.dddheroes.sdk.domain.FailureEvent
 
 sealed class CommandHandlerResult {
     data object Success : CommandHandlerResult()

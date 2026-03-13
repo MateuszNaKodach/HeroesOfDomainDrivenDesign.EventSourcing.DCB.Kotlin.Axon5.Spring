@@ -7,7 +7,7 @@ import com.dddheroes.heroesofddd.calendar.write.CalendarId
 import com.dddheroes.heroesofddd.calendar.write.Day
 import com.dddheroes.heroesofddd.calendar.write.Month
 import com.dddheroes.heroesofddd.calendar.write.Week
-import com.dddheroes.heroesofddd.shared.application.CommandHandlerResult
+import com.dddheroes.sdk.application.CommandHandlerResult
 import org.axonframework.extensions.kotlin.AxonMetadata
 import org.axonframework.test.fixture.*
 import org.junit.jupiter.api.Test

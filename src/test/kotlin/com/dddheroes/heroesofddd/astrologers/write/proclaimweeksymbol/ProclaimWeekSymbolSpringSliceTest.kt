@@ -5,8 +5,8 @@ import com.dddheroes.heroesofddd.astrologers.events.WeekSymbolProclaimed
 import com.dddheroes.heroesofddd.astrologers.write.AstrologersId
 import com.dddheroes.heroesofddd.astrologers.write.MonthWeek
 import com.dddheroes.heroesofddd.astrologers.write.WeekSymbol
-import com.dddheroes.heroesofddd.shared.application.CommandHandlerResult
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
+import com.dddheroes.sdk.application.CommandHandlerResult
 import org.axonframework.extensions.kotlin.AxonMetadata
 import org.axonframework.test.fixture.*
 import org.junit.jupiter.api.Test

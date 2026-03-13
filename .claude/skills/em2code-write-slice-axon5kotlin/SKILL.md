@@ -208,15 +208,15 @@ them **first** — the slice file depends on them.
 Events follow a three-level hierarchy:
 
 ```
-DomainEvent                          ← marker (shared.domain)
+DomainEvent                          ← marker (sdk.domain)
   ├─ HeroesEvent                     ← project-level marker (shared.domain)
   │    └─ {Context}Event             ← sealed interface per bounded context ({context}.events)
   │         └─ {ConcreteEvent}       ← data class ({context}.events)
-  └─ FailureEvent                    ← for business failure facts (shared.domain)
+  └─ FailureEvent                    ← for business failure facts (sdk.domain)
        └─ {ConcreteFailureEvent}     ← e.g., PaymentRejected — domain failures we care about recording
 ```
 
-`FailureEvent` (in `shared.domain`) is for domain failures that are **business facts worth recording** (e.g.,
+`FailureEvent` (in `sdk.domain`) is for domain failures that are **business facts worth recording** (e.g.,
 `PaymentRejected`). These are NOT exceptions — they are events emitted by `decide()` when a business rule produces a
 recordable failure outcome. They implement `FailureEvent` which has a `reason: String` property.
 

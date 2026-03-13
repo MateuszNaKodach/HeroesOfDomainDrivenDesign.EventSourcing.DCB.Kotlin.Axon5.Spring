@@ -1,6 +1,6 @@
-package com.dddheroes.heroesofddd.shared.restapi
+package com.dddheroes.sdk.restapi
 
-import com.dddheroes.heroesofddd.shared.application.CommandHandlerResult
+import com.dddheroes.sdk.application.CommandHandlerResult
 import org.springframework.http.ResponseEntity
 import java.util.concurrent.CompletableFuture
 

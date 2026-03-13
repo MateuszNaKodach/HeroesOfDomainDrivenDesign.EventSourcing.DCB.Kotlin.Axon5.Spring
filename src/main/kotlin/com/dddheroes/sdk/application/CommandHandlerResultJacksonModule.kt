@@ -1,10 +1,10 @@
-package com.dddheroes.heroesofddd.shared.application
+package com.dddheroes.sdk.application
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import tools.jackson.databind.module.SimpleModule
 import org.springframework.stereotype.Component
+import tools.jackson.databind.module.SimpleModule
 
 @Component
 class CommandHandlerResultJacksonModule : SimpleModule() {

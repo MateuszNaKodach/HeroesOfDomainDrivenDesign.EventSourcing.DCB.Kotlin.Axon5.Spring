@@ -1,4 +1,4 @@
-package com.dddheroes.heroesofddd.shared.application
+package com.dddheroes.sdk.application
 
 import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import org.assertj.core.api.Assertions.assertThat

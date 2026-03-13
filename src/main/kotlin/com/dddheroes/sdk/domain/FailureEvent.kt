@@ -1,4 +1,4 @@
-package com.dddheroes.heroesofddd.shared.domain
+package com.dddheroes.sdk.domain
 
 interface FailureEvent : DomainEvent {
     val reason: String

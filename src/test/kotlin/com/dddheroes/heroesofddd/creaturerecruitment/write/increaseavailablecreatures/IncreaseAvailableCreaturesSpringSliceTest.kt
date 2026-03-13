@@ -3,12 +3,12 @@ package com.dddheroes.heroesofddd.creaturerecruitment.write.increaseavailablecre
 import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
-import com.dddheroes.heroesofddd.shared.application.CommandHandlerResult
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.Quantity
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.Resources
+import com.dddheroes.sdk.application.CommandHandlerResult
 import org.axonframework.extensions.kotlin.AxonMetadata
 import org.axonframework.test.fixture.*
 import org.junit.jupiter.api.Test

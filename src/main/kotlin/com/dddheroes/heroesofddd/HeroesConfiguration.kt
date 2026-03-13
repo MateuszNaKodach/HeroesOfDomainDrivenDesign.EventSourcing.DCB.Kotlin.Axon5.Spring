@@ -1,8 +1,8 @@
 package com.dddheroes.heroesofddd
 
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
-import com.dddheroes.heroesofddd.shared.domain.DomainRuleViolatedException
-import com.dddheroes.heroesofddd.shared.restapi.ErrorResponse
+import com.dddheroes.sdk.domain.DomainRuleViolatedException
+import com.dddheroes.sdk.restapi.ErrorResponse
 import org.axonframework.common.configuration.ConfigurationEnhancer
 import org.axonframework.eventsourcing.eventstore.MetadataBasedTagResolver
 import org.axonframework.eventsourcing.eventstore.MultiTagResolver

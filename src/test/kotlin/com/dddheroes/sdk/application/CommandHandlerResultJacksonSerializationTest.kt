@@ -1,4 +1,4 @@
-package com.dddheroes.heroesofddd.shared.application
+package com.dddheroes.sdk.application
 
 import org.assertj.core.api.Assertions.assertThat
 import org.axonframework.conversion.jackson.JacksonConverter
