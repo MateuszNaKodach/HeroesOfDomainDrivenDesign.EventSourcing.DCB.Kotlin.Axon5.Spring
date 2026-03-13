@@ -5,7 +5,7 @@ name: "🚀 Build | EventStore = AxonServer"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
     paths-ignore:
       - '.claude/**'
       - '.proophboard/**'
