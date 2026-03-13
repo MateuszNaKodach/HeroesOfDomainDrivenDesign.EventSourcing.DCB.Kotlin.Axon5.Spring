@@ -3,7 +3,7 @@ package com.dddheroes.heroesofddd
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = ["com.dddheroes"])
 class HeroesOfDDDApplication
 
 fun main(args: Array<String>) {
