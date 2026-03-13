@@ -1,7 +1,5 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling
 
-import com.dddheroes.extensions.axon.test.AxonGatewaysMock
-import com.dddheroes.extensions.axon.test.AxonGatewaysMockTest
 import com.dddheroes.extensions.webmvc.test.RestAssuredMockMvcTest
 import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
@@ -13,6 +11,8 @@ import io.restassured.http.ContentType
 import io.restassured.module.mockmvc.kotlin.extensions.Given
 import io.restassured.module.mockmvc.kotlin.extensions.Then
 import io.restassured.module.mockmvc.kotlin.extensions.When
+import org.axonframework.extensions.spring.test.AxonGatewaysMock
+import org.axonframework.extensions.spring.test.AxonGatewaysMockTest
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired

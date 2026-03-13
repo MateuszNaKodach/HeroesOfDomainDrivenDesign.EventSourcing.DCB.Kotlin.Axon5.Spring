@@ -1,4 +1,4 @@
-package com.dddheroes.extensions.axon.test
+package org.axonframework.extensions.spring.test
 
 import org.axonframework.messaging.commandhandling.GenericCommandResultMessage
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway

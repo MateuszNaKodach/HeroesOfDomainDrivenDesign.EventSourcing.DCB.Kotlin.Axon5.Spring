@@ -10,7 +10,7 @@ Each can be used independently or together.
 ## Package structure
 
 ```
-com.dddheroes.extensions.axon.test            ← generic gateway mocking
+org.axonframework.extensions.spring.test      ← generic gateway mocking
 └── AxonGatewaysMock.kt                        class + @AxonGatewaysMockTest + config + listener
 
 com.dddheroes.extensions.webmvc.test          ← RestAssured + @WebMvcTest
