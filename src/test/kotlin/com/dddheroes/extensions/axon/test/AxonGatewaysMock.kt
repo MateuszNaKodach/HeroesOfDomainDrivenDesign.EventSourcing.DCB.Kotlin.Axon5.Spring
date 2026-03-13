@@ -4,14 +4,15 @@ import org.axonframework.messaging.commandhandling.GenericCommandResultMessage
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
 import org.axonframework.messaging.commandhandling.gateway.CommandResult
 import org.axonframework.messaging.commandhandling.gateway.FutureCommandResult
-import org.axonframework.messaging.core.Metadata
 import org.axonframework.messaging.core.MessageTypeResolver
+import org.axonframework.messaging.core.Metadata
 import org.axonframework.messaging.core.annotation.AnnotationMessageTypeResolver
 import org.axonframework.messaging.eventhandling.GenericEventMessage
 import org.axonframework.messaging.queryhandling.gateway.QueryGateway
 import org.mockito.ArgumentMatchers.*
 import org.mockito.Mockito
 import org.springframework.beans.factory.getBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
@@ -224,6 +225,15 @@ class AxonGatewaysMockConfiguration {
     // fixme: AF5 - should be bean in Axon by default
     @Bean
     fun messageTypeResolver(): MessageTypeResolver = AnnotationMessageTypeResolver()
+
+    @Bean
+    @ConditionalOnMissingBean(Clock::class)
+    @Suppress("DEPRECATION")
+    fun clock(): Clock {
+        val clock = Clock.systemUTC()
+        GenericEventMessage.clock = clock
+        return clock
+    }
 
     @Bean
     fun axonGatewaysMock(
