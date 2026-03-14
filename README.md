@@ -163,52 +163,35 @@ Each domain-focused module follows Vertical-Slice Architecture of three possible
 ![EventModeling_Module_CreatureRecruitment.png](.github/images/EventModeling_Module_CreatureRecruitment.png)
 
 Slices:
-
--
-Write: [BuildDwelling → DwellingBuilt](src/main/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/builddwelling/BuildDwelling.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/builddwelling/BuildDwellingSpringSliceTest.kt) | [REST test](src/test/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/builddwelling/BuildDwellingRestApiTest.kt)
--
-Write: [IncreaseAvailableCreatures → AvailableCreaturesChanged](src/main/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/increaseavailablecreatures/IncreaseAvailableCreatures.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/increaseavailablecreatures/IncreaseAvailableCreaturesSpringSliceTest.kt)
--
-Write: [RecruitCreature → CreatureRecruited, CreatureAddedToArmy, AvailableCreaturesChanged](src/main/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/recruitcreature/RecruitCreature.Slice.kt) | [unit test](src/test/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/recruitcreature/RecruitCreatureUnitTest.kt) | [spring test](src/test/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/recruitcreature/RecruitCreatureSpringSliceTest.kt)
--
-Read: [(DwellingBuilt, AvailableCreaturesChanged) → GetAllDwellings](src/main/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/read/getalldwellings/GetAllDwellings.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/read/getalldwellings/GetAllDwellingsSpringSliceTest.kt)
--
-Read: [GetDwellingById (inline event-sourced projection)](src/main/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/read/getdwellingbyid/GetDwellingById.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/read/getdwellingbyid/GetDwellingByIdSpringSliceTest.kt)
+- Write: [BuildDwelling → DwellingBuilt](src/main/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/builddwelling/BuildDwelling.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/builddwelling/BuildDwellingSpringSliceTest.kt) | [REST test](src/test/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/builddwelling/BuildDwellingRestApiTest.kt)
+- Write: [IncreaseAvailableCreatures → AvailableCreaturesChanged](src/main/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/increaseavailablecreatures/IncreaseAvailableCreatures.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/increaseavailablecreatures/IncreaseAvailableCreaturesSpringSliceTest.kt)
+- Write: [RecruitCreature → CreatureRecruited, CreatureAddedToArmy, AvailableCreaturesChanged](src/main/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/recruitcreature/RecruitCreature.Slice.kt) | [unit test](src/test/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/recruitcreature/RecruitCreatureUnitTest.kt) | [spring test](src/test/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/write/recruitcreature/RecruitCreatureSpringSliceTest.kt)
+- Read: [(DwellingBuilt, AvailableCreaturesChanged) → GetAllDwellings](src/main/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/read/getalldwellings/GetAllDwellings.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/read/getalldwellings/GetAllDwellingsSpringSliceTest.kt)
+- Read: [GetDwellingById (inline event-sourced projection)](src/main/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/read/getdwellingbyid/GetDwellingById.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/creaturerecruitment/read/getdwellingbyid/GetDwellingByIdSpringSliceTest.kt)
 
 ### 🧙 Astrologers
 
 ![EventModeling_Module_Astrologers.png](.github/images/EventModeling_Module_Astrologers.png)
 
 Slices:
-
--
-Write: [ProclaimWeekSymbol → WeekSymbolProclaimed](src/main/kotlin/com/dddheroes/heroesofddd/astrologers/write/proclaimweeksymbol/ProclaimWeekSymbol.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/astrologers/write/proclaimweeksymbol/ProclaimWeekSymbolSpringSliceTest.kt)
--
-Read: [(WeekSymbolProclaimed) → GetWeekSymbol](src/main/kotlin/com/dddheroes/heroesofddd/astrologers/read/getweeksymbol/GetWeekSymbol.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/astrologers/read/getweeksymbol/GetWeekSymbolSpringSliceTest.kt) | [REST test](src/test/kotlin/com/dddheroes/heroesofddd/astrologers/read/getweeksymbol/GetWeekSymbolRestApiTest.kt)
--
-Automation: [DayStarted (where day==1) → ProclaimWeekSymbol](src/main/kotlin/com/dddheroes/heroesofddd/astrologers/automation/whenweekstartedthenproclaimweeksymbol/WhenWeekStartedThenProclaimWeekSymbol.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/astrologers/automation/whenweekstartedthenproclaimweeksymbol/WhenWeekStartedThenProclaimWeekSymbolSpringSliceTest.kt)
--
-Automation: [(WeekSymbolProclaimed, DwellingBuilt) → IncreaseAvailableCreatures for each matching dwelling](src/main/kotlin/com/dddheroes/heroesofddd/astrologers/automation/whenweeksymbolproclaimedthenincreasedwellingavailablecreatures/WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreatures.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/astrologers/automation/whenweeksymbolproclaimedthenincreasedwellingavailablecreatures/WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreaturesSpringSliceTest.kt)
+- Write: [ProclaimWeekSymbol → WeekSymbolProclaimed](src/main/kotlin/com/dddheroes/heroesofddd/astrologers/write/proclaimweeksymbol/ProclaimWeekSymbol.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/astrologers/write/proclaimweeksymbol/ProclaimWeekSymbolSpringSliceTest.kt)
+- Read: [(WeekSymbolProclaimed) → GetWeekSymbol](src/main/kotlin/com/dddheroes/heroesofddd/astrologers/read/getweeksymbol/GetWeekSymbol.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/astrologers/read/getweeksymbol/GetWeekSymbolSpringSliceTest.kt) | [REST test](src/test/kotlin/com/dddheroes/heroesofddd/astrologers/read/getweeksymbol/GetWeekSymbolRestApiTest.kt)
+- Automation: [DayStarted (where day==1) → ProclaimWeekSymbol](src/main/kotlin/com/dddheroes/heroesofddd/astrologers/automation/whenweekstartedthenproclaimweeksymbol/WhenWeekStartedThenProclaimWeekSymbol.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/astrologers/automation/whenweekstartedthenproclaimweeksymbol/WhenWeekStartedThenProclaimWeekSymbolSpringSliceTest.kt)
+- Automation: [(WeekSymbolProclaimed, DwellingBuilt) → IncreaseAvailableCreatures for each matching dwelling](src/main/kotlin/com/dddheroes/heroesofddd/astrologers/automation/whenweeksymbolproclaimedthenincreasedwellingavailablecreatures/WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreatures.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/astrologers/automation/whenweeksymbolproclaimedthenincreasedwellingavailablecreatures/WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreaturesSpringSliceTest.kt)
 
 ### 📅 Calendar
 
 ![EventModeling_Module_Calendar.png](.github/images/EventModeling_Module_CalendarSlices.png)
 
 Slices:
-
--
-Write: [StartDay → DayStarted](src/main/kotlin/com/dddheroes/heroesofddd/calendar/write/startday/StartDay.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/calendar/write/startday/StartDaySpringSliceTest.kt) | [REST test](src/test/kotlin/com/dddheroes/heroesofddd/calendar/write/startday/StartDayRestApiTest.kt)
--
-Write: [FinishDay → DayFinished](src/main/kotlin/com/dddheroes/heroesofddd/calendar/write/finishday/FinishDay.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/calendar/write/finishday/FinishDaySpringSliceTest.kt) | [REST test](src/test/kotlin/com/dddheroes/heroesofddd/calendar/write/finishday/FinishDayRestApiTest.kt)
--
-Read: [(DayStarted, DayFinished) → GetCurrentDay](src/main/kotlin/com/dddheroes/heroesofddd/calendar/read/getcurrentday/GetCurrentDay.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/calendar/read/getcurrentday/GetCurrentDaySpringSliceTest.kt) | [REST test](src/test/kotlin/com/dddheroes/heroesofddd/calendar/read/getcurrentday/GetCurrentDayRestApiTest.kt)
+- Write: [StartDay → DayStarted](src/main/kotlin/com/dddheroes/heroesofddd/calendar/write/startday/StartDay.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/calendar/write/startday/StartDaySpringSliceTest.kt) | [REST test](src/test/kotlin/com/dddheroes/heroesofddd/calendar/write/startday/StartDayRestApiTest.kt)
+- Write: [FinishDay → DayFinished](src/main/kotlin/com/dddheroes/heroesofddd/calendar/write/finishday/FinishDay.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/calendar/write/finishday/FinishDaySpringSliceTest.kt) | [REST test](src/test/kotlin/com/dddheroes/heroesofddd/calendar/write/finishday/FinishDayRestApiTest.kt)
+- Read: [(DayStarted, DayFinished) → GetCurrentDay](src/main/kotlin/com/dddheroes/heroesofddd/calendar/read/getcurrentday/GetCurrentDay.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/calendar/read/getcurrentday/GetCurrentDaySpringSliceTest.kt) | [REST test](src/test/kotlin/com/dddheroes/heroesofddd/calendar/read/getcurrentday/GetCurrentDayRestApiTest.kt)
 
 ### 🎖️ Armies
 
 Slices:
-
--
-Read: [(CreatureAddedToArmy, CreatureRemovedFromArmy) → GetArmyCreatures](src/main/kotlin/com/dddheroes/heroesofddd/armies/read/getarmycreatures/GetArmyCreatures.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/armies/read/getarmycreatures/GetArmyCreaturesSpringSliceTest.kt) | [REST test](src/test/kotlin/com/dddheroes/heroesofddd/armies/read/getarmycreatures/GetArmyCreaturesRestApiTest.kt)
+- Read: [(CreatureAddedToArmy, CreatureRemovedFromArmy) → GetArmyCreatures](src/main/kotlin/com/dddheroes/heroesofddd/armies/read/getarmycreatures/GetArmyCreatures.Slice.kt) | [test](src/test/kotlin/com/dddheroes/heroesofddd/armies/read/getarmycreatures/GetArmyCreaturesSpringSliceTest.kt) | [REST test](src/test/kotlin/com/dddheroes/heroesofddd/armies/read/getarmycreatures/GetArmyCreaturesRestApiTest.kt)
 
 ## 🧪 Testing
 
