@@ -3,16 +3,11 @@ package com.dddheroes.heroesofddd
 import org.axonframework.extensions.spring.test.AxonSpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.UseMainMethod
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment
-import org.springframework.context.annotation.Import
 import org.springframework.core.annotation.AliasFor
-import org.springframework.test.context.ActiveProfiles
 import kotlin.reflect.KClass
 
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
-@ActiveProfiles("test", "testcontainers", "axonserver")
-// @ActiveProfiles("test", "axonserver") // uncomment if you don't want to use testcontainers
-@Import(TestcontainersConfiguration::class)
 @AxonSpringBootTest
 annotation class HeroesAxonSpringBootTest(
 
