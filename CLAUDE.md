@@ -33,8 +33,11 @@ docker compose up
 
 ### Vertical Slice Architecture
 
-Each feature is a self-contained "slice" in a single file with three sections:
+Each feature is a self-contained "slice" in a single file.
 
+#### Write Slice (Command handling, change-state slice)
+
+Contains 3 sections:
 ```kotlin
 ////////////////////////////////////////////
 ////////// Domain
