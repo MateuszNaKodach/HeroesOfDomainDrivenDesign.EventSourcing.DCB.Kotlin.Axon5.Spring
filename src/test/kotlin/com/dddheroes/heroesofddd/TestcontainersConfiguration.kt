@@ -1,7 +1,6 @@
 package com.dddheroes.heroesofddd
 
 import org.axonframework.test.server.AxonServerContainer
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -26,8 +25,7 @@ class TestcontainersConfiguration {
         }
     }
 
-    @Profile("testcontainers")
-    @ConditionalOnProperty(name = ["axon.axonserver.enabled"], havingValue = "true")
+    @Profile("axonserver")
     @Bean
     @ServiceConnection
     fun axonServerContainer(): AxonServerContainer = axonServer
