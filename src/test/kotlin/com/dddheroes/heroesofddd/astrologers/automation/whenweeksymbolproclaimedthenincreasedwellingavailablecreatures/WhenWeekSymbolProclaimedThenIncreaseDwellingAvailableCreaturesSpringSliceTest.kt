@@ -1,6 +1,5 @@
 package com.dddheroes.heroesofddd.astrologers.automation.whenweeksymbolproclaimedthenincreasedwellingavailablecreatures
 
-import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.astrologers.events.WeekSymbolProclaimed
 import com.dddheroes.heroesofddd.astrologers.write.AstrologersId
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
@@ -12,6 +11,7 @@ import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.Resources
 import org.assertj.core.api.Assertions.assertThat
 import org.axonframework.extensions.kotlin.AxonMetadata
+import org.axonframework.extensions.spring.test.AxonSpringBootTest
 import org.axonframework.test.fixture.AxonTestFixture
 import org.axonframework.test.fixture.Given
 import org.axonframework.test.fixture.Scenario
@@ -27,7 +27,7 @@ import java.util.*
         "slices.creaturerecruitment.write.increaseavailablecreatures.enabled=true"
     ]
 )
-@HeroesAxonSpringBootTest
+@AxonSpringBootTest
 internal class WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreaturesSpringSliceTest @Autowired constructor(
     private val fixture: AxonTestFixture
 ) {

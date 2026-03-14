@@ -1,6 +1,5 @@
 package com.dddheroes.heroesofddd.astrologers.automation.whenweekstartedthenproclaimweeksymbol
 
-import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.astrologers.write.AstrologersId
 import com.dddheroes.heroesofddd.astrologers.write.MonthWeek
 import com.dddheroes.heroesofddd.astrologers.write.WeekSymbol
@@ -12,6 +11,7 @@ import com.dddheroes.heroesofddd.calendar.write.Month
 import com.dddheroes.heroesofddd.calendar.write.Week
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
 import org.axonframework.extensions.kotlin.AxonMetadata
+import org.axonframework.extensions.spring.test.AxonSpringBootTest
 import org.axonframework.test.fixture.AxonTestFixture
 import org.axonframework.test.fixture.Given
 import org.axonframework.test.fixture.Scenario
@@ -31,7 +31,7 @@ import java.util.*
         "slices.astrologers.write.proclaimweeksymbol.enabled=true"
     ]
 )
-@HeroesAxonSpringBootTest
+@AxonSpringBootTest
 internal class WhenWeekStartedThenProclaimWeekSymbolSpringSliceTest @Autowired constructor(
     private val fixture: AxonTestFixture
 ) {

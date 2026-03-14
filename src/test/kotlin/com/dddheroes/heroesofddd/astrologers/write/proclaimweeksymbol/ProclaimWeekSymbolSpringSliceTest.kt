@@ -1,6 +1,5 @@
 package com.dddheroes.heroesofddd.astrologers.write.proclaimweeksymbol
 
-import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.astrologers.events.WeekSymbolProclaimed
 import com.dddheroes.heroesofddd.astrologers.write.AstrologersId
 import com.dddheroes.heroesofddd.astrologers.write.MonthWeek
@@ -8,6 +7,7 @@ import com.dddheroes.heroesofddd.astrologers.write.WeekSymbol
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
 import com.dddheroes.sdk.application.CommandHandlerResult
 import org.axonframework.extensions.kotlin.AxonMetadata
+import org.axonframework.extensions.spring.test.AxonSpringBootTest
 import org.axonframework.test.fixture.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,7 +15,7 @@ import org.springframework.test.context.TestPropertySource
 import java.util.*
 
 @TestPropertySource(properties = ["slices.astrologers.write.proclaimweeksymbol.enabled=true"])
-@HeroesAxonSpringBootTest
+@AxonSpringBootTest
 internal class ProclaimWeekSymbolSpringSliceTest @Autowired constructor(
     private val sliceUnderTest: AxonTestFixture
 ) {

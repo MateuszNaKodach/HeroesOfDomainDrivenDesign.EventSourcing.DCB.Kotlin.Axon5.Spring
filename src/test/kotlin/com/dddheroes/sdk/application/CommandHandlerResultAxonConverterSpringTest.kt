@@ -1,8 +1,8 @@
 package com.dddheroes.sdk.application
 
-import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import org.assertj.core.api.Assertions.assertThat
 import org.axonframework.conversion.Converter
+import org.axonframework.extensions.spring.test.AxonSpringBootTest
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -19,11 +19,11 @@ import org.springframework.beans.factory.annotation.Autowired
  * - Axon's `ObjectMapperAutoConfiguration` creating its own `ObjectMapper` (via `findAndAddModules`)
  *   instead of using the Spring-configured one
  *
- * Unlike `@HeroesAxonSpringBootTest` slice tests where [GenericMessage.payloadAs] short-circuits
+ * Unlike `@AxonSpringBootTest` slice tests where [GenericMessage.payloadAs] short-circuits
  * (payload is already the correct Java type), this test forces a full serialize/deserialize
  * round-trip through the [Converter], catching missing Jackson modules.
  */
-@HeroesAxonSpringBootTest
+@AxonSpringBootTest
 internal class CommandHandlerResultAxonConverterSpringTest @Autowired constructor(
     private val converter: Converter
 ) {

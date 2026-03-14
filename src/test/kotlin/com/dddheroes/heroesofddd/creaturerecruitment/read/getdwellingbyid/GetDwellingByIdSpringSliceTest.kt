@@ -1,6 +1,5 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.read.getdwellingbyid
 
-import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
@@ -12,6 +11,7 @@ import com.dddheroes.heroesofddd.shared.domain.valueobjects.Resources
 import org.assertj.core.api.Assertions.assertThat
 import org.axonframework.common.configuration.Configuration
 import org.axonframework.extensions.kotlin.AxonMetadata
+import org.axonframework.extensions.spring.test.AxonSpringBootTest
 import org.axonframework.messaging.queryhandling.gateway.QueryGateway
 import org.axonframework.test.fixture.AxonTestFixture
 import org.axonframework.test.fixture.Given
@@ -23,7 +23,7 @@ import org.springframework.test.context.TestPropertySource
 import java.util.concurrent.TimeUnit
 
 @TestPropertySource(properties = ["slices.creaturerecruitment.read.getdwellingbyid.enabled=true"])
-@HeroesAxonSpringBootTest
+@AxonSpringBootTest
 internal class GetDwellingByIdSpringSliceTest @Autowired constructor(
     private val fixture: AxonTestFixture
 ) {

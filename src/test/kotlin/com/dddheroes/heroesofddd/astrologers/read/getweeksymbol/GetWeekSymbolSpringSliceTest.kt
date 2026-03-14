@@ -1,6 +1,5 @@
 package com.dddheroes.heroesofddd.astrologers.read.getweeksymbol
 
-import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.astrologers.events.WeekSymbolProclaimed
 import com.dddheroes.heroesofddd.astrologers.write.AstrologersId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
@@ -8,6 +7,7 @@ import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
 import org.assertj.core.api.Assertions.assertThat
 import org.axonframework.common.configuration.Configuration
 import org.axonframework.extensions.kotlin.AxonMetadata
+import org.axonframework.extensions.spring.test.AxonSpringBootTest
 import org.axonframework.messaging.queryhandling.gateway.QueryGateway
 import org.axonframework.test.fixture.*
 import org.junit.jupiter.api.Test
@@ -16,7 +16,7 @@ import org.springframework.test.context.TestPropertySource
 import java.util.concurrent.TimeUnit
 
 @TestPropertySource(properties = ["slices.astrologers.read.getweeksymbol.enabled=true"])
-@HeroesAxonSpringBootTest
+@AxonSpringBootTest
 internal class GetWeekSymbolSpringSliceTest @Autowired constructor(
     private val fixture: AxonTestFixture
 ) {

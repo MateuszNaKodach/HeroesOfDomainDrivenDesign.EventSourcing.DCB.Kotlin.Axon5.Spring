@@ -1,6 +1,5 @@
 package com.dddheroes.heroesofddd.armies.read.getarmycreatures
 
-import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.armies.events.CreatureAddedToArmy
 import com.dddheroes.heroesofddd.armies.events.CreatureRemovedFromArmy
 import com.dddheroes.heroesofddd.shared.domain.identifiers.ArmyId
@@ -10,6 +9,7 @@ import com.dddheroes.heroesofddd.shared.domain.valueobjects.Quantity
 import org.assertj.core.api.Assertions.assertThat
 import org.axonframework.common.configuration.Configuration
 import org.axonframework.extensions.kotlin.AxonMetadata
+import org.axonframework.extensions.spring.test.AxonSpringBootTest
 import org.axonframework.messaging.queryhandling.gateway.QueryGateway
 import org.axonframework.test.fixture.*
 import org.junit.jupiter.api.Test
@@ -18,7 +18,7 @@ import org.springframework.test.context.TestPropertySource
 import java.util.concurrent.TimeUnit
 
 @TestPropertySource(properties = ["slices.armies.read.getarmycreatures.enabled=true"])
-@HeroesAxonSpringBootTest
+@AxonSpringBootTest
 internal class GetArmyCreaturesSpringSliceTest @Autowired constructor(
     private val fixture: AxonTestFixture
 ) {

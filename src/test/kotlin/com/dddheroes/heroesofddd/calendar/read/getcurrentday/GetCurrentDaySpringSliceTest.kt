@@ -1,6 +1,5 @@
 package com.dddheroes.heroesofddd.calendar.read.getcurrentday
 
-import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.calendar.events.DayFinished
 import com.dddheroes.heroesofddd.calendar.events.DayStarted
 import com.dddheroes.heroesofddd.calendar.write.CalendarId
@@ -11,6 +10,7 @@ import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
 import org.assertj.core.api.Assertions.assertThat
 import org.axonframework.common.configuration.Configuration
 import org.axonframework.extensions.kotlin.AxonMetadata
+import org.axonframework.extensions.spring.test.AxonSpringBootTest
 import org.axonframework.messaging.queryhandling.gateway.QueryGateway
 import org.axonframework.test.fixture.*
 import org.junit.jupiter.api.Test
@@ -19,7 +19,7 @@ import org.springframework.test.context.TestPropertySource
 import java.util.concurrent.TimeUnit
 
 @TestPropertySource(properties = ["slices.calendar.read.getcurrentday.enabled=true"])
-@HeroesAxonSpringBootTest
+@AxonSpringBootTest
 internal class GetCurrentDaySpringSliceTest @Autowired constructor(
     private val fixture: AxonTestFixture
 ) {

@@ -1,6 +1,5 @@
 package com.dddheroes.heroesofddd.calendar.write.finishday
 
-import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.calendar.events.DayFinished
 import com.dddheroes.heroesofddd.calendar.events.DayStarted
 import com.dddheroes.heroesofddd.calendar.write.CalendarId
@@ -9,6 +8,7 @@ import com.dddheroes.heroesofddd.calendar.write.Month
 import com.dddheroes.heroesofddd.calendar.write.Week
 import com.dddheroes.sdk.application.CommandHandlerResult
 import org.axonframework.extensions.kotlin.AxonMetadata
+import org.axonframework.extensions.spring.test.AxonSpringBootTest
 import org.axonframework.test.fixture.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,7 +16,7 @@ import org.springframework.test.context.TestPropertySource
 import java.util.*
 
 @TestPropertySource(properties = ["slices.calendar.write.finishday.enabled=true"])
-@HeroesAxonSpringBootTest
+@AxonSpringBootTest
 internal class FinishDaySpringSliceTest @Autowired constructor(
     private val sliceUnderTest: AxonTestFixture
 ) {

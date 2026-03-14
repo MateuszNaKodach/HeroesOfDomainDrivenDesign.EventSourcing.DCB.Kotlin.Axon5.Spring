@@ -18,7 +18,7 @@ import tools.jackson.databind.json.JsonMapper
  * Without [CommandHandlerResultJacksonModule], Jackson cannot construct [CommandHandlerResult]
  * because it's a sealed class with no default constructor or type information.
  *
- * Note: `@HeroesAxonSpringBootTest` slice tests do NOT catch this issue because
+ * Note: `@AxonSpringBootTest` slice tests do NOT catch this issue because
  * command handlers run in the same JVM. [GenericMessage.payloadAs] short-circuits at:
  * ```
  * if (type instanceof Class clazz && clazz.isAssignableFrom(payloadType())) {

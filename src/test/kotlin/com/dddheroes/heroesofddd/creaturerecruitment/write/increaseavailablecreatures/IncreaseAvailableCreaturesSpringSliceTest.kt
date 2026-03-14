@@ -1,6 +1,5 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.write.increaseavailablecreatures
 
-import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
@@ -10,6 +9,7 @@ import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.Resources
 import com.dddheroes.sdk.application.CommandHandlerResult
 import org.axonframework.extensions.kotlin.AxonMetadata
+import org.axonframework.extensions.spring.test.AxonSpringBootTest
 import org.axonframework.test.fixture.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,7 +17,7 @@ import org.springframework.test.context.TestPropertySource
 import java.util.*
 
 @TestPropertySource(properties = ["slices.creaturerecruitment.write.increaseavailablecreatures.enabled=true"])
-@HeroesAxonSpringBootTest
+@AxonSpringBootTest
 internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
     private val sliceUnderTest: AxonTestFixture
 ) {
