@@ -129,6 +129,10 @@ files. The source is available at:
 - State classes are `internal`, commands are `public`
 - REST endpoints follow: `games/{gameId}/resource/{resourceId}` pattern
 - Player ID passed via `X-Player-ID` header
+- **Value Objects:** Domain concepts (like `Day`, `Gold`, `Quantity`) are wrapped in Kotlin `value class` types with
+  validation in `init` blocks to enforce invariants at construction time.
+- **Feature Flags:** Every slice is toggled via `@ConditionalOnProperty`, requiring entries in `application.yaml` and
+  Spring metadata.
 
 ### Game-scoped singletons in REST API
 When a bounded context has exactly one instance per game (e.g., Calendar, Astrologers), do NOT expose its domain ID as a path variable. Use a fixed path segment (e.g., `/calendar/` not `/calendars/{calendarId}/`) and derive the domain ID from `gameId` inside the controller (`CalendarId(gameId)`).
