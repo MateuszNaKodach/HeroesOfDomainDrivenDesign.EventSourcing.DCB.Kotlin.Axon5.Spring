@@ -27,6 +27,7 @@ vary. Look for:
 - REST conventions (URL patterns, headers, response types)
 - Feature flag patterns (`@ConditionalOnProperty`)
 - Test patterns (unit test fixtures vs Spring integration tests)
+- **Spring Boot test annotation**: Check if the project defines a **meta-annotation** for `@AxonSpringBootTest` (e.g., a custom annotation that composes `@AxonSpringBootTest` with `@ActiveProfiles`, `@Import` for testcontainers, etc.). Search for classes/annotations annotated with `@AxonSpringBootTest` and check CLAUDE.md for the project's test annotation. If a meta-annotation exists, use it in all integration tests. If not, use `@AxonSpringBootTest` directly but look at existing tests for common patterns (`@ActiveProfiles`, `@Import`, etc.) that should be replicated consistently.
 - Imports and package structure
 
 ## Step 1: Understand the Input
@@ -88,7 +89,7 @@ by automations don't need an HTTP endpoint. Skip the Presentation section and RE
   multi-tag)
 - `@Component` on handler class
 - Auto-registered by Spring
-- Tested with Spring Boot test (`@HeroesAxonSpringBootTest`)
+- Tested with Spring Boot test (using the project's `@AxonSpringBootTest` meta-annotation if available — see Step 0)
 - **Default choice** when the project uses Spring Boot
 
 **Explicit Registration** — entity and handler registered manually via `@Configuration`:
@@ -314,7 +315,7 @@ handler/@config, and REST classes. Update ALL of these files:
 Two test approaches exist (see [references/af5-write-slice-patterns.md](references/af5-write-slice-patterns.md) "
 Testing" section):
 
-- **Spring Boot test** — uses `@HeroesAxonSpringBootTest` + `springTestFixture(configuration)`. Works with the Spring
+- **Spring Boot test** — uses the project's `@AxonSpringBootTest` meta-annotation (discovered in Step 0) + `springTestFixture(configuration)`. Works with the Spring
   Boot pattern (`@EventSourced` + `@Component`). Requires `@TestPropertySource` to enable the slice.
 - **Non-Spring Boot test** — uses `axonTestFixture(configSlice { ... })`. Works with the Explicit Registration pattern (
   `@EventSourcedEntity` + `@Configuration`). No Spring context needed.

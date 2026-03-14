@@ -32,6 +32,7 @@ Read the target project's CLAUDE.md and explore existing slices. Look for:
 - Feature flag patterns (`@ConditionalOnProperty` prefix structure)
 - `additional-spring-configuration-metadata.json` entries
 - YAML config files (`application.yaml`, `application-test.yaml`)
+- **Spring Boot test annotation**: Check if the project defines a **meta-annotation** for `@AxonSpringBootTest` (e.g., a custom annotation that composes `@AxonSpringBootTest` with `@ActiveProfiles`, `@Import` for testcontainers, etc.). Search for classes/annotations annotated with `@AxonSpringBootTest` and check CLAUDE.md for the project's test annotation. If a meta-annotation exists, use it in all integration tests. If not, use `@AxonSpringBootTest` directly but look at existing tests for common patterns (`@ActiveProfiles`, `@Import`, etc.) that should be replicated consistently.
 
 ## Step 1: Understand the Input
 

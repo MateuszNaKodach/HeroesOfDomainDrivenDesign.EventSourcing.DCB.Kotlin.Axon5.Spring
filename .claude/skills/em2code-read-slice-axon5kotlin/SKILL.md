@@ -17,7 +17,7 @@ description: >
 Before writing any code, read the target project's CLAUDE.md and explore at least one existing read slice.
 Look for:
 
-- Test annotation (`@HeroesAxonSpringBootTest` or equivalent)
+- **Spring Boot test annotation**: Check if the project defines a **meta-annotation** for `@AxonSpringBootTest` (e.g., a custom annotation that composes `@AxonSpringBootTest` with `@ActiveProfiles`, `@Import` for testcontainers, etc.). Search for classes/annotations annotated with `@AxonSpringBootTest` and check CLAUDE.md for the project's test annotation. If a meta-annotation exists, use it in all integration tests. If not, use `@AxonSpringBootTest` directly but look at existing tests for common patterns (`@ActiveProfiles`, `@Import`, etc.) that should be replicated consistently.
 - Feature flag pattern (`@TestPropertySource` enabling the slice)
 - Assertion library (AssertJ, AssertK, etc.)
 - Test naming conventions (backtick-quoted method names)
@@ -217,7 +217,7 @@ Use the Spring Boot integration test approach with `AxonTestFixture`.
 
 ```kotlin
 @TestPropertySource(properties = ["slices.{context}.read.{feature}.enabled=true"])
-@HeroesAxonSpringBootTest
+@{ProjectAxonSpringBootTest} // Use the project's @AxonSpringBootTest meta-annotation discovered in Step 0 (e.g. @HeroesAxonSpringBootTest)
 internal class {Feature}SpringSliceTest @Autowired constructor(
     private val fixture: AxonTestFixture
 ) {

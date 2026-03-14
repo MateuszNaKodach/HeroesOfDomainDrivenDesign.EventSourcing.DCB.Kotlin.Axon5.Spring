@@ -159,7 +159,7 @@ private class BuildDwellingRestApi(private val commandGateway: CommandGateway) {
 - `@InjectEntity(idProperty = EventTags.DWELLING_ID)` - the command property named `dwellingId` is used to filter events
   by tag
 - `@ConditionalOnProperty` on BOTH entity and handler classes (and REST)
-- Tested with Spring Boot test (`@HeroesAxonSpringBootTest` + `springTestFixture`)
+- Tested with Spring Boot test (project's `@AxonSpringBootTest` meta-annotation + `springTestFixture`)
 
 ---
 

@@ -78,6 +78,10 @@ Located in `com.dddheroes.heroesofddd.*`:
 
 ## Testing Patterns
 
+### Spring Boot Test Meta-Annotation
+`@HeroesAxonSpringBootTest` (`src/test/kotlin/com/dddheroes/heroesofddd/HeroesAxonSpringBootTest.kt`) is the project's meta-annotation for `@AxonSpringBootTest`. It composes `@AxonSpringBootTest` with test profiles (`test`, `testcontainers`, `axonserver`) and Testcontainers configuration. Use it instead of bare `@AxonSpringBootTest` in all integration tests.
+
+### Unit Tests
 Unit tests use Axon Test Fixtures with a Kotlin DSL (`Given { } When { } Then { }`):
 
 ```kotlin
