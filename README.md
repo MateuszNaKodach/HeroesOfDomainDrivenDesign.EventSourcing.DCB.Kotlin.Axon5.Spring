@@ -51,16 +51,7 @@ You can interact with the system in two ways:
 ### REST API
 
 Access the REST API documentation
-at: [http://localhost:3773/swagger-ui/index.html](http://localhost:3773/swagger-ui/index.html)
-
-### Model Context Protocol (MCP) Server
-
-The application exposes a Model Context Protocol Server that allows AI assistants to interact directly with the domain.
-You can add it to Claude Code with:
-
-```bash
-claude mcp add --transport sse HeroesOfDDD http://localhost:3773/sse
-```
+at: [http://localhost:3775/swagger-ui/index.html](http://localhost:3775/swagger-ui/index.html)
 
 ## 🏛️ Screaming Architecture
 
