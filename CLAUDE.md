@@ -68,9 +68,10 @@ Contains 3 sections:
 Located in `com.dddheroes.heroesofddd.*`:
 
 - `armies/` - Army management
+- `astrologers/` - Week symbol proclamation (astrologer prophecies)
+- `calendar/` - Game calendar (days, weeks, months)
 - `creaturerecruitment/` - Dwelling building and creature recruitment
 - `resourcespool/` - Resource management
-- `scenario/` - Game scenarios
 - `shared/` - Cross-cutting concerns (domain primitives, metadata, REST headers)
 
 ### Event Tags and Metadata
