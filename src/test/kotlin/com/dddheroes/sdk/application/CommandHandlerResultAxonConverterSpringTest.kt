@@ -1,5 +1,6 @@
 package com.dddheroes.sdk.application
 
+import com.dddheroes.heroesofddd.HeroesOfDDDApplication
 import org.assertj.core.api.Assertions.assertThat
 import org.axonframework.conversion.Converter
 import org.axonframework.extensions.spring.test.AxonSpringBootTest
@@ -23,7 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired
  * (payload is already the correct Java type), this test forces a full serialize/deserialize
  * round-trip through the [Converter], catching missing Jackson modules.
  */
-@AxonSpringBootTest
+@AxonSpringBootTest(classes = [HeroesOfDDDApplication::class])
 internal class CommandHandlerResultAxonConverterSpringTest @Autowired constructor(
     private val converter: Converter
 ) {
