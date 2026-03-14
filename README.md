@@ -226,40 +226,39 @@ functions exercised through the `AxonTestFixture` DSL. The domain model can be r
 ![EventModeling_GWT_TestCase_CreatureRecruitment.png](.github/images/EventModeling_GWT_TestCase_CreatureRecruitment.png)
 
 ```kotlin
-@TestPropertySource(properties = ["slices.creaturerecruitment.write.builddwelling.enabled=true"])
-@HeroesAxonSpringBootTest
-internal class BuildDwellingSpringSliceTest @Autowired constructor(
+internal class RecruitCreatureSpringSliceTest @Autowired constructor(
     private val sliceUnderTest: AxonTestFixture
 ) {
 
     @Test
-    fun `given not built dwelling, when build, then built`() {
+    fun `given dwelling with 2 creatures, when recruit 2 creatures, then recruited`() {
         val dwellingId = DwellingId.random()
+        val armyId = ArmyId.random()
         val creatureId = CreatureId("angel")
-        val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
         sliceUnderTest.Scenario {
             Given {
-                noPriorActivity()
+                event(DwellingBuilt(dwellingId, creatureId, costPerTroop))
+                event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 2, changedTo = Quantity(2)))
             } When {
-                command(BuildDwelling(dwellingId, creatureId, costPerTroop), gameMetadata)
+                command(
+                    RecruitCreature(
+                        dwellingId = dwellingId,
+                        creatureId = creatureId,
+                        armyId = armyId,
+                        quantity = Quantity(2),
+                    )
+                )
             } Then {
-                resultMessagePayload(CommandHandlerResult.Success)
-                events(DwellingBuilt(dwellingId, creatureId, costPerTroop))
-            }
-        }
-    }
-
-    @Test
-    fun `given already built, when build again, then no events (idempotent)`() {
-        sliceUnderTest.Scenario {
-            Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
-            } When {
-                command(BuildDwelling(dwellingId, creatureId, costPerTroop), gameMetadata)
-            } Then {
-                resultMessagePayload(CommandHandlerResult.Success)
-                noEvents()
+                events(
+                    CreatureRecruited(
+                        dwellingId = dwellingId,
+                        creatureId = creatureId,
+                        toArmy = armyId,
+                        quantity = Quantity(2),
+                        totalCost = Resources.of(ResourceType.GOLD to 6000, ResourceType.GEMS to 2)
+                    )
+                )
             }
         }
     }
