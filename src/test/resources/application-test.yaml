@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 5
+
+slices:
+  creaturerecruitment.write.builddwelling:
+    enabled: false
+  creaturerecruitment.write.increaseavailablecreatures:
+    enabled: false
+  creaturerecruitment.write.recruitcreature:
+    enabled: false
+  creaturerecruitment.read.getalldwellings:
+    enabled: false
+  creaturerecruitment.read.getdwellingbyid:
+    enabled: false
+  astrologers.write.proclaimweeksymbol:
+    enabled: false
+  astrologers.automation.whenweekstartedthenproclaimweeksymbol:
+    enabled: false
+  astrologers.automation.whenweeksymbolproclaimedthenincreasedwellingavailablecreatures:
+    enabled: false
+  calendar.write.startday:
+    enabled: false
+  calendar.write.finishday:
+    enabled: false
+  armies.read.getarmycreatures:
+    enabled: false
+  astrologers.read.getweeksymbol:
+    enabled: false
+  calendar.read.getcurrentday:
+    enabled: false

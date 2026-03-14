@@ -51,7 +51,6 @@ jobs:
 
       - name: 🧪 Run integration tests
         env:
-          SPRING_PROFILES_ACTIVE: test,testcontainers,axonserver
           AXON_AXONSERVER_ENABLED: true
         run: mvn -B test -Dgroups=integration --file pom.xml
 

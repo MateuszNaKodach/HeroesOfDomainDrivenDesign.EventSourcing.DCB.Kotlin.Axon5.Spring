@@ -13,8 +13,11 @@ Modeling patterns using Kotlin, Axon Framework 5, and Spring Boot 3.
 # Install dependencies
 ./mvnw install -DskipTests
 
-# Run all tests
+# Run all tests (Maven profile `test` is active by default, sets spring.profiles.active=test)
 ./mvnw test
+
+# Run tests without Axon Server (uses testcontainers profile only, no axonserver profile)
+./mvnw test -P '!test,test-without-axonserver'
 
 # Run single test class
 ./mvnw test -Dtest=BuildDwellingUnitTest
@@ -141,6 +144,25 @@ When a bounded context has exactly one instance per game (e.g., Calendar, Astrol
 
 ### Spring
 - Prefer constructor injection over field injection, even in tests.
+
+### Test Profiles
+
+Spring profiles for tests are activated automatically — do NOT add `@ActiveProfiles` to test classes.
+
+The Maven profile `test` (active by default) sets `spring.profiles.active=test` via Surefire.
+Spring Boot then expands the group defined in `application.yaml`:
+
+| Spring profile activated  | Expands to                     |
+|---------------------------|--------------------------------|
+| `test`                    | `testcontainers`, `axonserver` |
+| `test-without-axonserver` | `testcontainers`               |
+
+- `testcontainers` — enables `TestcontainersConfiguration` beans (Axon Server + Postgres containers)
+- `axonserver` — enables Axon Server connection configuration
+
+`TestcontainersConfiguration` uses `@Configuration` (not `@TestConfiguration`) so Spring Boot's
+component scan picks it up automatically. `@TestConfiguration` is intentionally excluded from
+scanning and would require explicit `@Import` on every test class.
 
 ## Commit Conventions
 
