@@ -5,8 +5,8 @@ spring:
     name: heroesofddd
   profiles:
     group:
-      test: testcontainers,axonserver
-      test-without-axonserver: testcontainers
+      test-with-axonserver: test,testcontainers,axonserver
+      test-without-axonserver: test,testcontainers
   docker:
     compose:
       enabled: true

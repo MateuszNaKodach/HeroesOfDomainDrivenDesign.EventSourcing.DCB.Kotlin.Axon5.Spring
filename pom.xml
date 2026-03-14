@@ -199,7 +199,7 @@
 
     <profiles>
         <profile>
-            <id>test</id>
+            <id>test-with-axonserver</id>
 
             <build>
                 <plugins>
@@ -208,7 +208,7 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <systemPropertyVariables>
-                                <spring.profiles.active>test</spring.profiles.active>
+                                <spring.profiles.active>test-with-axonserver</spring.profiles.active>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
