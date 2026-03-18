@@ -262,7 +262,7 @@ inline fun <reified T : Throwable> Then.MessageAssertions<*>.exception() {
  * ```
  */
 @Suppress("unused", "DEPRECATION")
-inline fun <reified T> Then.Command.resultMessagePayloadSatisfies(
+inline fun <reified T : Any> Then.Command.resultMessagePayloadSatisfies(
     noinline consumer: (T) -> Unit
 ) {
     this.resultMessagePayloadSatisfies(T::class.java, consumer)

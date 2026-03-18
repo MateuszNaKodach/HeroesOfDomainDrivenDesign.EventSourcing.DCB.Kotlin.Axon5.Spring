@@ -116,9 +116,16 @@ class AxonGatewaysMock(
     // ---- Query ----
 
     /** Stubs the [QueryGateway] to return [result] when the given [query] is dispatched. */
-    inline fun <reified R, reified Q : Any> assumeQueryReturns(query: Q, result: R) {
+    inline fun <reified R : Any, reified Q : Any> assumeQueryReturns(query: Q, result: R) {
         Mockito.doReturn(CompletableFuture.completedFuture(result))
             .`when`(queryGateway).query(eq(query), eq(R::class.java))
+    }
+
+    /** Stubs the [QueryGateway] to return `null` when the given [query] is dispatched. */
+    @Suppress("UNCHECKED_CAST")
+    fun <Q : Any> assumeQueryReturnsNull(query: Q) {
+        Mockito.doReturn(CompletableFuture.completedFuture(null))
+            .`when`(queryGateway).query(eq(query), any(Class::class.java) as Class<Any>)
     }
 
     // ---- Clock ----

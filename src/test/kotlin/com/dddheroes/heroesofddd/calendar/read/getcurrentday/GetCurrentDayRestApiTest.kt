@@ -44,7 +44,7 @@ internal class GetCurrentDayRestApiTest @Autowired constructor(val gateways: Axo
     @Test
     fun `returns 404 when no day started`() {
         val query = GetCurrentDay(gameId)
-        gateways.assumeQueryReturns<CurrentDayReadModel?, GetCurrentDay>(query, null)
+        gateways.assumeQueryReturnsNull(query)
 
         Given {
             pathParam("gameId", gameId.raw)

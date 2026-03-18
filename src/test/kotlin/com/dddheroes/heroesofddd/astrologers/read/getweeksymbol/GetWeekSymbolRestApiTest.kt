@@ -46,7 +46,7 @@ internal class GetWeekSymbolRestApiTest @Autowired constructor(val gateways: Axo
     @Test
     fun `returns 404 when no symbol for given week`() {
         val query = GetWeekSymbol(gameId, month = 1, week = 3)
-        gateways.assumeQueryReturns<WeekSymbolReadModel?, GetWeekSymbol>(query, null)
+        gateways.assumeQueryReturnsNull(query)
 
         Given {
             pathParam("gameId", gameId.raw)
