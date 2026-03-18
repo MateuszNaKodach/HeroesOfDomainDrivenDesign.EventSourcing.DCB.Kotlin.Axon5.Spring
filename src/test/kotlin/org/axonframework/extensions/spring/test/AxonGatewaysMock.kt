@@ -116,7 +116,7 @@ class AxonGatewaysMock(
     // ---- Query ----
 
     /** Stubs the [QueryGateway] to return [result] when the given [query] is dispatched. */
-    inline fun <reified R : Any, reified Q : Any> assumeQueryReturns(query: Q, result: R) {
+    inline fun <reified R : Any, reified Q : Any> assumeQueryReturns(query: Q, result: R?) {
         Mockito.doReturn(CompletableFuture.completedFuture(result))
             .`when`(queryGateway).query(eq(query), eq(R::class.java))
     }
