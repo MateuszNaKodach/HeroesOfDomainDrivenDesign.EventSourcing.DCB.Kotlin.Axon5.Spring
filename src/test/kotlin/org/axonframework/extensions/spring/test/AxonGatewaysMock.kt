@@ -122,10 +122,9 @@ class AxonGatewaysMock(
     }
 
     /** Stubs the [QueryGateway] to return `null` when the given [query] is dispatched. */
-    @Suppress("UNCHECKED_CAST")
     fun <Q : Any> assumeQueryReturnsNull(query: Q) {
         Mockito.doReturn(CompletableFuture.completedFuture(null))
-            .`when`(queryGateway).query(eq(query), any(Class::class.java) as Class<Any>)
+            .`when`(queryGateway).query(eq(query), any(Class::class.java))
     }
 
     // ---- Clock ----
