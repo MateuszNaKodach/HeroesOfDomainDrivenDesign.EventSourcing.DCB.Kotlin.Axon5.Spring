@@ -1,0 +1,41 @@
+@serverPort = 3775
+
+## --- Dead Letter Queue Retries ---
+
+### Retry 1 dead letter (default) for GetAllDwellings projector
+POST http://localhost:{{serverPort}}/maintenance/event-processors/ReadModel_GetAllDwellings/components/dwellingReadModelProjector/dead-letters/retries
+
+### Retry up to 10 dead letters for GetAllDwellings projector
+POST http://localhost:{{serverPort}}/maintenance/event-processors/ReadModel_GetAllDwellings/components/dwellingReadModelProjector/dead-letters/retries?limit=10
+
+### Retry all dead letters for GetAllDwellings projector
+POST http://localhost:{{serverPort}}/maintenance/event-processors/ReadModel_GetAllDwellings/components/dwellingReadModelProjector/dead-letters/retries?limit=0
+
+### Retry dead letters for GetCurrentDay projector
+POST http://localhost:{{serverPort}}/maintenance/event-processors/ReadModel_GetCurrentDay/components/currentDayReadModelProjector/dead-letters/retries
+
+### Retry dead letters for GetWeekSymbol projector
+POST http://localhost:{{serverPort}}/maintenance/event-processors/ReadModel_GetWeekSymbol/components/weekSymbolReadModelProjector/dead-letters/retries
+
+### Retry dead letters for GetArmyCreatures projector
+POST http://localhost:{{serverPort}}/maintenance/event-processors/ReadModel_GetArmyCreatures/components/creatureStackReadModelProjector/dead-letters/retries
+
+### Retry dead letters for WhenWeekStartedThenProclaimWeekSymbol automation
+POST http://localhost:{{serverPort}}/maintenance/event-processors/Automation_WhenWeekStartedThenProclaimWeekSymbol/components/whenWeekStartedThenProclaimWeekSymbolProcessor/dead-letters/retries
+
+### Retry dead letters for WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreatures automation
+POST http://localhost:{{serverPort}}/maintenance/event-processors/Automation_WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreatures/components/whenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreaturesProcessor/dead-letters/retries
+
+## --- Reset Event Processors ---
+
+### Reset GetAllDwellings processor
+POST http://localhost:{{serverPort}}/maintenance/event-processors/ReadModel_GetAllDwellings/resets
+
+### Reset GetCurrentDay processor
+POST http://localhost:{{serverPort}}/maintenance/event-processors/ReadModel_GetCurrentDay/resets
+
+### Reset GetWeekSymbol processor
+POST http://localhost:{{serverPort}}/maintenance/event-processors/ReadModel_GetWeekSymbol/resets
+
+### Reset GetArmyCreatures processor
+POST http://localhost:{{serverPort}}/maintenance/event-processors/ReadModel_GetArmyCreatures/resets
