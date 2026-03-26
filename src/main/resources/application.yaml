@@ -54,6 +54,31 @@ axon:
   axonserver:
     context: default
     enabled: ${AXON_AXONSERVER_ENABLED:false}
+  eventhandling:
+    processors:
+      # Read Slices
+      ReadModel_GetAllDwellings:
+        dlq:
+          enabled: true
+      ReadModel_GetCurrentDay:
+        dlq:
+          enabled: false
+      ReadModel_GetWeekSymbol:
+        dlq:
+          enabled: false
+      ReadModel_GetArmyCreatures:
+        dlq:
+          enabled: true
+      # Automation Slices
+      Automation_WhenWeekStartedThenProclaimWeekSymbol:
+        dlq:
+          enabled: false
+      Automation_WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreatures:
+        dlq:
+          enabled: false
+
+maintenance:
+  enabled: true
 
 # Feature flags - allows you to enable/disable certain slices
 
