@@ -11,6 +11,7 @@ import org.axonframework.messaging.commandhandling.gateway.CommandDispatcher
 import org.axonframework.messaging.core.annotation.MetadataValue
 import org.axonframework.messaging.core.annotation.Namespace
 import org.axonframework.messaging.eventhandling.annotation.EventHandler
+import org.axonframework.messaging.eventhandling.replay.annotation.DisallowReplay
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 import java.util.concurrent.CompletableFuture
@@ -23,6 +24,7 @@ private const val FIRST_DAY_OF_THE_WEEK = 1
 )
 @Namespace("Automation_WhenWeekStartedThenProclaimWeekSymbol")
 @Component
+@DisallowReplay
 private class WhenWeekStartedThenProclaimWeekSymbolProcessor(
     private val weekSymbolCalculator: WeekSymbolCalculator
 ) {

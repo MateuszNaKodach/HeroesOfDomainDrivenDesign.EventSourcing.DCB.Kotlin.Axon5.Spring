@@ -19,6 +19,7 @@ import org.axonframework.messaging.core.annotation.Namespace
 import org.axonframework.messaging.core.annotation.SequencingPolicy
 import org.axonframework.messaging.core.sequencing.MetadataSequencingPolicy
 import org.axonframework.messaging.eventhandling.annotation.EventHandler
+import org.axonframework.messaging.eventhandling.replay.annotation.DisallowReplay
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Component
@@ -53,6 +54,7 @@ private interface BuiltDwellingReadModelRepository : JpaRepository<BuiltDwelling
 @Namespace("Automation_WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreatures")
 @Component
 @SequencingPolicy(type = MetadataSequencingPolicy::class, parameters = ["gameId"])
+@DisallowReplay
 private class WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreaturesProcessor(
     private val repository: BuiltDwellingReadModelRepository
 ) {
