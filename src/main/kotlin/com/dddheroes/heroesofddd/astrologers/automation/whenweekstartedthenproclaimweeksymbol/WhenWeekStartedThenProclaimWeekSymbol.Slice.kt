@@ -9,6 +9,7 @@ import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.PlayerId
 import org.axonframework.messaging.commandhandling.gateway.CommandDispatcher
 import org.axonframework.messaging.core.annotation.MetadataValue
+import org.axonframework.messaging.core.annotation.Namespace
 import org.axonframework.messaging.eventhandling.annotation.EventHandler
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
@@ -20,6 +21,7 @@ private const val FIRST_DAY_OF_THE_WEEK = 1
     prefix = "slices.astrologers.automation",
     name = ["whenweekstartedthenproclaimweeksymbol.enabled"]
 )
+@Namespace("Automation_WhenWeekStartedThenProclaimWeekSymbol")
 @Component
 private class WhenWeekStartedThenProclaimWeekSymbolProcessor(
     private val weekSymbolCalculator: WeekSymbolCalculator

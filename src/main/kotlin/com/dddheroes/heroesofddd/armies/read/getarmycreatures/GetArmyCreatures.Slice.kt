@@ -7,6 +7,7 @@ import com.dddheroes.heroesofddd.shared.domain.identifiers.ArmyId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
 import jakarta.persistence.*
 import org.axonframework.messaging.core.annotation.MetadataValue
+import org.axonframework.messaging.core.annotation.Namespace
 import org.axonframework.messaging.core.annotation.SequencingPolicy
 import org.axonframework.messaging.core.sequencing.MetadataSequencingPolicy
 import org.axonframework.messaging.eventhandling.annotation.EventHandler
@@ -61,6 +62,7 @@ private interface CreatureStackReadModelRepository : JpaRepository<CreatureStack
 }
 
 @ConditionalOnProperty(prefix = "slices.armies", name = ["read.getarmycreatures.enabled"])
+@Namespace("ReadModel_GetArmyCreatures")
 @Component
 @SequencingPolicy(type = MetadataSequencingPolicy::class, parameters = ["gameId"])
 private class CreatureStackReadModelProjector(

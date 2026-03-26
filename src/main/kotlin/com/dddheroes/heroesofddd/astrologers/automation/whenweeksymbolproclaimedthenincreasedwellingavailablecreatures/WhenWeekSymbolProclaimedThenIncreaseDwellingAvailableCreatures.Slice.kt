@@ -15,6 +15,7 @@ import jakarta.persistence.Index
 import jakarta.persistence.Table
 import org.axonframework.messaging.commandhandling.gateway.CommandDispatcher
 import org.axonframework.messaging.core.annotation.MetadataValue
+import org.axonframework.messaging.core.annotation.Namespace
 import org.axonframework.messaging.core.annotation.SequencingPolicy
 import org.axonframework.messaging.core.sequencing.MetadataSequencingPolicy
 import org.axonframework.messaging.eventhandling.annotation.EventHandler
@@ -49,6 +50,7 @@ private interface BuiltDwellingReadModelRepository : JpaRepository<BuiltDwelling
     prefix = "slices.astrologers.automation",
     name = ["whenweeksymbolproclaimedthenincreasedwellingavailablecreatures.enabled"]
 )
+@Namespace("Automation_WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreatures")
 @Component
 @SequencingPolicy(type = MetadataSequencingPolicy::class, parameters = ["gameId"])
 private class WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreaturesProcessor(

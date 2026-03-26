@@ -8,6 +8,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.IdClass
 import jakarta.persistence.Table
 import org.axonframework.messaging.core.annotation.MetadataValue
+import org.axonframework.messaging.core.annotation.Namespace
 import org.axonframework.messaging.core.annotation.SequencingPolicy
 import org.axonframework.messaging.core.sequencing.MetadataSequencingPolicy
 import org.axonframework.messaging.eventhandling.annotation.EventHandler
@@ -53,6 +54,7 @@ data class WeekSymbolReadModel(
 private interface WeekSymbolReadModelRepository : JpaRepository<WeekSymbolReadModel, WeekSymbolReadModelId>
 
 @ConditionalOnProperty(prefix = "slices.astrologers", name = ["read.getweeksymbol.enabled"])
+@Namespace("ReadModel_GetWeekSymbol")
 @Component
 @SequencingPolicy(type = MetadataSequencingPolicy::class, parameters = ["gameId"])
 private class WeekSymbolReadModelProjector(

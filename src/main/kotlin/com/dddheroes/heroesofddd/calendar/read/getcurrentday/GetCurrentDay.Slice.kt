@@ -8,6 +8,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import org.axonframework.messaging.core.annotation.MetadataValue
+import org.axonframework.messaging.core.annotation.Namespace
 import org.axonframework.messaging.core.annotation.SequencingPolicy
 import org.axonframework.messaging.core.sequencing.MetadataSequencingPolicy
 import org.axonframework.messaging.eventhandling.annotation.EventHandler
@@ -45,6 +46,7 @@ data class CurrentDayReadModel(
 private interface CurrentDayReadModelRepository : JpaRepository<CurrentDayReadModel, String>
 
 @ConditionalOnProperty(prefix = "slices.calendar", name = ["read.getcurrentday.enabled"])
+@Namespace("ReadModel_GetCurrentDay")
 @Component
 @SequencingPolicy(type = MetadataSequencingPolicy::class, parameters = ["gameId"])
 private class CurrentDayReadModelProjector(
