@@ -12,13 +12,18 @@ import org.axonframework.messaging.core.annotation.MetadataValue
 import org.axonframework.messaging.core.annotation.Namespace
 import org.axonframework.messaging.core.annotation.SequencingPolicy
 import org.axonframework.messaging.core.sequencing.MetadataSequencingPolicy
+import org.axonframework.messaging.deadletter.DeadLetter
+import org.axonframework.messaging.eventhandling.EventMessage
 import org.axonframework.messaging.eventhandling.annotation.EventHandler
+import org.axonframework.messaging.eventhandling.processing.streaming.token.TrackingToken
+import org.axonframework.messaging.eventhandling.replay.ReplayStatus
 import org.axonframework.messaging.eventhandling.replay.annotation.ResetHandler
 import org.axonframework.messaging.queryhandling.annotation.Query
 import org.axonframework.messaging.queryhandling.annotation.QueryHandler
 import org.axonframework.messaging.queryhandling.gateway.QueryGateway
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
+import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.repository.findByIdOrNull
@@ -78,13 +83,33 @@ private class DwellingReadModelProjector(
     }
 
     @EventHandler
-    fun on(event: AvailableCreaturesChanged) {
+    fun on(
+        event: AvailableCreaturesChanged,
+        @MetadataValue(GameMetadata.GAME_ID_KEY) gameId: String,
+        replayStatus: ReplayStatus,
+        trackingToken: TrackingToken?,
+        deadLetter: DeadLetter<EventMessage>?
+    ) {
+        // TODO: remove — temporary DLQ/parameter injection testing
+        log.info(
+            "AvailableCreaturesChanged for gameId={}, replayStatus={}, trackingToken={}, deadLetter={}",
+            gameId, replayStatus, trackingToken, deadLetter?.let {
+                "DeadLetter(cause=${it.cause().orElse(null)}, enqueuedAt=${it.enqueuedAt()}, lastTouched=${it.lastTouched()}, diagnostics=${it.diagnostics()})"
+            }
+        )
+        if (gameId.startsWith("fail-")) {
+            throw RuntimeException("DLQ test: simulated failure for gameId=$gameId")
+        }
         val dwellingId = event.dwellingId.raw
         val state = repository.findByIdOrNull(dwellingId)
         if (state != null) {
             val updatedState = state.copy(availableCreatures = event.changedTo.raw)
             repository.save(updatedState)
         }
+    }
+
+    companion object {
+        private val log = LoggerFactory.getLogger(DwellingReadModelProjector::class.java)
     }
 
     @ResetHandler
