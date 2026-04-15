@@ -16,6 +16,7 @@ import org.axonframework.test.fixture.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.TestPropertySource
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 @TestPropertySource(properties = ["slices.calendar.read.getcurrentday.enabled=true"])
@@ -25,8 +26,10 @@ internal class GetCurrentDaySpringSliceTest @Autowired constructor(
 ) {
 
     private val gameId = GameId.random()
+    private val playerId: String = UUID.randomUUID().toString()
     private val calendarId = CalendarId(gameId.raw)
     private val gameMetadata = AxonMetadata.with("gameId", gameId.raw)
+        .and("playerId", playerId)
 
     @Test
     fun `given no day started, then no result`() {

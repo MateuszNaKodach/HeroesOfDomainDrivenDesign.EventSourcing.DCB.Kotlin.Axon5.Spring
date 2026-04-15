@@ -15,6 +15,7 @@ import org.axonframework.test.fixture.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.TestPropertySource
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 @TestPropertySource(properties = ["slices.armies.read.getarmycreatures.enabled=true"])
@@ -24,8 +25,10 @@ internal class GetArmyCreaturesSpringSliceTest @Autowired constructor(
 ) {
 
     private val gameId = GameId.random()
+    private val playerId: String = UUID.randomUUID().toString()
     private val armyId = ArmyId("hero-catherine-army")
     private val gameMetadata = AxonMetadata.with("gameId", gameId.raw)
+        .and("playerId", playerId)
 
     @Test
     fun `given no events, when get army creatures, then empty stacks`() {

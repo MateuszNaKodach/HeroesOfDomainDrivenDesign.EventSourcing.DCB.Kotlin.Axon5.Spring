@@ -13,6 +13,7 @@ import org.axonframework.test.fixture.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.TestPropertySource
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 @TestPropertySource(properties = ["slices.astrologers.read.getweeksymbol.enabled=true"])
@@ -22,8 +23,10 @@ internal class GetWeekSymbolSpringSliceTest @Autowired constructor(
 ) {
 
     private val gameId = GameId.random()
+    private val playerId: String = UUID.randomUUID().toString()
     private val astrologersId = AstrologersId(gameId.raw)
     private val gameMetadata = AxonMetadata.with("gameId", gameId.raw)
+        .and("playerId", playerId)
 
     @Test
     fun `given no proclamation for queried week, then no result`() {

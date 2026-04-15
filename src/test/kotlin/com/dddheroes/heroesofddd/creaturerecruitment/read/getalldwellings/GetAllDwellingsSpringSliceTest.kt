@@ -17,6 +17,7 @@ import org.axonframework.test.fixture.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.TestPropertySource
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 @TestPropertySource(properties = ["slices.creaturerecruitment.read.getalldwellings.enabled=true"])
@@ -26,7 +27,9 @@ internal class GetAllDwellingsSpringSliceTest @Autowired constructor(
 ) {
 
     private val gameId = GameId.random()
+    private val playerId: String = UUID.randomUUID().toString()
     private val gameMetadata = AxonMetadata.with("gameId", gameId.raw)
+        .and("playerId", playerId)
     private val phoenixCost = Resources.of(ResourceType.GOLD to 2000, ResourceType.MERCURY to 1)
     private val phoenixCostRaw = mapOf(
         "GOLD" to 2000, "WOOD" to 0, "ORE" to 0,
