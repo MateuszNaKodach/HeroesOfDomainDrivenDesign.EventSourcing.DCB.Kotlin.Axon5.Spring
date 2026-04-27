@@ -10,8 +10,8 @@ fun springTestFixture(
 
 fun axonTestFixture(configurer: ApplicationConfigurer): AxonTestFixture =
     AxonTestFixture.with(configurer) { customization ->
-    if (System.getenv("AXON_AXONSERVER_ENABLED")?.toBoolean() != true) {
-        customization.disableAxonServer()
+    if (System.getenv("AXON_AXONSERVER_ENABLED")?.toBoolean() == true) {
+        customization.asIntegrationTest()
     } else {
         customization
     }

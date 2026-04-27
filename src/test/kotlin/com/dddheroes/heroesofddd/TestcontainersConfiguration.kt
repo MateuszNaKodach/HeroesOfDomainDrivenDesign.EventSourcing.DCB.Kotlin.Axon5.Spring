@@ -1,6 +1,6 @@
 package com.dddheroes.heroesofddd
 
-import org.axonframework.test.server.AxonServerContainer
+import io.axoniq.framework.testcontainer.AxonServerContainer
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
@@ -12,7 +12,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer
 class TestcontainersConfiguration {
 
     companion object {
-        private val axonServer: AxonServerContainer = AxonServerContainer("axoniq/axonserver:2025.2.4")
+        private val axonServer: AxonServerContainer = AxonServerContainer("axoniq/axonserver:2025.2.7")
             .withDevMode(true)
             .withDcbContext(true)
             .withReuse(true)
