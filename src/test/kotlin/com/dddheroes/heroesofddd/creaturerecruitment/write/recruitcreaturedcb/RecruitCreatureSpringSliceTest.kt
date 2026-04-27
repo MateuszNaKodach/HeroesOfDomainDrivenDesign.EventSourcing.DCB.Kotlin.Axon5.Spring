@@ -1,4 +1,4 @@
-package com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature
+package com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreaturedcb
 
 import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.armies.events.CreatureAddedToArmy
@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.TestPropertySource
 import java.util.*
 
-@TestPropertySource(properties = ["slices.creaturerecruitment.write.recruitcreature.enabled=true"])
+@TestPropertySource(properties = ["slices.creaturerecruitment.write.recruitcreaturedcb.enabled=true"])
 @HeroesAxonSpringBootTest
 internal class RecruitCreatureSpringSliceTest @Autowired constructor(
     private val sliceUnderTest: AxonTestFixture

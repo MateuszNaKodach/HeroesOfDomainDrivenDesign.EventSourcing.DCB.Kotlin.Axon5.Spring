@@ -1,4 +1,4 @@
-package com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature
+package com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreaturedcb
 
 import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.armies.events.CreatureAddedToArmy
@@ -204,7 +204,7 @@ private class RecruitCreatureCommandHandler {
     }
 }
 
-@ConditionalOnProperty(prefix = "slices.creaturerecruitment", name = ["write.recruitcreature.enabled"])
+@ConditionalOnProperty(prefix = "slices.creaturerecruitment", name = ["write.recruitcreaturedcb.enabled"])
 @Configuration
 internal class RecruitCreatureWriteSliceConfig {
 
@@ -228,7 +228,7 @@ internal class RecruitCreatureWriteSliceConfig {
 ////////// Presentation
 ///////////////////////////////////////////
 
-@ConditionalOnProperty(prefix = "slices.creaturerecruitment", name = ["write.recruitcreature.enabled"])
+@ConditionalOnProperty(prefix = "slices.creaturerecruitment", name = ["write.recruitcreaturedcb.enabled"])
 @RestController
 @RequestMapping("games/{gameId}")
 private class RecruitCreatureRestApi(private val commandGateway: CommandGateway) {

@@ -1,4 +1,4 @@
-package com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature
+package com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreaturedcb
 
 import com.dddheroes.heroesofddd.armies.events.CreatureAddedToArmy
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged

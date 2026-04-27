@@ -21,9 +21,9 @@
       "description": "Enable/disable the IncreaseAvailableCreatures vertical slice in the Creature Recruitment bounded context."
     },
     {
-      "name": "slices.creaturerecruitment.write.recruitcreature.enabled",
+      "name": "slices.creaturerecruitment.write.recruitcreaturedcb.enabled",
       "type": "java.lang.Boolean",
-      "description": "Enable/disable the RecruitCreature vertical slice in the Creature Recruitment bounded context."
+      "description": "Enable/disable the RecruitCreature (DCB) vertical slice in the Creature Recruitment bounded context."
     },
     {
       "name": "slices.astrologers.write.proclaimweeksymbol.enabled",
