@@ -1,3 +1,5 @@
 axon:
   axonserver:
     enabled: ${AXON_AXONSERVER_ENABLED:true}
+  postgresql:
+    enabled: false

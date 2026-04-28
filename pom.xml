@@ -34,6 +34,7 @@
         <spring-ai.version>2.0.0-M2</spring-ai.version>
         <spring-boot.version>4.0.2</spring-boot.version>
         <springdoc-openapi.version>3.0.2</springdoc-openapi.version>
+        <axon.test.eventstore>axonserver</axon.test.eventstore>
     </properties>
 
     <repositories>
@@ -71,6 +72,11 @@
         <dependency>
             <groupId>io.axoniq.framework</groupId>
             <artifactId>axon-server-connector</artifactId>
+            <version>${axon.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.axoniq.framework</groupId>
+            <artifactId>axoniq-postgresql</artifactId>
             <version>${axon.version}</version>
         </dependency>
         <dependency>
@@ -243,6 +249,15 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <axon.test.eventstore>${axon.test.eventstore}</axon.test.eventstore>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
                 <configuration>
@@ -270,5 +285,21 @@
             </plugin>
         </plugins>
     </build>
+
+
+    <profiles>
+        <profile>
+            <id>test-axonserver</id>
+            <properties>
+                <axon.test.eventstore>axonserver</axon.test.eventstore>
+            </properties>
+        </profile>
+        <profile>
+            <id>test-postgres</id>
+            <properties>
+                <axon.test.eventstore>postgres</axon.test.eventstore>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>

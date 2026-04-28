@@ -2,6 +2,7 @@ spring:
   datasource:
     hikari:
       maximum-pool-size: 5
+      auto-commit: false
 
 axon:
   axonserver:

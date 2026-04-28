@@ -10,8 +10,7 @@ import kotlin.reflect.KClass
 
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
-@ActiveProfiles("test", "testcontainers", "axonserver")
-// @ActiveProfiles("test", "axonserver") // uncomment if you don't want to use testcontainers
+@ActiveProfiles(resolver = EventStoreProfilesResolver::class)
 @Import(TestcontainersConfiguration::class)
 @AxonSpringBootTest
 annotation class HeroesAxonSpringBootTest(

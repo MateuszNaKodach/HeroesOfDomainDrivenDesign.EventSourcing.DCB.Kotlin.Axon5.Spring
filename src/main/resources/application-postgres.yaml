@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    hikari:
+      auto-commit: false
+axon:
+  axonserver:
+    enabled: false
+  postgresql:
+    enabled: true
