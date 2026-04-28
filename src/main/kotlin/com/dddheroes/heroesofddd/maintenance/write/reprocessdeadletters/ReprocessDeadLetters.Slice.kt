@@ -1,8 +1,8 @@
 package com.dddheroes.heroesofddd.maintenance.write.reprocessdeadletters
 
 import com.dddheroes.sdk.restapi.ErrorResponse
+import io.axoniq.framework.messaging.deadletter.SequencedDeadLetterProcessor
 import org.axonframework.common.configuration.AxonConfiguration
-import org.axonframework.messaging.deadletter.SequencedDeadLetterProcessor
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -67,7 +67,7 @@ internal class ReprocessDeadLettersRestApi(
         val moduleConfig = axonConfiguration.getModuleConfiguration(moduleName).orElse(null)
             ?: return DlProcessorResult.ProcessorNotFound(processorName)
 
-        val componentInModuleName = "EventHandlingComponent[$moduleName][$componentName]"
+        val componentInModuleName = "EventHandlingComponent[$processorName][$componentName]"
         val dlProcessor = moduleConfig.getOptionalComponent(
             SequencedDeadLetterProcessor::class.java,
             componentInModuleName

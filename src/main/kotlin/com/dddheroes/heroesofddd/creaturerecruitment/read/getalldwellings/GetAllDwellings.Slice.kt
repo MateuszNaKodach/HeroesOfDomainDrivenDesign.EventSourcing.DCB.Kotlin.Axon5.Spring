@@ -4,6 +4,7 @@ import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesCh
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
+import io.axoniq.framework.messaging.deadletter.DeadLetter
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
@@ -12,7 +13,6 @@ import org.axonframework.messaging.core.annotation.MetadataValue
 import org.axonframework.messaging.core.annotation.Namespace
 import org.axonframework.messaging.core.annotation.SequencingPolicy
 import org.axonframework.messaging.core.sequencing.MetadataSequencingPolicy
-import org.axonframework.messaging.deadletter.DeadLetter
 import org.axonframework.messaging.eventhandling.EventMessage
 import org.axonframework.messaging.eventhandling.annotation.EventHandler
 import org.axonframework.messaging.eventhandling.processing.streaming.token.TrackingToken
@@ -90,16 +90,17 @@ private class DwellingReadModelProjector(
         trackingToken: TrackingToken?,
         deadLetter: DeadLetter<EventMessage>?
     ) {
-        // TODO: remove — temporary DLQ/parameter injection testing
+        // region DLQ experiment
         log.info(
             "AvailableCreaturesChanged for gameId={}, replayStatus={}, trackingToken={}, deadLetter={}",
             gameId, replayStatus, trackingToken, deadLetter?.let {
                 "DeadLetter(cause=${it.cause().orElse(null)}, enqueuedAt=${it.enqueuedAt()}, lastTouched=${it.lastTouched()}, diagnostics=${it.diagnostics()})"
             }
         )
-        if (gameId.startsWith("fail-")) {
+        if (gameId.startsWith("fail-")) { // comment out to process successfuly
             throw RuntimeException("DLQ test: simulated failure for gameId=$gameId")
         }
+        // endregion
         val dwellingId = event.dwellingId.raw
         val state = repository.findByIdOrNull(dwellingId)
         if (state != null) {
