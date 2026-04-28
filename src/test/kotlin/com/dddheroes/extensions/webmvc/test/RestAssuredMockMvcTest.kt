@@ -6,6 +6,7 @@ import org.springframework.beans.factory.getBean
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
 import org.springframework.context.annotation.Import
 import org.springframework.core.annotation.AliasFor
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestContext
 import org.springframework.test.context.TestExecutionListener
 import org.springframework.test.context.TestExecutionListeners
@@ -55,6 +56,7 @@ class RestAssuredMockMvcSetupListener : TestExecutionListener {
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 @WebMvcTest
+@ActiveProfiles("test")
 @Import(SecurityConfiguration::class) // project specific
 @TestExecutionListeners(
     listeners = [RestAssuredMockMvcSetupListener::class],

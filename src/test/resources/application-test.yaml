@@ -11,6 +11,9 @@ axon:
 
 # Feature flags - allows you to enable/disable certain slices
 
+maintenance:
+  enabled: false
+
 slices:
   creaturerecruitment.write.builddwelling:
     enabled: false
