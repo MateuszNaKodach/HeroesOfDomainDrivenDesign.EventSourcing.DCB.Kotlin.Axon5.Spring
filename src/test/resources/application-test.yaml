@@ -15,6 +15,8 @@ slices:
     enabled: false
   creaturerecruitment.write.increaseavailablecreatures:
     enabled: false
+  creaturerecruitment.write.recruitcreature:
+    enabled: false
   creaturerecruitment.write.recruitcreaturedcb:
     enabled: false
   creaturerecruitment.read.getalldwellings:
