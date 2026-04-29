@@ -1,6 +1,7 @@
 package com.dddheroes.heroesofddd
 
 import org.axonframework.extension.springboot.test.AxonSpringBootTest
+import org.junit.jupiter.api.Tag
 import org.springframework.boot.test.context.SpringBootTest.UseMainMethod
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment
 import org.springframework.context.annotation.Import
@@ -10,6 +11,7 @@ import kotlin.reflect.KClass
 
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
+@Tag("integration")
 @ActiveProfiles(resolver = EventStoreProfilesResolver::class)
 @Import(TestcontainersConfiguration::class)
 @AxonSpringBootTest
