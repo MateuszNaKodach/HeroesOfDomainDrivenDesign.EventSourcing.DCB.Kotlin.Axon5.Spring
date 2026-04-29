@@ -107,6 +107,8 @@ slices:
     enabled: true
   resourcespool.write.depositresources:
     enabled: true
+  resourcespool.write.withdrawresources:
+    enabled: true
   armies.write.addcreaturetoarmy:
     enabled: true
   armies.write.removecreaturefromarmy:
