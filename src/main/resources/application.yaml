@@ -105,6 +105,8 @@ slices:
     enabled: true
   calendar.write.finishday:
     enabled: true
+  resourcespool.write.depositresources:
+    enabled: true
   armies.write.addcreaturetoarmy:
     enabled: true
   armies.write.removecreaturefromarmy:

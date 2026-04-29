@@ -56,6 +56,11 @@
       "description": "Enable/disable the FinishDay write slice in the Calendar bounded context."
     },
     {
+      "name": "slices.resourcespool.write.depositresources.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable/disable the DepositResources write slice in the ResourcesPool bounded context."
+    },
+    {
       "name": "slices.armies.write.addcreaturetoarmy.enabled",
       "type": "java.lang.Boolean",
       "description": "Enable/disable the AddCreatureToArmy write slice in the Armies bounded context."
