@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.2</version>
+        <version>4.0.6</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.dddheroes</groupId>
@@ -27,14 +27,15 @@
         <url/>
     </scm>
     <properties>
-        <axon.version>5.1.0-SNAPSHOT</axon.version>
-        <axon-workflow.version>1.0.0-SNAPSHOT</axon-workflow.version>
+        <axon.version>5.1.0</axon.version>
+        <axon-workflow.version>0.1.0</axon-workflow.version>
         <java.version>21</java.version>
-        <kotlin.version>2.2.21</kotlin.version>
-        <spring-ai.version>2.0.0-M2</spring-ai.version>
-        <spring-boot.version>4.0.2</spring-boot.version>
+        <kotlin.version>2.3.21</kotlin.version>
+        <spring-ai.version>2.0.0-M5</spring-ai.version>
+        <spring-boot.version>4.0.6</spring-boot.version>
         <springdoc-openapi.version>3.0.2</springdoc-openapi.version>
         <axon.test.eventstore>axonserver</axon.test.eventstore>
+        <rest-assured-spring-kotlin.version>6.0.0</rest-assured-spring-kotlin.version>
     </properties>
 
     <repositories>
@@ -82,7 +83,7 @@
         <dependency>
             <groupId>io.axoniq.framework</groupId>
             <artifactId>axoniq-data-protection</artifactId>
-            <version>5.0.0-SNAPSHOT</version>
+            <version>${axon.version}</version>
         </dependency>
         <dependency>
             <groupId>io.axoniq.framework</groupId>
@@ -199,7 +200,7 @@
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>spring-mock-mvc-kotlin-extensions</artifactId>
-            <version>6.0.0</version>
+            <version>${rest-assured-spring-kotlin.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
