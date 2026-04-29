@@ -114,7 +114,7 @@ Create `FeatureName.Slice.kt` with three sections (adapt to project conventions)
 ////////// Domain
 ///////////////////////////////////////////
 // 1. Command data class (public)
-// 2. State data class (private) + initialState
+// 2. State data class (private) + initialState top-level private val
 // 3. decide(command, state): List<Event>  -- pure function
 // 4. evolve(state, event): State          -- pure function
 
@@ -136,7 +136,12 @@ Key rules for each component:
 **Command**: No `@TargetAggregateIdentifier`. Plain data class. Public. Add `@get:JvmName` on properties whose names
 match their type pattern. Annotate with `@Command(namespace = "<BoundedContext>", name = "<CommandName>", version = "1.0.0")` — import from `org.axonframework.messaging.commandhandling.annotation.Command`.
 
-**State**: Private. Immutable data class. Contains ONLY fields needed by `decide()`. Companion `initialState` val.
+**State**: Private. Immutable data class. Contains ONLY fields needed by `decide()`. `initialState` is a **top-level private property** (NOT a companion object) placed immediately after the `State` class:
+```kotlin
+private data class State(val foo: Foo)
+
+private val initialState = State(foo = Foo.default())
+```
 
 **decide()**: Private standalone function. Takes `(command, state)`, returns event(s). No side effects. Enforce rules
 here: throw `IllegalStateException` for violations, return `emptyList()` for idempotent no-ops.
