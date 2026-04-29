@@ -1,4 +1,4 @@
-package com.dddheroes.heroesofddd.armies.write.addcreaturetoarmy
+package com.dddheroes.heroesofddd.armies.write.removecreaturefromarmy
 
 import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.armies.events.ArmyEvent
@@ -35,10 +35,8 @@ import java.util.concurrent.CompletableFuture
 ////////// Domain
 ///////////////////////////////////////////
 
-private const val MAX_CREATURE_STACKS = 7
-
-@Command(namespace = "Armies", name = "AddCreatureToArmy", version = "1.0.0")
-data class AddCreatureToArmy(
+@Command(namespace = "Armies", name = "RemoveCreatureFromArmy", version = "1.0.0")
+data class RemoveCreatureFromArmy(
     @get:JvmName("getArmyId")
     val armyId: ArmyId,
     @get:JvmName("getCreatureId")
@@ -48,20 +46,18 @@ data class AddCreatureToArmy(
 )
 
 private data class State(val creatureStacks: Map<CreatureId, Quantity>) {
-    val distinctCreatureTypes: Int get() = creatureStacks.size
-
-    fun hasCreature(creatureId: CreatureId): Boolean = creatureStacks.containsKey(creatureId)
+    fun quantityOf(creatureId: CreatureId): Quantity = creatureStacks[creatureId] ?: Quantity.zero()
 }
 
 private val initialState = State(creatureStacks = emptyMap())
 
-private fun decide(command: AddCreatureToArmy, state: State): List<HeroesEvent> {
-    if (!state.hasCreature(command.creatureId) && state.distinctCreatureTypes >= MAX_CREATURE_STACKS) {
-        throw IllegalStateException("Can have max $MAX_CREATURE_STACKS different creature stacks in the army")
+private fun decide(command: RemoveCreatureFromArmy, state: State): List<HeroesEvent> {
+    if (state.quantityOf(command.creatureId) < command.quantity) {
+        throw IllegalStateException("Can remove only present creatures")
     }
 
     return listOf(
-        CreatureAddedToArmy(
+        CreatureRemovedFromArmy(
             armyId = command.armyId,
             creatureId = command.creatureId,
             quantity = command.quantity
@@ -90,29 +86,29 @@ private fun evolve(state: State, event: ArmyEvent): State = when (event) {
 ////////// Application
 ///////////////////////////////////////////
 
-@ConditionalOnProperty(prefix = "slices.armies", name = ["write.addcreaturetoarmy.enabled"])
+@ConditionalOnProperty(prefix = "slices.armies", name = ["write.removecreaturefromarmy.enabled"])
 @EventSourced(tagKey = EventTags.ARMY_ID)
-private class AddCreatureToArmyEventSourcedState private constructor(val state: State) {
+private class RemoveCreatureFromArmyEventSourcedState private constructor(val state: State) {
 
     @EntityCreator
     constructor() : this(initialState)
 
     @EventSourcingHandler
-    fun evolve(event: CreatureAddedToArmy) = AddCreatureToArmyEventSourcedState(evolve(state, event))
+    fun evolve(event: CreatureAddedToArmy) = RemoveCreatureFromArmyEventSourcedState(evolve(state, event))
 
     @EventSourcingHandler
-    fun evolve(event: CreatureRemovedFromArmy) = AddCreatureToArmyEventSourcedState(evolve(state, event))
+    fun evolve(event: CreatureRemovedFromArmy) = RemoveCreatureFromArmyEventSourcedState(evolve(state, event))
 }
 
-@ConditionalOnProperty(prefix = "slices.armies", name = ["write.addcreaturetoarmy.enabled"])
+@ConditionalOnProperty(prefix = "slices.armies", name = ["write.removecreaturefromarmy.enabled"])
 @Component
-private class AddCreatureToArmyCommandHandler {
+private class RemoveCreatureFromArmyCommandHandler {
 
     @CommandHandler
     fun handle(
-        command: AddCreatureToArmy,
+        command: RemoveCreatureFromArmy,
         metadata: AxonMetadata,
-        @InjectEntity(idProperty = EventTags.ARMY_ID) eventSourced: AddCreatureToArmyEventSourcedState,
+        @InjectEntity(idProperty = EventTags.ARMY_ID) eventSourced: RemoveCreatureFromArmyEventSourcedState,
         eventAppender: EventAppender
     ): CommandHandlerResult = resultOf {
         val events = decide(command, eventSourced.state)
@@ -125,23 +121,24 @@ private class AddCreatureToArmyCommandHandler {
 ////////// Presentation
 ///////////////////////////////////////////
 
-@ConditionalOnProperty(prefix = "slices.armies", name = ["write.addcreaturetoarmy.enabled"])
+@ConditionalOnProperty(prefix = "slices.armies", name = ["write.removecreaturefromarmy.enabled"])
 @RestController
 @RequestMapping("games/{gameId}")
-private class AddCreatureToArmyRestApi(private val commandGateway: CommandGateway) {
+private class RemoveCreatureFromArmyRestApi(private val commandGateway: CommandGateway) {
     @JvmRecord
-    data class Body(val creatureId: String, val quantity: Int)
+    data class Body(val quantity: Int)
 
-    @PostMapping("/armies/{armyId}/creatures")
-    fun postAddCreatureToArmy(
+    @DeleteMapping("/armies/{armyId}/creatures/{creatureId}")
+    fun deleteRemoveCreatureFromArmy(
         @RequestHeader(Headers.PLAYER_ID) playerId: String,
         @PathVariable gameId: String,
         @PathVariable armyId: String,
+        @PathVariable creatureId: String,
         @RequestBody requestBody: Body
     ): CompletableFuture<ResponseEntity<Any>> {
-        val command = AddCreatureToArmy(
+        val command = RemoveCreatureFromArmy(
             ArmyId(armyId),
-            CreatureId(requestBody.creatureId),
+            CreatureId(creatureId),
             Quantity(requestBody.quantity)
         )
 
