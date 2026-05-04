@@ -88,8 +88,10 @@ slices:
   creaturerecruitment.write.increaseavailablecreatures:
     enabled: true
   creaturerecruitment.write.recruitcreature:
-    enabled: false
+    enabled: true  # non-DCB; mutually exclusive with recruitcreaturedcb (same command class)
   creaturerecruitment.write.recruitcreaturedcb:
+    enabled: false  # DCB direct-recruit; enable this only when workflow is off
+  creaturerecruitment.write.requestcreaturerecruitment:
     enabled: true
   creaturerecruitment.read.getalldwellings:
     enabled: true
@@ -118,4 +120,8 @@ slices:
   astrologers.read.getweeksymbol:
     enabled: true
   calendar.read.getcurrentday:
+    enabled: true
+
+processes:
+  creaturerecruitmentprocess:
     enabled: true

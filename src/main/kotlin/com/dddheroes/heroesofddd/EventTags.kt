@@ -6,4 +6,5 @@ object EventTags {
     const val RESOURCES_POOL_ID = "resourcesPoolId"
     const val ASTROLOGERS_ID = "astrologersId"
     const val CALENDAR_ID = "calendarId"
+    const val RECRUITMENT_ID = "recruitmentId"
 }
