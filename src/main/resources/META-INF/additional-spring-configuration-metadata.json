@@ -91,11 +91,6 @@
       "description": "Enable/disable the GetCurrentDay read slice in the Calendar bounded context."
     },
     {
-      "name": "slices.creaturerecruitment.write.requestcreaturerecruitment.enabled",
-      "type": "java.lang.Boolean",
-      "description": "Enable/disable the RequestCreatureRecruitment write slice in the Creature Recruitment bounded context."
-    },
-    {
       "name": "processes.creaturerecruitmentprocess.enabled",
       "type": "java.lang.Boolean",
       "description": "Enable/disable the CreatureRecruitmentProcess workflow process."

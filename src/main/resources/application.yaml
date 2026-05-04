@@ -91,8 +91,6 @@ slices:
     enabled: true  # non-DCB; mutually exclusive with recruitcreaturedcb (same command class)
   creaturerecruitment.write.recruitcreaturedcb:
     enabled: false  # DCB direct-recruit; enable this only when workflow is off
-  creaturerecruitment.write.requestcreaturerecruitment:
-    enabled: true
   creaturerecruitment.read.getalldwellings:
     enabled: true
   creaturerecruitment.read.getdwellingbyid:
