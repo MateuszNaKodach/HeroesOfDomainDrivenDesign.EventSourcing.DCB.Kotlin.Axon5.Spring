@@ -50,6 +50,12 @@ cors:
     - "*"
   allow-credentials: true
 
+axoniq:
+  platform:
+    application-name: heroesofddd
+    credentials: ${HEROES_AXON5_PLATFORM_CREDENTIALS:XYZ}
+    dlq-mode: full
+
 axon:
   axonserver:
     context: default
