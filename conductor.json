@@ -2,7 +2,7 @@
   "scripts": {
     "setup": "./mvnw -B -q -DskipTests dependency:go-offline test-compile",
     "run": "./mvnw -B test",
-    "archive": ""
+    "archive": "docker compose down -v --remove-orphans"
   },
   "runScriptMode": "concurrent"
 }
