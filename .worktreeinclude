@@ -1,0 +1,31 @@
+# Files Conductor copies from the repo root into each new workspace.
+# Uses .gitignore syntax. See https://conductor.build/docs/reference/files-to-copy
+
+# --- Env / local config ---
+.env
+.env.*
+!.env.example
+.proophboard/.env.local
+
+# --- IntelliJ IDEA: shareable project files ---
+# Run configs only when stored as project files (tick "Store as project file" in IDE).
+.idea/runConfigurations/
+
+# Datasources (definitions). NOTE: dataSources.local.xml contains your encrypted
+# credentials and is tied to your IDE keystore — copying it across workspaces
+# is fine on the same machine but won't work for other developers.
+.idea/dataSources.xml
+.idea/dataSources.local.xml
+.idea/dataSources/
+
+# Other stable IDE project settings worth sharing across workspaces
+.idea/compiler.xml
+.idea/encodings.xml
+.idea/jarRepositories.xml
+.idea/kotlinc.xml
+.idea/misc.xml
+.idea/vcs.xml
+.idea/.gitignore
+
+# Explicitly DO NOT copy: .idea/workspace.xml — it carries per-window UI state
+# (open tabs, last-run config, breakpoints, etc.) that should stay workspace-local.
