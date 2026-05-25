@@ -30,6 +30,24 @@ I'm focused on domain modeling on the backend, but I'm going to implement UI lik
 3. Create Axon Server Context (details below)
 3. `./mvnw spring-boot:run` or `./mvnw test`
 
+### 🚂 Conductor.build
+
+This repo ships a [`conductor.json`](conductor.json) so [Conductor](https://conductor.build) workspaces are ready to use out of the box:
+- **Setup** pre-resolves Maven dependencies and compiles tests so the first run is fast.
+- **Run** executes `./mvnw test`. Tests are the recommended Run target because `@HeroesAxonSpringBootTest` uses Testcontainers, which spawns Axon Server / Postgres on random ports — so multiple Conductor workspaces can run tests in parallel without colliding (`runScriptMode: "concurrent"`).
+- The full app (`./mvnw spring-boot:run` + `docker compose up`) binds **fixed** ports (Axon Server `8024`/`8124`, Postgres `6555`, Spring `3775`), so only run the app in **one** Conductor workspace at a time.
+
+#### Running the app on a per-workspace port
+
+Conductor assigns each workspace a unique `CONDUCTOR_PORT`. Override Spring's port with it so the HTTP API doesn't collide with another workspace:
+
+```bash
+docker compose up -d
+SERVER_PORT=$CONDUCTOR_PORT ./mvnw spring-boot:run
+```
+
+Swagger UI is then at `http://localhost:$CONDUCTOR_PORT/swagger-ui/index.html` instead of the default `3775`. Note: this only remaps the Spring HTTP port — Axon Server and Postgres still listen on their fixed compose ports, so `docker compose up` should only be active in one workspace.
+
 ### Create Axon Server Context
 
 - Open the Axon Server UI at [http://localhost:8024](http://localhost:8024)
