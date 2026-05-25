@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "setup": "./mvnw -B -q -DskipTests dependency:go-offline test-compile",
+    "run": "./mvnw -B test",
+    "archive": ""
+  },
+  "runScriptMode": "concurrent"
+}
