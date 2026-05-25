@@ -260,6 +260,21 @@
                 <configuration>
                     <systemPropertyVariables>
                         <axon.test.eventstore>${axon.test.eventstore}</axon.test.eventstore>
+                        <!--
+                            Disable Spring Framework 7's "Context Pausing" for the test cache.
+
+                            Spring 7 pauses cached ApplicationContexts that aren't currently in use and restarts
+                            them on demand (DefaultContextCache.restartContextIfNecessary). Axon Framework 5's
+                            lifecycle handlers aren't restart-symmetric: command handler subscriptions aren't
+                            removed on stop, and PooledStreamingEventProcessor executors are terminated on stop
+                            with no recreation on restart. Both surface as failures during the second start
+                            (DuplicateCommandHandlerSubscriptionException, RejectedExecutionException).
+
+                            Setting this to `never` is the Spring-documented escape hatch
+                            (see https://docs.spring.io/spring-framework/reference/testing/testcontext-framework/ctx-management/context-pausing.html).
+                            Remove once Axon Framework 5 supports Spring Lifecycle stop+start cycles.
+                        -->
+                        <spring.test.context.cache.pause>never</spring.test.context.cache.pause>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
