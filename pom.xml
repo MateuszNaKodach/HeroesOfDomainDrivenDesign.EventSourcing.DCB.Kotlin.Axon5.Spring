@@ -309,6 +309,56 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <plugin>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+                <version>1.25.1</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-junit5-plugin</artifactId>
+                        <version>1.2.3</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <targetClasses>
+                        <param>com.dddheroes.heroesofddd.*</param>
+                    </targetClasses>
+                    <targetTests>
+                        <param>com.dddheroes.heroesofddd.*</param>
+                    </targetTests>
+                    <avoidCallsTo>
+                        <param>org.slf4j</param>
+                        <param>java.util.logging</param>
+                    </avoidCallsTo>
+                    <mutators>
+                        <mutator>DEFAULTS</mutator>
+                    </mutators>
+                    <outputFormats>
+                        <param>HTML</param>
+                        <param>XML</param>
+                    </outputFormats>
+                    <timeoutFactor>1.5</timeoutFactor>
+                    <timeoutConstant>4000</timeoutConstant>
+                    <!--
+                        Pitest forks one JVM per worker thread, each with its own heap.
+                        With Spring/Testcontainers tests in scope, every fork may boot
+                        its own Spring context — so high thread counts multiply memory
+                        usage and trigger OOM kills. `+auto_threads` (one thread per CPU)
+                        is too aggressive for this codebase; pin to 2 as a safe default.
+                    -->
+                    <threads>2</threads>
+                    <jvmArgs>
+                        <jvmArg>-Xmx2g</jvmArg>
+                    </jvmArgs>
+                    <!-- historyInputFile / historyOutputFile (incremental analysis) require the
+                         commercial Arcmutate history plugin in Pitest 1.22+. Skipped here. -->
+                    <!-- Enable after a baseline mutation score is established:
+                    <mutationThreshold>70</mutationThreshold>
+                    <coverageThreshold>80</coverageThreshold>
+                    -->
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

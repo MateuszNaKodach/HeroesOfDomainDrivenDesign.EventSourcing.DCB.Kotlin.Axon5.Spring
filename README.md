@@ -257,6 +257,73 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
 }
 ```
 
+### 🧬 Mutation Testing with Pitest
+
+Mutation testing answers a question that line/branch coverage cannot:
+**does the test suite actually fail when the production code is wrong?**
+
+[Pitest](https://pitest.org/) rewrites bytecode to introduce small faults
+("mutants") into `decide()` / `evolve()` and re-runs the tests. A *killed*
+mutant means a test caught the regression; a *surviving* mutant is a gap in
+the assertions.
+
+This works particularly well for our vertical slices because `decide()` and
+`evolve()` are pure functions exercised through `AxonTestFixture` with the
+`Given/When/Then` DSL — tests observe only emitted events and reconstructed
+state, so killed mutants reflect real behavioural coverage.
+
+Pitest is wired against **all tests in the project** — both pure
+`AxonTestFixture` unit tests and `@HeroesAxonSpringBootTest`-based slice tests
+(which still drive their slice through the same `AxonTestFixture` DSL).
+
+#### Run it locally
+
+Prerequisite: Java 21 (already required for the project). Testcontainers
+starts Axon Server automatically during the mutation run — no manual
+`docker compose up` needed.
+
+Full mutation run over all classes and tests:
+
+```bash
+./mvnw test org.pitest:pitest-maven:mutationCoverage
+```
+
+Scope to a single bounded context while iterating (much faster feedback):
+
+```bash
+./mvnw test org.pitest:pitest-maven:mutationCoverage \
+  -DtargetClasses=com.dddheroes.heroesofddd.creaturerecruitment.* \
+  -DtargetTests=com.dddheroes.heroesofddd.creaturerecruitment.*
+```
+
+Scope to a single slice:
+
+```bash
+./mvnw test org.pitest:pitest-maven:mutationCoverage \
+  -DtargetClasses=com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreaturedcb.* \
+  -DtargetTests=com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreaturedcb.*
+```
+
+Open the HTML report:
+
+```bash
+open target/pit-reports/index.html
+```
+
+(On Linux replace `open` with `xdg-open`.)
+
+#### Run it on CI
+
+A one-click GitHub Actions workflow lives at
+[`.github/workflows/mutation-testing.yml`](.github/workflows/mutation-testing.yml).
+Open the *Actions* tab → "Mutation Testing" → "Run workflow". The HTML report
+is uploaded as a workflow artifact. CI is **manual only** — Pitest is not run
+on every push or PR because mutation runs are expensive.
+
+See [docs/mutation-testing.md](docs/mutation-testing.md) for the deeper guide:
+how to read the report, recognise equivalent mutants, and how mutation testing
+complements the `Given/When/Then` style.
+
 ### 💼 Hire me
 
 If you'd like to hire me for Domain-Driven Design and/or Event Sourcing projects I'm available to work with:
