@@ -131,7 +131,7 @@ test run — you do not need to `docker compose up` separately for Pitest.
 
 The workflow at
 [`.github/workflows/mutation-testing.yml`](../.github/workflows/mutation-testing.yml)
-exposes a single `workflow_dispatch` trigger. Open *Actions* → "Mutation
+exposes a single `workflow_dispatch` trigger. Open *Actions* → "🧬 Mutation
 Testing" → "Run workflow", pick the branch, click. The HTML report is
 uploaded as the `pit-report` artifact on the workflow run page.
 

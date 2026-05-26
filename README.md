@@ -316,7 +316,7 @@ open target/pit-reports/index.html
 
 A one-click GitHub Actions workflow lives at
 [`.github/workflows/mutation-testing.yml`](.github/workflows/mutation-testing.yml).
-Open the *Actions* tab → "Mutation Testing" → "Run workflow". The HTML report
+Open the *Actions* tab → "🧬 Mutation Testing" → "Run workflow". The HTML report
 is uploaded as a workflow artifact. CI is **manual only** — Pitest is not run
 on every push or PR because mutation runs are expensive.
 
