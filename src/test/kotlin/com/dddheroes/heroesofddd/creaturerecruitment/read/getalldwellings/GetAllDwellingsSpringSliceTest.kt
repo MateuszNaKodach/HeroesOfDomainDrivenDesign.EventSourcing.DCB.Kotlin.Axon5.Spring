@@ -85,6 +85,13 @@ internal class GetAllDwellingsSpringSliceTest @Autowired constructor(
                 assertThat(result.items).containsExactlyInAnyOrder(
                     DwellingReadModel(gameId.raw, dwellingId.raw, creatureId.raw, expectedCost, 5)
                 )
+                // Per-field assertions go through generated getters, killing
+                // EmptyObjectReturnValsMutator / PrimitiveReturnsMutator on the
+                // getters that data-class equals() would otherwise bypass.
+                val item = result.items.single()
+                assertThat(item.creatureId).isEqualTo(creatureId.raw)
+                assertThat(item.costPerTroop).isEqualTo(expectedCost)
+                assertThat(item.availableCreatures).isEqualTo(5)
             }
         }
     }
