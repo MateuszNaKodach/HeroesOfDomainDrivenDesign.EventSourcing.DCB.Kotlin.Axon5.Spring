@@ -74,6 +74,11 @@ Chapter (a user journey / business process path)
 ### Shared UI Naming
 - When a UI element serves as both a read view and a trigger for a subsequent write slice, use the **same name** on both slices (e.g., "Army Creatures" on the read slice UI and the next write slice UI) to indicate they represent the same screen.
 
+### proophboard Rendering Limitations (STRICT)
+- **Markdown tables do NOT render on proophboard.** Use lists, code blocks, or plain text formatting instead.
+- Supported: headings, bold, italic, code blocks (` ```lang``` `), lists, `:::element` blocks, inline code
+- Unsupported: tables (`| col | col |`), HTML tags
+
 ### Automatic Arrows (no manual wiring needed)
 Connections are drawn automatically when elements are placed correctly:
 - UI/Automation → Command (same slice)
@@ -120,7 +125,15 @@ Before creating anything, **plan the full chapter structure**:
 2. `add_slice` with descriptive label at the right index and `status: "blocked"` (specification in progress)
 3. `add_element` — `automation` or `ui` in the `user-lane`
 4. `add_element` — `command` in the `information-flow` lane, same slice
-5. `add_element` — `event` in the `system` lane, same slice
+5. `add_element` — `event`(s) in the `system` lane, same slice
+
+#### Per-Item Event Cardinality (STRICT)
+
+When a command's description shows an **array property** with N example items (e.g., `seats: [1:1, 1:2, 2:1]`), and the resulting event is produced **per item** (not per batch), place **N separate event elements** on the board — one for each item. Each event element's description should contain the corresponding example value from the command's array.
+
+Example: Command "Block Seats" with `seats: [1:1, 1:2, 2:1]` produces 3 separate "Seat Blocked" event elements with `seat: 1:1`, `seat: 1:2`, and `seat: 2:1` respectively.
+
+This rule does **not** apply when a single event captures the entire batch (e.g., `SeatsBlocked` with `seats: [...]`).
 
 ### Add a Read Slice (Event → Information)
 1. `add_slice` with descriptive label at the right index (after the write slice whose events feed it) and `status: "blocked"` (specification in progress)
@@ -148,27 +161,34 @@ After the flow structure is modeled and validated, enrich elements with details:
 
 1. **Element description with properties** (optional): Add property names with example values or types directly in the element description via `update_element_description`. This makes properties visible on the board card itself. **Ask the user** whether to add description properties — it's not required.
 2. **Element details**: Add detailed descriptions, JSON examples, JSON Schema, validation rules, and business rules via `update_element_details` / `update_element_description`
-3. **UI mockups**: Add ASCII mockups to the `details` field of UI elements
+3. **UI details**: Add relevant documentation to the `details` field of UI elements:
+   - **REST API endpoints**: When a UI element represents a REST endpoint, add **OpenAPI specification** (in YAML) to its details. Derive from the `@RestController`: HTTP method, path, path parameters, request body schema. **Exclude server-side fields** from the request body (e.g., timestamps set by `Clock`, fields computed internally).
+   - **UI mockups**: Add ASCII mockups for frontend screens
 4. **Slice details**: Add business rules and Given-When-Then scenarios to slice details via `update_slice_details` (see [Slice GWT Scenarios](#slice-gwt-scenarios) below)
+
+**When modeling from existing code** (code/tests already exist): proactively add Example + JSON Schema to command and event element details without asking — the data shapes are already known from the code. Read value objects and event/command classes to derive the full JSON structure. Also add OpenAPI to UI elements that wrap REST endpoints.
 
 #### Element Description Properties (Optional)
 
 Element descriptions can list properties with example values or types. These are shown directly on the board card, making the data shape visible at a glance. Use `update_element_description` to set this.
 
-**Format**: each property on its own line. End each line with **two trailing spaces** (`  `) to force a line break in markdown.
+**Default format**: use a ` ```yaml``` ` code block. This avoids newline escaping issues and renders reliably on proophboard.
 
 Example for a "Build Dwelling" command:
-```
+````
+```yaml
 dwellingId: uuid
 creatureId: Angel
 costPerTroop: {gold: 3000, gems: 1}
 ```
+````
 
-Example for a "Dwelling Built" event:
+**Alternative format**: each property on its own line with **two trailing spaces** (`  `) to force a line break in markdown. This also works but is more error-prone.
+
 ```
-dwellingId: uuid
-creatureId: Angel
-costPerTroop: {gold: 3000, gems: 1}
+dwellingId: uuid··
+creatureId: Angel··
+costPerTroop: {gold: 3000, gems: 1}··
 ```
 
 **Guidelines:**
@@ -245,11 +265,65 @@ NOTHING
 
 **Read slice** — `Given (events) → Then (information)` — no When block:
 
-When a read slice returns **multiple items**, show each as a **separate `:::element information` block** in the Then section. Never wrap results in an `items` array property.
+**Always include the query key** (e.g., `screeningId`) in each `:::element information` block — it shows which entity the read model returns data for and makes the behavior explicit, especially in multi-entity scenarios.
+
+When a read slice returns **multiple items** in the Then section, choose between two formats:
+
+**Option A — Separate blocks (default)**: Each item as its own `:::element information` block. Best when items have many properties or you're testing specific items individually.
 
 ```markdown
 ## Scenarios (GWTs)
 
+### 1. given two dwellings built, then both returned
+
+**Given**
+:::element event
+Dwelling Built··
+dwellingId: portal-of-glory··
+:::
+:::element event
+Dwelling Built··
+dwellingId: cursed-temple··
+:::
+**Then**
+:::element information
+Dwelling··
+dwellingId: portal-of-glory··
+:::
+:::element information
+Dwelling··
+dwellingId: cursed-temple··
+:::
+```
+
+**Option B — Single block with list**: One `:::element information` block using yaml or json list notation inside. Best when the read model is conceptually one response containing a list and items are simple.
+
+```markdown
+### 1. given seats placed, then show all as available
+
+**Given**
+:::element event
+Seat Placed··
+screeningId: screening-1··
+seat: 1:1··
+:::
+:::element event
+Seat Placed··
+screeningId: screening-1··
+seat: 1:2··
+:::
+**Then**
+:::element information
+Screening Seats··
+seats:··
+  - seat: 1:1, blockadeOwner: null··
+  - seat: 1:2, blockadeOwner: null··
+:::
+```
+
+**Single item** — always use a single block:
+
+```markdown
 ### 1. given creatures added, then show army
 
 **Given**
@@ -263,27 +337,6 @@ quantity: 5··
 Army Creatures··
 creatureId: Angel··
 quantity: 5··
-:::
-
-### 2. given two dwellings built, then both returned
-
-**Given**
-:::element event
-Dwelling Built··
-dwellingId: portal-of-glory··
-:::
-:::element event
-Dwelling Built··
-dwellingId: cursed-temple··
-:::
-**Then**
-:::element information
-Dwelling··
-dwellingId: portal-of-glory··
-:::
-:::element information
-Dwelling··
-dwellingId: cursed-temple··
 :::
 ```
 
@@ -327,6 +380,24 @@ Use `NOTHING` for:
 ##### Implementation Guidelines
 
 Slice documentation may include a `## Implementation Guidelines` section with Backend and/or Frontend subsections. These contain specific technical requirements for the slice (e.g., integrate with a payment provider, create an S3 bucket, use a specific library). When present, these guidelines **must be followed** during implementation — they take priority over generic patterns.
+
+#### Tags (DCB) Section for Events
+
+When an event has tagged properties (for Dynamic Consistency Boundary), add a `## Tags (DCB) 🏷️` section at the **top** of the event's details, before Example and JSON Schema. This documents which properties become event tags and what their tag keys are.
+
+**Format:**
+```
+## Tags (DCB) 🏷️
+
+*key* -> `property` (example value)
+*screeningId* -> `screeningId` ("b47d2e1f-3c8a-4f5b-9d6e-1a2b3c4d5e6f")
+*seatId* -> `seat` ("1:1")
+```
+
+- First line is a legend: `*key* -> \`property\` (example value)`
+- Each subsequent line maps a tag key to the property it comes from, with an example value from the `## Example` section below
+- Use `*italic*` for tag keys, `` `backticks` `` for property names
+- When modeling from code, derive tag keys from `@EventTag(key = ...)` annotations
 
 #### Element Details Format
 
@@ -382,11 +453,11 @@ Example of details for a command element:
 ````
 
 **Guidelines for element details:**
-- Event modeling typically happens **before code exists** — propose domain-meaningful example values and ask the user to confirm or adjust before writing
-- In the less common case where code/tests already exist, derive example values from them for consistency. Read value objects and event classes to understand the full data shape — unwrap `value class` / `@JvmInline` wrappers to their raw type, and flatten nested data classes (e.g., `MonthWeek(month, week)` becomes separate `month` and `week` fields in JSON)
+- **When code/tests already exist** (reverse-engineering to board): **proactively add** Example + JSON Schema to command and event elements without asking — the data shapes are already known. Read value objects and event/command classes to derive the full JSON structure. Unwrap `value class` / `@JvmInline` wrappers to their raw type, and flatten nested data classes (e.g., `MonthWeek(month, week)` becomes separate `month` and `week` fields in JSON). Also add OpenAPI to UI elements that wrap REST endpoints.
+- **When modeling from scratch** (no code yet): propose domain-meaningful example values and ask the user to confirm or adjust before writing
 - Use meaningful IDs (e.g., `"portal-of-glory"` not `"uuid-123"`)
 - JSON Schema should match the intended data structure (value classes unwrap to their raw type)
-- When updating details, always pass the **complete new content** to `update_element_details` — partial string replacements cause conflicts on proophboard
+- **CRITICAL — `update_element_details` safety**: NEVER pass partial `old_details`. Always call `get_chapter` first to read the current full details, then pass the **complete** current content as `old_details` and the **complete** desired content as `new_details`. Passing only a section as `old_details` will replace the entire details field and destroy everything else (Example, JSON Schema, etc.)
 
 ### Specification Lifecycle
 
@@ -413,6 +484,8 @@ blocked → planned → in-progress → ready → deployed
 - `in-progress` / `ready` / `deployed` — code implementation states
 
 Use `update_slice_status` with both `old_status` and `new_status`.
+
+**Independent slice status verification (STRICT):** Each slice's status must be determined independently. A write slice having code does NOT mean the follow-up read slice is also implemented — the read model's projection may not handle the new events yet. When adding slices, check the status of existing equivalent slices on the board (e.g., if the first "View Seats" is `planned`, a new "View Seats" read slice should also be `planned`, not `ready`). Never copy a write slice's status to its follow-up read slice without verifying the read model implementation separately.
 
 Derive implementation tasks from the event model — **one task per slice**. Update progress on proophboard using slice status as implementation proceeds.
 
