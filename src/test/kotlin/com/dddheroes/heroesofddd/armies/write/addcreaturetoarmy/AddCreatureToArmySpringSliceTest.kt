@@ -136,4 +136,31 @@ internal class AddCreatureToArmySpringSliceTest @Autowired constructor(
             }
         }
     }
+
+    @Test
+    fun `given army with max creature stacks where one stacked twice then partially removed, when add new creature, then failure`() {
+        sliceUnderTest.Scenario {
+            Given {
+                // Behemoth stacked in two batches (11 + 4 = 15)...
+                event(CreatureAddedToArmy(armyId, CreatureId("Centaur"), Quantity(5)), gameMetadata)
+                event(CreatureAddedToArmy(armyId, CreatureId("Angel"), Quantity(1)), gameMetadata)
+                event(CreatureAddedToArmy(armyId, CreatureId("ArchAngel"), Quantity(3)), gameMetadata)
+                event(CreatureAddedToArmy(armyId, CreatureId("BlackDragon"), Quantity(9)), gameMetadata)
+                event(CreatureAddedToArmy(armyId, CreatureId("RedDragon"), Quantity(15)), gameMetadata)
+                event(CreatureAddedToArmy(armyId, CreatureId("Bowman"), Quantity(12)), gameMetadata)
+                event(CreatureAddedToArmy(armyId, CreatureId("Behemoth"), Quantity(11)), gameMetadata)
+                event(CreatureAddedToArmy(armyId, CreatureId("Behemoth"), Quantity(4)), gameMetadata)
+                // ...then partially removed — the stack still occupies an army slot
+                event(CreatureRemovedFromArmy(armyId, CreatureId("Behemoth"), Quantity(12)), gameMetadata)
+            } When {
+                command(
+                    AddCreatureToArmy(armyId, CreatureId("Phoenix"), Quantity(3)),
+                    gameMetadata
+                )
+            } Then {
+                resultMessagePayload(Failure("Can have max 7 different creature stacks in the army"))
+                noEvents()
+            }
+        }
+    }
 }

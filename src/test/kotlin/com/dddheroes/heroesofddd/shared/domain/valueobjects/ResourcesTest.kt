@@ -312,6 +312,14 @@ internal class ResourcesTest {
         }
 
         @Test
+        fun `should have different hash codes for different resources`() {
+            val resources1 = Resources.of(ResourceType.GOLD to 100)
+            val resources2 = Resources.of(ResourceType.GOLD to 200)
+
+            assertThat(resources1.hashCode()).isNotEqualTo(resources2.hashCode())
+        }
+
+        @Test
         fun `should not be equal when different types`() {
             val resources1 = Resources.of(ResourceType.GOLD to 100)
             val resources2 = Resources.of(ResourceType.WOOD to 100)

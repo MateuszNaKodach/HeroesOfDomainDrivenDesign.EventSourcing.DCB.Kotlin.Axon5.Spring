@@ -72,6 +72,36 @@ internal class StartDaySpringSliceTest @Autowired constructor(
     }
 
     @Test
+    fun `given previous day finished, when start day skipping week, then failure`() {
+        sliceUnderTest.Scenario {
+            Given {
+                event(DayStarted(calendarId, month = Month(1), week = Week(1), day = Day(1)), gameMetadata)
+                event(DayFinished(calendarId, month = Month(1), week = Week(1), day = Day(1)), gameMetadata)
+            } When {
+                command(StartDay(calendarId, month = Month(1), week = Week(2), day = Day(2)), gameMetadata)
+            } Then {
+                resultMessagePayload(CommandHandlerResult.Failure("Cannot skip days"))
+                noEvents()
+            }
+        }
+    }
+
+    @Test
+    fun `given previous day finished, when start day skipping month, then failure`() {
+        sliceUnderTest.Scenario {
+            Given {
+                event(DayStarted(calendarId, month = Month(1), week = Week(1), day = Day(1)), gameMetadata)
+                event(DayFinished(calendarId, month = Month(1), week = Week(1), day = Day(1)), gameMetadata)
+            } When {
+                command(StartDay(calendarId, month = Month(2), week = Week(1), day = Day(2)), gameMetadata)
+            } Then {
+                resultMessagePayload(CommandHandlerResult.Failure("Cannot skip days"))
+                noEvents()
+            }
+        }
+    }
+
+    @Test
     fun `given last day of week finished, when start first day of next week, then DayStarted`() {
         sliceUnderTest.Scenario {
             Given {
