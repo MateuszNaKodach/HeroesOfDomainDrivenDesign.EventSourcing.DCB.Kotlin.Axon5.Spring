@@ -1,7 +1,71 @@
 "$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+# Repo-shared Conductor settings. Personal overrides: .conductor/settings.local.toml (gitignored).
+# Docs: https://conductor.build/docs/configure-your-project
 
 [scripts]
-archive = "docker compose down -v --remove-orphans"
-run = "./mvnw -B test"
+# All scripts live as committed files in .conductor/ — see each file for details.
+# Scripts run from the workspace directory, so relative paths work.
+setup = "./.conductor/setup.sh"
+run = "./.conductor/run.sh"
 run_mode = "concurrent"
-setup = "./mvnw -B -q -DskipTests dependency:go-offline test-compile"
+# New in Conductor 0.63: kick off the run script (unit tests) as soon as a new
+# workspace finishes setup, so every workspace starts with a green baseline.
+auto_run_after_setup = true
+archive = "./.conductor/archive.sh"
+
+[git]
+# Tidy up automatically: archive the workspace when its PR merges and drop the branch.
+archive_on_merge = true
+delete_branch_on_archive = true
+worktree_push_auto_setup_remote = true
+# Branch naming for new workspaces:
+#branch_prefix_type = "custom"   # how prefixes are generated
+#branch_prefix = "feature/"      # custom prefix
+
+# Repo-scoped action prompts (Conductor 0.62+). These apply to ALL agents
+# (Claude Code, Codex, Cursor Composer), not just ones that read CLAUDE.md.
+# They are layered ON TOP of Conductor's built-in action prompts, with priority.
+[prompts]
+# Prompts are inline strings only (no native file reference), so this points at the
+# project skill that holds the actual checklist: .claude/skills/code-review/SKILL.md
+code_review = "Use the code-review skill (.claude/skills/code-review/SKILL.md) and verify the project invariants it lists. If neither the skill nor the file is available, review against the conventions in CLAUDE.md instead."
+create_pr = "Create commits using the commit skill (.claude/skills/commit/SKILL.md): Conventional Commits + Gitmoji. Never include AI/Claude attribution in commits or PR descriptions."
+# Appended to every agent session in this repo (all agent types: Claude Code, Codex, Cursor).
+#general = "<project-wide rules: e.g. Vertical Slice Architecture, one slice per file; run the narrowest relevant tests with ./mvnw test -Dtest=...>"
+# Used by the Fix Errors action (when checks/tests fail).
+#fix_errors = "<how to diagnose: e.g. run the failing test class first; check Axon Server/Testcontainers logs; never weaken assertions to make tests pass>"
+# Used by the Resolve Merge Conflicts action.
+#resolve_merge_conflicts = "<conflict policy: e.g. preserve both slices when conflicts touch application.yaml feature flags; rerun affected slice tests after resolving>"
+# Used by the Rename Branch action.
+#rename_branch = "<branch naming scheme: e.g. feature/<context>-<slice-name>, kebab-case, no ticket numbers>"
+
+# --- Other available repo settings (uncomment when needed) ---
+
+# Environment variables passed to agents in this repo (top-level = local + cloud).
+#[environment_variables]
+#MY_VAR = "value"
+#[environment_variables.local]
+#LOCAL_ONLY_VAR = "value"
+#[environment_variables.cloud]
+#CLOUD_ONLY_VAR = "value"
+
+# Or load them from committed env files:
+#environment_variable_files = [".env.conductor"]
+
+# Files copied into each new workspace — NOT used here: .worktreeinclude at the
+# repo root takes precedence and already covers this.
+#file_include_globs = ".env*\n"
+
+# Run this repo from the repository root instead of worktrees (per-repo Spotlight,
+# Conductor 0.55+). Not needed: tests run fine from worktrees via Testcontainers.
+#spotlight_testing = true
+
+# Provider / enterprise options:
+#enterprise_data_privacy = true
+#claude_provider = "anthropic"        # or "bedrock", "vertex"
+#bedrock_region = "us-east-1"
+#vertex_project_id = "my-gcp-project"
+#claude_code_executable_path = "/path/to/claude"
+#codex_executable_path = "/path/to/codex"
+#codex_provider = "openai"
+#ssh_key_path = "~/.ssh/id_ed25519"   # SSH key for cloud workspaces
