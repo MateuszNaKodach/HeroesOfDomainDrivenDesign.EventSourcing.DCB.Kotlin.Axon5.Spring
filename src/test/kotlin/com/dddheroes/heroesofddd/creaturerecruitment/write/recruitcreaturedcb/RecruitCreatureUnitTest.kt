@@ -1,6 +1,7 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreaturedcb
 
 import com.dddheroes.heroesofddd.armies.events.CreatureAddedToArmy
+import com.dddheroes.heroesofddd.armies.events.CreatureRemovedFromArmy
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
@@ -601,6 +602,64 @@ internal class RecruitCreatureUnitTest {
                             dwellingId = dwellingId,
                             creatureId = existingCreatureId,
                             changedBy = -2,
+                            changedTo = Quantity(0)
+                        )
+                    )
+                }
+            }
+        }
+
+        @Test
+        fun `given army with 7 creature types where one stacked twice then fully removed, when recruit new type, then recruited`() {
+            val dwellingId = DwellingId.random()
+            val armyId = ArmyId.random()
+            val newCreatureId = CreatureId("black-dragon")
+            val costPerTroop = Resources.of(ResourceType.GOLD to 4000, ResourceType.GEMS to 2)
+
+            sliceUnderTest.Scenario {
+                Given {
+                    event(DwellingBuilt(dwellingId, newCreatureId, costPerTroop), gameMetadata)
+                    event(AvailableCreaturesChanged(dwellingId, newCreatureId, changedBy = 1, changedTo = Quantity(1)), gameMetadata)
+                    // Army at the 7-type limit, with angel stacked in two batches (5 + 3 = 8)...
+                    event(CreatureAddedToArmy(armyId, CreatureId("angel"), Quantity(5)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("griffin"), Quantity(10)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("swordsman"), Quantity(20)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("monk"), Quantity(8)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("cavalier"), Quantity(6)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("mage"), Quantity(4)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("titan"), Quantity(2)), gameMetadata)
+                    event(CreatureAddedToArmy(armyId, CreatureId("angel"), Quantity(3)), gameMetadata)
+                    // ...then the whole accumulated angel stack leaves, freeing an army slot
+                    event(CreatureRemovedFromArmy(armyId, CreatureId("angel"), Quantity(8)), gameMetadata)
+                } When {
+                    command(
+                        RecruitCreature(
+                            dwellingId = dwellingId,
+                            creatureId = newCreatureId,
+                            armyId = armyId,
+                            quantity = Quantity(1),
+                            expectedCost = costPerTroop
+                        ), gameMetadata
+                    )
+                } Then {
+                    resultMessagePayload(CommandHandlerResult.Success)
+                    events(
+                        CreatureRecruited(
+                            dwellingId = dwellingId,
+                            creatureId = newCreatureId,
+                            toArmy = armyId,
+                            quantity = Quantity(1),
+                            totalCost = costPerTroop
+                        ),
+                        CreatureAddedToArmy(
+                            armyId = armyId,
+                            creatureId = newCreatureId,
+                            quantity = Quantity(1)
+                        ),
+                        AvailableCreaturesChanged(
+                            dwellingId = dwellingId,
+                            creatureId = newCreatureId,
+                            changedBy = -1,
                             changedTo = Quantity(0)
                         )
                     )
