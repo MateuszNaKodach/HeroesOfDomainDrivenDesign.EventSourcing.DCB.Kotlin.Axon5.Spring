@@ -320,7 +320,7 @@ Open the *Actions* tab → "🧬 Mutation Testing" → "Run workflow". The HTML 
 is uploaded as a workflow artifact. CI is **manual only** — Pitest is not run
 on every push or PR because mutation runs are expensive.
 
-See [docs/mutation-testing.md](docs/mutation-testing.md) for the deeper guide:
+See [docs/MUTATION_TESTING.md](docs/MUTATION_TESTING.md) for the deeper guide:
 how to read the report, recognise equivalent mutants, and how mutation testing
 complements the `Given/When/Then` style.
 

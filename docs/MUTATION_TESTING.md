@@ -175,6 +175,41 @@ A practical workflow: filter the report to surviving mutants in `*.Slice.kt`
 first. That's where killing mutants directly improves your `decide()` /
 `evolve()` confidence.
 
+### Triage heuristics learned from this codebase
+
+Real survivor triage done on this repo surfaced patterns worth knowing:
+
+- **Impossible line numbers = inlined code.** A survivor at line 166 of a
+  161-line file is not a bug in Pitest — Kotlin `inline` functions copy
+  their bytecode (with original line numbers) into each call site. In this
+  repo every `@CommandHandler` uses the inlined `resultOf { }` SDK helper,
+  so each handler "contains" a copy of its branches at out-of-range line
+  numbers. These mutants are duplicated per call site and mostly
+  equivalent — skip them.
+- **The `?.let { } ?: ` idiom manufactures an equivalent mutant.** Kotlin
+  compiles `result?.let { ok(it) } ?: notFound()` with *two* null checks:
+  the safe-call on `result`, and the elvis re-checking the let-block's
+  *result* — which, being `ResponseEntity.ok(...)`, is never null. The
+  second check is unkillable by any test. When an apparently-tested line
+  keeps a survivor, suspect the idiom, not the test — and **keep the
+  idiomatic Kotlin**: bending production code to please the tool inverts
+  the point of mutation testing. Accept the survivor as a known
+  equivalent. (The commercial Arcmutate Kotlin plugin filters exactly
+  this class of mutants automatically.)
+- **Data-class `equals()` bypasses getters.** Asserting whole-object
+  equality (`containsExactly(expected)`) never calls the generated
+  getters, so return-value mutants on them survive. One per-field
+  assertion (`assertThat(item.x).isEqualTo(...)`) kills the whole family.
+- **`hashCode` needs an inequality assertion.** The classic
+  equal-objects-have-equal-hashes test is satisfied by `return 0`. Add
+  `assertThat(a.hashCode()).isNotEqualTo(b.hashCode())` for two distinct
+  values to pin the real implementation.
+- **Elvis defaults in `evolve()` accumulators hide real gaps.** A survivor
+  on `state.map[key] ?: zero()` means no test ever exercised the *second*
+  event for the same key. The killing scenario is domain-meaningful: stack
+  the same creature twice and then remove some — accumulation suddenly
+  matters for the army-slot limit.
+
 ## Two flavours of `AxonTestFixture` tests
 
 Every test in this repo uses `AxonTestFixture`, but the construction differs:
