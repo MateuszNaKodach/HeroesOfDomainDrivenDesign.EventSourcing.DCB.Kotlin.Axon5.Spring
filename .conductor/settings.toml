@@ -1,0 +1,7 @@
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+[scripts]
+archive = "docker compose down -v --remove-orphans"
+run = "./mvnw -B test"
+run_mode = "concurrent"
+setup = "./mvnw -B -q -DskipTests dependency:go-offline test-compile"
