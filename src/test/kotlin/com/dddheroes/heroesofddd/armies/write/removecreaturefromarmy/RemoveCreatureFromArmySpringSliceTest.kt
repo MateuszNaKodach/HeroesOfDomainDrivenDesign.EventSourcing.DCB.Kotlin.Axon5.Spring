@@ -99,6 +99,25 @@ internal class RemoveCreatureFromArmySpringSliceTest @Autowired constructor(
     }
 
     @Test
+    fun `given creature added twice, when remove partial, then success with accumulated quantity tracked`() {
+        sliceUnderTest.Scenario {
+            Given {
+                event(CreatureAddedToArmy(armyId, CreatureId("Angel"), Quantity(3)), gameMetadata)
+                event(CreatureAddedToArmy(armyId, CreatureId("Angel"), Quantity(2)), gameMetadata)
+            } When {
+                command(
+                    RemoveCreatureFromArmy(armyId, CreatureId("Angel"), Quantity(4)),
+                    gameMetadata
+                )
+            } Then {
+                resultMessagePayload(Success)
+                events(CreatureRemovedFromArmy(armyId, CreatureId("Angel"), Quantity(4)))
+                allEventsHaveMetadata(gameMetadata)
+            }
+        }
+    }
+
+    @Test
     fun `given creature stack removed, when remove same creature again, then failure`() {
         sliceUnderTest.Scenario {
             Given {
