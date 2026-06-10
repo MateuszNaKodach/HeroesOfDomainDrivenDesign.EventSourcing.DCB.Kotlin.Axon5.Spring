@@ -40,3 +40,5 @@ build/
 CLAUDE.local.md
 .ai/temp/
 .claude/worktrees/
+# Conductor: personal per-machine overrides (see https://conductor.build/docs/configure-your-project)
+.conductor/settings.local.toml
