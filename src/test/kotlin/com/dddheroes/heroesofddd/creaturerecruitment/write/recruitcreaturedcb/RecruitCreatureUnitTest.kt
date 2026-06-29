@@ -4,7 +4,7 @@ import com.dddheroes.heroesofddd.armies.events.CreatureAddedToArmy
 import com.dddheroes.heroesofddd.armies.events.CreatureRemovedFromArmy
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
-import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingConstructed
 import com.dddheroes.heroesofddd.shared.domain.identifiers.ArmyId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
@@ -78,7 +78,7 @@ internal class RecruitCreatureUnitTest {
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
             } When {
                 command(
                     RecruitCreature(
@@ -104,7 +104,7 @@ internal class RecruitCreatureUnitTest {
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)), gameMetadata)
             } When {
                 command(
@@ -152,7 +152,7 @@ internal class RecruitCreatureUnitTest {
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 2, changedTo = Quantity(2)), gameMetadata)
             } When {
                 command(
@@ -200,7 +200,7 @@ internal class RecruitCreatureUnitTest {
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 3, changedTo = Quantity(3)), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(4)), gameMetadata)
             } When {
@@ -249,7 +249,7 @@ internal class RecruitCreatureUnitTest {
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 5, changedTo = Quantity(5)), gameMetadata)
             } When {
                 command(
@@ -277,7 +277,7 @@ internal class RecruitCreatureUnitTest {
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)), gameMetadata)
             } When {
                 command(
@@ -307,7 +307,7 @@ internal class RecruitCreatureUnitTest {
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 3, changedTo = Quantity(3)), gameMetadata)
                 event(CreatureRecruited(dwellingId, creatureId, armyId, Quantity(2), cost2), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = -2, changedTo = Quantity(1)), gameMetadata)
@@ -340,7 +340,7 @@ internal class RecruitCreatureUnitTest {
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 4, changedTo = Quantity(4)), gameMetadata)
                 event(CreatureRecruited(dwellingId, creatureId, armyId, Quantity(3), cost3), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = -3, changedTo = Quantity(1)), gameMetadata)
@@ -390,7 +390,7 @@ internal class RecruitCreatureUnitTest {
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)), gameMetadata)
             } When {
                 command(
@@ -420,7 +420,7 @@ internal class RecruitCreatureUnitTest {
 
             sliceUnderTest.Scenario {
                 Given {
-                    event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                    event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
                     event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)), gameMetadata)
                 } When {
                     command(
@@ -467,7 +467,7 @@ internal class RecruitCreatureUnitTest {
 
             sliceUnderTest.Scenario {
                 Given {
-                    event(DwellingBuilt(dwellingId, newCreatureId, costPerTroop), gameMetadata)
+                    event(DwellingConstructed(dwellingId, newCreatureId, costPerTroop, level = 1), gameMetadata)
                     event(AvailableCreaturesChanged(dwellingId, newCreatureId, changedBy = 1, changedTo = Quantity(1)), gameMetadata)
                     // Simulate army already having 7 different creature types
                     event(CreatureAddedToArmy(armyId, CreatureId("angel"), Quantity(5)), gameMetadata)
@@ -502,7 +502,7 @@ internal class RecruitCreatureUnitTest {
 
             sliceUnderTest.Scenario {
                 Given {
-                    event(DwellingBuilt(dwellingId, newCreatureId, costPerTroop), gameMetadata)
+                    event(DwellingConstructed(dwellingId, newCreatureId, costPerTroop, level = 1), gameMetadata)
                     event(AvailableCreaturesChanged(dwellingId, newCreatureId, changedBy = 1, changedTo = Quantity(1)), gameMetadata)
                     // Simulate army having 6 different creature types
                     event(CreatureAddedToArmy(armyId, CreatureId("angel"), Quantity(5)), gameMetadata)
@@ -556,7 +556,7 @@ internal class RecruitCreatureUnitTest {
 
             sliceUnderTest.Scenario {
                 Given {
-                    event(DwellingBuilt(dwellingId, existingCreatureId, costPerTroop), gameMetadata)
+                    event(DwellingConstructed(dwellingId, existingCreatureId, costPerTroop, level = 1), gameMetadata)
                     event(
                         AvailableCreaturesChanged(
                             dwellingId,
@@ -618,7 +618,7 @@ internal class RecruitCreatureUnitTest {
 
             sliceUnderTest.Scenario {
                 Given {
-                    event(DwellingBuilt(dwellingId, newCreatureId, costPerTroop), gameMetadata)
+                    event(DwellingConstructed(dwellingId, newCreatureId, costPerTroop, level = 1), gameMetadata)
                     event(AvailableCreaturesChanged(dwellingId, newCreatureId, changedBy = 1, changedTo = Quantity(1)), gameMetadata)
                     // Army at the 7-type limit, with angel stacked in two batches (5 + 3 = 8)...
                     event(CreatureAddedToArmy(armyId, CreatureId("angel"), Quantity(5)), gameMetadata)

@@ -3,7 +3,7 @@ package com.dddheroes.heroesofddd.creaturerecruitment.write.increaseavailablecre
 import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
-import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingConstructed
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
@@ -67,7 +67,7 @@ private fun decide(
 }
 
 private fun evolve(state: State, event: DwellingEvent): State = when (event) {
-    is DwellingBuilt ->
+    is DwellingConstructed ->
         state.copy(isBuilt = true)
 
     is AvailableCreaturesChanged ->
@@ -88,7 +88,7 @@ private class IncreaseAvailableCreaturesEventSourcedState private constructor(va
     constructor() : this(initialState)
 
     @EventSourcingHandler
-    fun evolve(event: DwellingBuilt) = IncreaseAvailableCreaturesEventSourcedState(
+    fun evolve(event: DwellingConstructed) = IncreaseAvailableCreaturesEventSourcedState(
         evolve(
             state,
             event

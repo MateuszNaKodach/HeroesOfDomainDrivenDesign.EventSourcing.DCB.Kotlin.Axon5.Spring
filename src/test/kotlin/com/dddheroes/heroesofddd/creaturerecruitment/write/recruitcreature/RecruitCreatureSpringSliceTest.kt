@@ -3,7 +3,7 @@ package com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature
 import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
-import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingConstructed
 import com.dddheroes.heroesofddd.shared.domain.identifiers.ArmyId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
@@ -65,7 +65,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
             } When {
                 command(
                     RecruitCreature(
@@ -91,7 +91,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)), gameMetadata)
             } When {
                 command(
@@ -128,7 +128,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 2, changedTo = Quantity(2)), gameMetadata)
             } When {
                 command(
@@ -165,7 +165,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 3, changedTo = Quantity(3)), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(4)), gameMetadata)
             } When {
@@ -203,7 +203,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 5, changedTo = Quantity(5)), gameMetadata)
             } When {
                 command(
@@ -231,7 +231,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)), gameMetadata)
             } When {
                 command(
@@ -259,7 +259,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 4, changedTo = Quantity(4)), gameMetadata)
                 // prior recruitment tracked via CreatureRecruited (availableCreatures: 4 - 3 = 1)
                 event(CreatureRecruited(dwellingId, creatureId, armyId, Quantity(3), cost3), gameMetadata)
@@ -298,7 +298,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 3, changedTo = Quantity(3)), gameMetadata)
                 // prior recruitment depleted all creatures
                 event(CreatureRecruited(dwellingId, creatureId, armyId, Quantity(3), cost3), gameMetadata)
@@ -328,7 +328,7 @@ internal class RecruitCreatureSpringSliceTest @Autowired constructor(
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)), gameMetadata)
             } When {
                 command(

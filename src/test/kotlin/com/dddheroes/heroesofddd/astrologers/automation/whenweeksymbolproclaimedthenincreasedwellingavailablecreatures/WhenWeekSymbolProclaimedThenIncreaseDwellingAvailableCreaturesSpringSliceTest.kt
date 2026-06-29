@@ -3,7 +3,7 @@ package com.dddheroes.heroesofddd.astrologers.automation.whenweeksymbolproclaime
 import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.astrologers.events.WeekSymbolProclaimed
 import com.dddheroes.heroesofddd.astrologers.write.AstrologersId
-import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingConstructed
 import com.dddheroes.heroesofddd.creaturerecruitment.write.increaseavailablecreatures.IncreaseAvailableCreatures
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
@@ -49,9 +49,9 @@ internal class WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreaturesSpr
 
         fixture.Scenario {
             Given {
-                event(DwellingBuilt(angelDwelling1, CreatureId("angel"), costPerTroop), gameMetadata)
-                event(DwellingBuilt(angelDwelling2, CreatureId("angel"), costPerTroop), gameMetadata)
-                event(DwellingBuilt(titanDwelling, CreatureId("titan"), costPerTroop), gameMetadata)
+                event(DwellingConstructed(angelDwelling1, CreatureId("angel"), costPerTroop, level = 1), gameMetadata)
+                event(DwellingConstructed(angelDwelling2, CreatureId("angel"), costPerTroop, level = 1), gameMetadata)
+                event(DwellingConstructed(titanDwelling, CreatureId("titan"), costPerTroop, level = 1), gameMetadata)
                 event(
                     WeekSymbolProclaimed(astrologersId, month = 1, week = 1, weekOf = CreatureId("angel"), growth = 3),
                     gameMetadata
@@ -79,14 +79,14 @@ internal class WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreaturesSpr
         fixture.Scenario {
             Given {
                 // Dwelling 1 built before week 1
-                event(DwellingBuilt(angelDwelling1, CreatureId("angel"), costPerTroop), gameMetadata)
+                event(DwellingConstructed(angelDwelling1, CreatureId("angel"), costPerTroop, level = 1), gameMetadata)
                 // Week 1: growth 1 — only dwelling 1 exists
                 event(
                     WeekSymbolProclaimed(astrologersId, month = 1, week = 1, weekOf = CreatureId("angel"), growth = 1),
                     gameMetadata
                 )
                 // Dwelling 2 built after week 1
-                event(DwellingBuilt(angelDwelling2, CreatureId("angel"), costPerTroop), gameMetadata)
+                event(DwellingConstructed(angelDwelling2, CreatureId("angel"), costPerTroop, level = 1), gameMetadata)
                 // Week 2: growth 2 — both dwellings exist
                 event(
                     WeekSymbolProclaimed(astrologersId, month = 1, week = 2, weekOf = CreatureId("angel"), growth = 2),

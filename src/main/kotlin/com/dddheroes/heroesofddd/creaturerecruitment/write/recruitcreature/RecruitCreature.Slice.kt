@@ -3,7 +3,7 @@ package com.dddheroes.heroesofddd.creaturerecruitment.write.recruitcreature
 import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
-import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingConstructed
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
@@ -82,7 +82,7 @@ private fun decide(
 }
 
 private fun evolve(state: State, event: DwellingEvent): State = when (event) {
-    is DwellingBuilt ->
+    is DwellingConstructed ->
         state.copy(
             creatureId = event.creatureId,
             costPerTroop = event.costPerTroop
@@ -107,7 +107,7 @@ private class RecruitCreatureEventSourcedState private constructor(val state: St
     constructor() : this(initialState)
 
     @EventSourcingHandler
-    fun evolve(event: DwellingBuilt) = RecruitCreatureEventSourcedState(evolve(state, event))
+    fun evolve(event: DwellingConstructed) = RecruitCreatureEventSourcedState(evolve(state, event))
 
     @EventSourcingHandler
     fun evolve(event: AvailableCreaturesChanged) = RecruitCreatureEventSourcedState(evolve(state, event))

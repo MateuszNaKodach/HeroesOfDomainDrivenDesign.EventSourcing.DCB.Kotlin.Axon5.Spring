@@ -2,7 +2,7 @@ package com.dddheroes.heroesofddd.creaturerecruitment.read.getalldwellings
 
 import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
-import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingConstructed
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
@@ -54,8 +54,8 @@ internal class GetAllDwellingsSpringSliceTest @Autowired constructor(
         val expectedCost = phoenixCostRaw
 
         fixture.Given {
-            event(DwellingBuilt(dwellingId1, creatureId, phoenixCost), gameMetadata)
-            event(DwellingBuilt(dwellingId2, creatureId, phoenixCost), gameMetadata)
+            event(DwellingConstructed(dwellingId1, creatureId, phoenixCost, level = 1), gameMetadata)
+            event(DwellingConstructed(dwellingId2, creatureId, phoenixCost, level = 1), gameMetadata)
         } Then {
             awaitAndExpect { cfg ->
                 val result = queryAllDwellings(cfg)
@@ -73,7 +73,7 @@ internal class GetAllDwellingsSpringSliceTest @Autowired constructor(
         val creatureId = CreatureId("phoenix")
 
         fixture.Given {
-            event(DwellingBuilt(dwellingId, creatureId, phoenixCost), gameMetadata)
+            event(DwellingConstructed(dwellingId, creatureId, phoenixCost, level = 1), gameMetadata)
             event(
                 AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 5, changedTo = Quantity(5)),
                 gameMetadata

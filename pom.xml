@@ -68,6 +68,11 @@
             <version>${axon.version}</version>
         </dependency>
         <dependency>
+            <groupId>io.axoniq.framework</groupId>
+            <artifactId>axoniq-message-transformation</artifactId>
+            <version>${axon.version}</version>
+        </dependency>
+        <dependency>
             <groupId>io.axoniq.platform</groupId>
             <artifactId>axoniq-platform-spring-boot-starter</artifactId>
             <version>${axoniq-platform.version}</version>

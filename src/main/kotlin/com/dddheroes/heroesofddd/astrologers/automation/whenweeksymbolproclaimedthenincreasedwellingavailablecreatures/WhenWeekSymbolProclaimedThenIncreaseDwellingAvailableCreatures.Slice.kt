@@ -1,7 +1,7 @@
 package com.dddheroes.heroesofddd.astrologers.automation.whenweeksymbolproclaimedthenincreasedwellingavailablecreatures
 
 import com.dddheroes.heroesofddd.astrologers.events.WeekSymbolProclaimed
-import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingConstructed
 import com.dddheroes.heroesofddd.creaturerecruitment.write.increaseavailablecreatures.IncreaseAvailableCreatures
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
@@ -87,7 +87,7 @@ private class WhenWeekSymbolProclaimedThenIncreaseDwellingAvailableCreaturesProc
     }
 
     @EventHandler
-    fun on(event: DwellingBuilt, @MetadataValue(GameMetadata.GAME_ID_KEY) gameId: String) {
+    fun on(event: DwellingConstructed, @MetadataValue(GameMetadata.GAME_ID_KEY) gameId: String) {
         repository.save(
             BuiltDwellingReadModel(
                 gameId = gameId,

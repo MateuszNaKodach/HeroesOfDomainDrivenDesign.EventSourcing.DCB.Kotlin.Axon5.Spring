@@ -119,3 +119,9 @@ slices:
     enabled: true
   calendar.read.getcurrentday:
     enabled: true
+
+# Event transformations (upcasters) - toggle to observe app behaviour with and without upcasting
+transformations:
+  creaturerecruitment:
+    dwelling:
+      enabled: true

@@ -1,7 +1,7 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling
 
 import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
-import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingConstructed
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.ResourceType
@@ -37,10 +37,11 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(
             } Then {
                 resultMessagePayload(CommandHandlerResult.Success)
                 events(
-                    DwellingBuilt(
+                    DwellingConstructed(
                         dwellingId = dwellingId,
                         creatureId = creatureId,
-                        costPerTroop = costPerTroop
+                        costPerTroop = costPerTroop,
+                        level = 1
                     )
                 )
                 allEventsHaveMetadata(gameMetadata)
@@ -56,7 +57,7 @@ internal class BuildDwellingSpringSliceTest @Autowired constructor(
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
             } When {
                 command(BuildDwelling(dwellingId, creatureId, costPerTroop), gameMetadata)
             } Then {

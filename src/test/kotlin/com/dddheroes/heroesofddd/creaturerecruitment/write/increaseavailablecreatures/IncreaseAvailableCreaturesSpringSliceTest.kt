@@ -2,7 +2,7 @@ package com.dddheroes.heroesofddd.creaturerecruitment.write.increaseavailablecre
 
 import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
-import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingConstructed
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.valueobjects.Quantity
@@ -44,7 +44,7 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
     }
 
     @Test
-    fun `given DwellingBuilt, when IncreaseAvailableCreatures, then AvailableCreaturesChanged`() {
+    fun `given DwellingConstructed, when IncreaseAvailableCreatures, then AvailableCreaturesChanged`() {
         val dwellingId = DwellingId.random()
         val creatureId = CreatureId("angel")
         val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
@@ -52,7 +52,7 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
             } When {
                 command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy), gameMetadata)
             } Then {
@@ -70,14 +70,14 @@ internal class IncreaseAvailableCreaturesSpringSliceTest @Autowired constructor(
     }
 
     @Test
-    fun `given DwellingBuilt with AvailableCreaturesChanged, when IncreaseAvailableCreatures, then AvailableCreaturesChanged`() {
+    fun `given DwellingConstructed with AvailableCreaturesChanged, when IncreaseAvailableCreatures, then AvailableCreaturesChanged`() {
         val dwellingId = DwellingId.random()
         val creatureId = CreatureId("angel")
         val costPerTroop = Resources.of(ResourceType.GOLD to 3000, ResourceType.GEMS to 1)
 
         sliceUnderTest.Scenario {
             Given {
-                event(DwellingBuilt(dwellingId, creatureId, costPerTroop), gameMetadata)
+                event(DwellingConstructed(dwellingId, creatureId, costPerTroop, level = 1), gameMetadata)
                 event(AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 1, changedTo = Quantity(1)), gameMetadata)
             } When {
                 command(IncreaseAvailableCreatures(dwellingId, creatureId, increaseBy = Quantity(2)), gameMetadata)

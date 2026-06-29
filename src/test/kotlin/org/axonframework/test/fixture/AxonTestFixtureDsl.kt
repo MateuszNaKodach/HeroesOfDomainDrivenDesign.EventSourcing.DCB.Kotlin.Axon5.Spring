@@ -24,7 +24,7 @@ import java.time.Duration
  *         command(BuildDwelling(...), gameMetadata)
  *     } Then {
  *         resultMessagePayload(CommandHandlerResult.Success)
- *         events(DwellingBuilt(...))
+ *         events(DwellingConstructed(...))
  *     }
  * }
  * ```
@@ -32,7 +32,7 @@ import java.time.Duration
  * ### Read slice example (Given → Then, skip When):
  * ```kotlin
  * fixture.Given {
- *     event(DwellingBuilt(...), gameMetadata)
+ *     event(DwellingConstructed(...), gameMetadata)
  * } Then {
  *     awaitAndExpect { cfg -> ... }
  * }
@@ -111,7 +111,7 @@ infix fun <T> Given.When(block: When.() -> T): T =
  * Useful for read model / projection tests where you only need to set up events
  * and assert on the projected state:
  * ```kotlin
- * fixture.Given { event(DwellingBuilt(...), meta) } Then {
+ * fixture.Given { event(DwellingConstructed(...), meta) } Then {
  *     awaitAndExpect { cfg -> ... }
  * }
  * ```
@@ -278,7 +278,7 @@ inline fun <reified T : Any> Then.Command.resultMessagePayloadSatisfies(
  *
  * ```kotlin
  * Then {
- *     events(DwellingBuilt(...))
+ *     events(DwellingConstructed(...))
  *     allEventsHaveMetadata(gameMetadata)
  * }
  * ```

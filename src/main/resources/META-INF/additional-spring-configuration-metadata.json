@@ -1,6 +1,12 @@
 {
   "properties": [
     {
+      "name": "transformations.creaturerecruitment.dwelling.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable/disable the DwellingBuilt->DwellingConstructed event transformation chain (rename + v1->v2 upcast). When disabled, legacy events are read in their stored shape.",
+      "defaultValue": true
+    },
+    {
       "name": "slices.creaturerecruitment.read.getalldwellings.enabled",
       "type": "java.lang.Boolean",
       "description": "Enable/disable the GetAllDwellings vertical slice in the Creature Recruitment bounded context."

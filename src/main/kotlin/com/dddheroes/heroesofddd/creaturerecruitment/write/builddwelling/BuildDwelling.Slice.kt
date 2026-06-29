@@ -3,7 +3,7 @@ package com.dddheroes.heroesofddd.creaturerecruitment.write.builddwelling
 import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
-import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingConstructed
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
@@ -55,16 +55,17 @@ private fun decide(command: BuildDwelling, state: State): List<HeroesEvent> {
     }
 
     return listOf(
-        DwellingBuilt(
+        DwellingConstructed(
             dwellingId = command.dwellingId,
             creatureId = command.creatureId,
-            costPerTroop = command.costPerTroop
+            costPerTroop = command.costPerTroop,
+            level = 1
         )
     )
 }
 
 private fun evolve(state: State, event: DwellingEvent): State = when (event) {
-    is DwellingBuilt -> state.copy(isBuilt = true)
+    is DwellingConstructed -> state.copy(isBuilt = true)
     is AvailableCreaturesChanged -> state
     is CreatureRecruited -> state
 }
@@ -81,7 +82,7 @@ private class BuildDwellingEventSourcedState private constructor(val state: Stat
     constructor() : this(initialState)
 
     @EventSourcingHandler
-    fun evolve(event: DwellingBuilt) = BuildDwellingEventSourcedState(evolve(state, event))
+    fun evolve(event: DwellingConstructed) = BuildDwellingEventSourcedState(evolve(state, event))
 }
 
 @ConditionalOnProperty(prefix = "slices.creaturerecruitment", name = ["write.builddwelling.enabled"])

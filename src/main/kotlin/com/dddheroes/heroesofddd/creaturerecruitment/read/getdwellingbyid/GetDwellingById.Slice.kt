@@ -2,7 +2,7 @@ package com.dddheroes.heroesofddd.creaturerecruitment.read.getdwellingbyid
 
 import com.dddheroes.heroesofddd.EventTags
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
-import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingConstructed
 import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingEvent
 import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
@@ -31,20 +31,22 @@ data class GetDwellingById(
         val dwellingId: String,
         val creatureId: String,
         val costPerTroop: Map<String, Int>,
-        val availableCreatures: Int
+        val availableCreatures: Int,
+        val level: Int
     )
 }
 
-val initialState = GetDwellingById.Result("", "", emptyMap(), 0)
+val initialState = GetDwellingById.Result("", "", emptyMap(), 0, 0)
 
 private fun evolve(state: GetDwellingById.Result, event: DwellingEvent): GetDwellingById.Result = when (event) {
-    is DwellingBuilt ->
+    is DwellingConstructed ->
         state.copy(
             dwellingId = event.dwellingId.raw,
             creatureId = event.creatureId.raw,
             costPerTroop = event.costPerTroop.raw.entries
                 .associate { it.key.name to it.value.raw },
-            availableCreatures = 0
+            availableCreatures = 0,
+            level = event.level
         )
 
     is AvailableCreaturesChanged ->
@@ -61,7 +63,7 @@ private class DwellingInlineProjection private constructor(val state: GetDwellin
     constructor() : this(initialState)
 
     @EventSourcingHandler
-    fun evolve(event: DwellingBuilt) = DwellingInlineProjection(
+    fun evolve(event: DwellingConstructed) = DwellingInlineProjection(
         evolve(state, event)
     )
 

@@ -2,7 +2,7 @@ package com.dddheroes.heroesofddd.creaturerecruitment.read.getdwellingbyid
 
 import com.dddheroes.heroesofddd.HeroesAxonSpringBootTest
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
-import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingConstructed
 import com.dddheroes.heroesofddd.shared.domain.identifiers.CreatureId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.DwellingId
 import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
@@ -45,12 +45,12 @@ internal class GetDwellingByIdSpringSliceTest @Autowired constructor(
         val creatureId = CreatureId("phoenix")
 
         fixture.Given {
-            event(DwellingBuilt(dwellingId, creatureId, phoenixCost), gameMetadata)
+            event(DwellingConstructed(dwellingId, creatureId, phoenixCost, level = 1), gameMetadata)
         } Then {
             awaitAndExpect { cfg ->
                 val result = queryDwellingById(cfg, dwellingId)
                 assertThat(result).isEqualTo(
-                    GetDwellingById.Result(dwellingId.raw, creatureId.raw, phoenixCostRaw, 0)
+                    GetDwellingById.Result(dwellingId.raw, creatureId.raw, phoenixCostRaw, 0, 1)
                 )
             }
         }
@@ -62,7 +62,7 @@ internal class GetDwellingByIdSpringSliceTest @Autowired constructor(
         val creatureId = CreatureId("phoenix")
 
         fixture.Given {
-            event(DwellingBuilt(dwellingId, creatureId, phoenixCost), gameMetadata)
+            event(DwellingConstructed(dwellingId, creatureId, phoenixCost, level = 1), gameMetadata)
             event(
                 AvailableCreaturesChanged(dwellingId, creatureId, changedBy = 5, changedTo = Quantity(5)),
                 gameMetadata
@@ -71,7 +71,7 @@ internal class GetDwellingByIdSpringSliceTest @Autowired constructor(
             awaitAndExpect { cfg ->
                 val result = queryDwellingById(cfg, dwellingId)
                 assertThat(result).isEqualTo(
-                    GetDwellingById.Result(dwellingId.raw, creatureId.raw, phoenixCostRaw, 5)
+                    GetDwellingById.Result(dwellingId.raw, creatureId.raw, phoenixCostRaw, 5, 1)
                 )
             }
         }
@@ -84,13 +84,13 @@ internal class GetDwellingByIdSpringSliceTest @Autowired constructor(
         val creatureId = CreatureId("phoenix")
 
         fixture.Given {
-            event(DwellingBuilt(dwellingId1, creatureId, phoenixCost), gameMetadata)
-            event(DwellingBuilt(dwellingId2, creatureId, phoenixCost), gameMetadata)
+            event(DwellingConstructed(dwellingId1, creatureId, phoenixCost, level = 1), gameMetadata)
+            event(DwellingConstructed(dwellingId2, creatureId, phoenixCost, level = 1), gameMetadata)
         } Then {
             awaitAndExpect { cfg ->
                 val result = queryDwellingById(cfg, dwellingId1)
                 assertThat(result).isEqualTo(
-                    GetDwellingById.Result(dwellingId1.raw, creatureId.raw, phoenixCostRaw, 0)
+                    GetDwellingById.Result(dwellingId1.raw, creatureId.raw, phoenixCostRaw, 0, 1)
                 )
             }
         }

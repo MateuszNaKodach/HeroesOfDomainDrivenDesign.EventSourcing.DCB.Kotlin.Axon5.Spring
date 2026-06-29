@@ -1,7 +1,7 @@
 package com.dddheroes.heroesofddd.creaturerecruitment.read.getalldwellings
 
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
-import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingConstructed
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.heroesofddd.shared.domain.identifiers.GameId
 import io.axoniq.framework.messaging.deadletter.DeadLetter
@@ -70,7 +70,7 @@ private class DwellingReadModelProjector(
 ) {
 
     @EventHandler
-    fun on(event: DwellingBuilt, @MetadataValue(GameMetadata.GAME_ID_KEY) gameId: String) {
+    fun on(event: DwellingConstructed, @MetadataValue(GameMetadata.GAME_ID_KEY) gameId: String) {
         val state = DwellingReadModel(
             gameId,
             event.dwellingId.raw,

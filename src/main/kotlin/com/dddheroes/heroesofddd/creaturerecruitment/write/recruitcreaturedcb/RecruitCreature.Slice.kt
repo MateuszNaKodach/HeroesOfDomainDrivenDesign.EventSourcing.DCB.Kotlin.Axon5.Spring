@@ -5,7 +5,7 @@ import com.dddheroes.heroesofddd.armies.events.CreatureAddedToArmy
 import com.dddheroes.heroesofddd.armies.events.CreatureRemovedFromArmy
 import com.dddheroes.heroesofddd.creaturerecruitment.events.AvailableCreaturesChanged
 import com.dddheroes.heroesofddd.creaturerecruitment.events.CreatureRecruited
-import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingBuilt
+import com.dddheroes.heroesofddd.creaturerecruitment.events.DwellingConstructed
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.heroesofddd.shared.domain.HeroesEvent
 import com.dddheroes.heroesofddd.shared.domain.identifiers.*
@@ -112,7 +112,7 @@ private fun decide(
 }
 
 private fun evolve(state: State, event: HeroesEvent): State = when (event) {
-    is DwellingBuilt ->
+    is DwellingConstructed ->
         state.copy(
             creatureId = event.creatureId,
             costPerTroop = event.costPerTroop
@@ -152,7 +152,7 @@ private class RecruitCreatureEventSourcedState private constructor(val state: St
     constructor() : this(initialState)
 
     @EventSourcingHandler
-    fun evolve(event: DwellingBuilt): RecruitCreatureEventSourcedState =
+    fun evolve(event: DwellingConstructed): RecruitCreatureEventSourcedState =
         RecruitCreatureEventSourcedState(evolve(state, event))
 
     @EventSourcingHandler
@@ -175,7 +175,7 @@ private class RecruitCreatureEventSourcedState private constructor(val state: St
                 EventCriteria
                     .havingTags(Tag.of(EventTags.DWELLING_ID, recruitmentId.dwellingId.raw))
                     .andBeingOneOfTypes(
-                        "CreatureRecruitment.DwellingBuilt",
+                        "CreatureRecruitment.DwellingConstructed",
                         "CreatureRecruitment.AvailableCreaturesChanged",
                     ),
                 EventCriteria
