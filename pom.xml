@@ -27,7 +27,10 @@
         <url/>
     </scm>
     <properties>
-        <axon.version>5.1.0</axon.version>
+        <axon.version>5.2.0-SNAPSHOT</axon.version>
+        <!-- Pinned: no 5.2.0-SNAPSHOT published for these AxonIQ artifacts; 5.1.0 is the latest available -->
+        <axoniq-data-protection.version>5.1.0</axoniq-data-protection.version>
+        <axoniq-platform.version>5.1.0</axoniq-platform.version>
         <axon-workflow.version>0.1.0</axon-workflow.version>
         <java.version>21</java.version>
         <kotlin.version>2.3.21</kotlin.version>
@@ -67,7 +70,7 @@
         <dependency>
             <groupId>io.axoniq.platform</groupId>
             <artifactId>axoniq-platform-spring-boot-starter</artifactId>
-            <version>${axon.version}</version>
+            <version>${axoniq-platform.version}</version>
         </dependency>
         <dependency>
             <groupId>org.axonframework.extensions.spring</groupId>
@@ -88,7 +91,7 @@
         <dependency>
             <groupId>io.axoniq.framework</groupId>
             <artifactId>axoniq-data-protection</artifactId>
-            <version>${axon.version}</version>
+            <version>${axoniq-data-protection.version}</version>
         </dependency>
         <dependency>
             <groupId>io.axoniq.framework</groupId>
