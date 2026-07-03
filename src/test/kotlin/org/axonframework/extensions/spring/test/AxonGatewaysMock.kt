@@ -1,5 +1,6 @@
 package org.axonframework.extensions.spring.test
 
+import org.axonframework.common.ClockUtils
 import org.axonframework.messaging.commandhandling.GenericCommandResultMessage
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
 import org.axonframework.messaging.commandhandling.gateway.CommandResult
@@ -7,7 +8,6 @@ import org.axonframework.messaging.commandhandling.gateway.FutureCommandResult
 import org.axonframework.messaging.core.MessageTypeResolver
 import org.axonframework.messaging.core.Metadata
 import org.axonframework.messaging.core.annotation.AnnotationMessageTypeResolver
-import org.axonframework.messaging.eventhandling.GenericEventMessage
 import org.axonframework.messaging.queryhandling.gateway.QueryGateway
 import org.mockito.ArgumentMatchers.*
 import org.mockito.Mockito
@@ -130,14 +130,13 @@ class AxonGatewaysMock(
     // ---- Clock ----
 
     /**
-     * Fixes the [Clock] mock and [GenericEventMessage.clock] to the given [instant].
+     * Fixes the [Clock] mock and the framework's global [ClockUtils] clock to the given [instant].
      *
      * @return the same [instant] for convenient assignment.
      */
     fun currentTimeIs(instant: Instant): Instant {
         Mockito.`when`(clock.instant()).thenReturn(instant)
-        @Suppress("DEPRECATION")
-        GenericEventMessage.clock = Clock.fixed(instant, ZoneOffset.UTC)
+        ClockUtils.set(Clock.fixed(instant, ZoneOffset.UTC))
         return instant
     }
 
@@ -234,12 +233,7 @@ class AxonGatewaysMockConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(Clock::class)
-    @Suppress("DEPRECATION")
-    fun clock(): Clock {
-        val clock = Clock.systemUTC()
-        GenericEventMessage.clock = clock
-        return clock
-    }
+    fun clock(): Clock = ClockUtils.set(Clock.systemUTC())
 
     @Bean
     fun axonGatewaysMock(
