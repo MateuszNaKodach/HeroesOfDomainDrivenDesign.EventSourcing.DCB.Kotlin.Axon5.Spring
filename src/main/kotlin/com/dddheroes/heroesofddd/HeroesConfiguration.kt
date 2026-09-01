@@ -3,6 +3,7 @@ package com.dddheroes.heroesofddd
 import com.dddheroes.heroesofddd.shared.application.GameMetadata
 import com.dddheroes.sdk.domain.DomainRuleViolatedException
 import com.dddheroes.sdk.restapi.ErrorResponse
+import org.axonframework.common.ClockUtils
 import org.axonframework.common.configuration.ConfigurationEnhancer
 import org.axonframework.eventsourcing.eventstore.MetadataBasedTagResolver
 import org.axonframework.eventsourcing.eventstore.MultiTagResolver
@@ -10,7 +11,6 @@ import org.axonframework.eventsourcing.eventstore.TagResolver
 import org.axonframework.messaging.core.correlation.CorrelationDataProvider
 import org.axonframework.messaging.core.correlation.MessageOriginProvider
 import org.axonframework.messaging.core.correlation.SimpleCorrelationDataProvider
-import org.axonframework.messaging.eventhandling.GenericEventMessage
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.ResponseEntity
@@ -57,12 +57,7 @@ internal class AxonFrameworkConfiguration {
     }
 
     @Bean
-    @Suppress("DEPRECATION")
-    fun clock(): Clock {
-        val clock = Clock.systemUTC()
-        GenericEventMessage.clock = clock
-        return clock
-    }
+    fun clock(): Clock = ClockUtils.set(Clock.systemUTC())
 
 }
 

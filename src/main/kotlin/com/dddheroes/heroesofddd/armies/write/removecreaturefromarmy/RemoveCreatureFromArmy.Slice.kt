@@ -25,6 +25,7 @@ import org.axonframework.messaging.commandhandling.annotation.CommandHandler
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
 import org.axonframework.messaging.eventhandling.gateway.EventAppender
 import org.axonframework.modelling.annotation.InjectEntity
+import org.jspecify.annotations.Nullable
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
@@ -108,10 +109,10 @@ private class RemoveCreatureFromArmyCommandHandler {
     fun handle(
         command: RemoveCreatureFromArmy,
         metadata: AxonMetadata,
-        @InjectEntity(idProperty = EventTags.ARMY_ID) eventSourced: RemoveCreatureFromArmyEventSourcedState,
+        @InjectEntity(idProperty = EventTags.ARMY_ID) eventSourced: @Nullable RemoveCreatureFromArmyEventSourcedState?,
         eventAppender: EventAppender
     ): CommandHandlerResult = resultOf {
-        val events = decide(command, eventSourced.state)
+        val events = decide(command, eventSourced?.state ?: initialState)
         eventAppender.append(events, metadata)
         events.toCommandResult()
     }

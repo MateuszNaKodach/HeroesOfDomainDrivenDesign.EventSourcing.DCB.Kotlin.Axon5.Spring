@@ -30,6 +30,7 @@ import org.axonframework.messaging.eventhandling.gateway.EventAppender
 import org.axonframework.messaging.eventstreaming.EventCriteria
 import org.axonframework.messaging.eventstreaming.Tag
 import org.axonframework.modelling.annotation.InjectEntity
+import org.jspecify.annotations.Nullable
 import org.axonframework.modelling.configuration.EntityModule
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
@@ -195,10 +196,10 @@ private class RecruitCreatureCommandHandler {
     fun handle(
         command: RecruitCreature,
         metadata: AxonMetadata,
-        @InjectEntity(idProperty = "recruitmentId") eventSourced: RecruitCreatureEventSourcedState,
+        @InjectEntity(idProperty = "recruitmentId") eventSourced: @Nullable RecruitCreatureEventSourcedState?,
         eventAppender: EventAppender
     ): CommandHandlerResult = resultOf {
-        val events = decide(command, eventSourced.state)
+        val events = decide(command, eventSourced?.state ?: initialState)
         eventAppender.append(events, metadata)
         events.toCommandResult()
     }
