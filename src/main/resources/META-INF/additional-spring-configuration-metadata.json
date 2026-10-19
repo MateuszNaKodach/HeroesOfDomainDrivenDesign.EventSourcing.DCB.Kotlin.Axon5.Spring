@@ -51,6 +51,11 @@
       "description": "Enable/disable the FinishDay write slice in the Calendar bounded context."
     },
     {
+      "name": "slices.armies.write.addcreaturetoarmy.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable/disable the AddCreatureToArmy write slice in the Armies bounded context."
+    },
+    {
       "name": "slices.armies.read.getarmycreatures.enabled",
       "type": "java.lang.Boolean",
       "description": "Enable/disable the GetArmyCreatures read slice in the Armies bounded context."
