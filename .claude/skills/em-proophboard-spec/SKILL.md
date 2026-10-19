@@ -149,7 +149,7 @@ After the flow structure is modeled and validated, enrich elements with details:
 1. **Element description with properties** (optional): Add property names with example values or types directly in the element description via `update_element_description`. This makes properties visible on the board card itself. **Ask the user** whether to add description properties — it's not required.
 2. **Element details**: Add detailed descriptions, JSON examples, JSON Schema, validation rules, and business rules via `update_element_details` / `update_element_description`
 3. **UI mockups**: Add ASCII mockups to the `details` field of UI elements
-4. **Slice details**: Add business rules and Given-When-Then scenarios to slice details via `update_slice_details` (see [Slice GWT Scenarios](#slice-gwt-scenarios) below)
+4. **Slice details**: Add business rules and Given-When-Then scenarios to slice details via `update_slice` (`details` field) (see [Slice GWT Scenarios](#slice-gwt-scenarios) below)
 
 #### Element Description Properties (Optional)
 
@@ -179,7 +179,7 @@ costPerTroop: {gold: 3000, gems: 1}
 
 #### Slice GWT Scenarios (Optional)
 
-Slice details (set via `update_slice_details`) can contain Given-When-Then scenarios — executable acceptance criteria that map directly to test methods. This is **optional** — ask the user whether to add GWT scenarios when documenting slices.
+Slice details (set via `update_slice` (`details` field)) can contain Given-When-Then scenarios — executable acceptance criteria that map directly to test methods. This is **optional** — ask the user whether to add GWT scenarios when documenting slices.
 
 Use [references/SLICE_DOCUMENTATION.md](references/SLICE_DOCUMENTATION.md) as the starting template when a slice has no documentation.
 
@@ -392,15 +392,15 @@ Example of details for a command element:
 
 New slices follow a two-phase flow:
 
-1. **During specification**: Create the slice with `status: "blocked"`. The slice documentation (set via `update_slice_details`) should start with a blockquote note:
+1. **During specification**: Create the slice with `status: "blocked"`. The slice documentation (set via `update_slice` (`details` field)) should start with a blockquote note:
    ```
    > **Blocked**: Specification in progress. This slice is not ready for implementation yet.
    ```
    This signals to anyone viewing the board that the slice is still being defined.
 
 2. **After user accepts specification**: Once the user confirms the slice specification is complete:
-   - Update the slice status from `blocked` to `planned` using `update_slice_status`
-   - Remove the `> **Blocked**: ...` note from the slice documentation (rewrite via `update_slice_details` without it)
+   - Update the slice status from `blocked` to `planned` using `update_slice` with `status: "planned"`
+   - Remove the `> **Blocked**: ...` note from the slice documentation (rewrite via `update_slice` with `details`, without it)
 
 ### Track Implementation Progress
 
@@ -412,7 +412,7 @@ blocked → planned → in-progress → ready → deployed
 - `planned` — specification accepted, ready for implementation
 - `in-progress` / `ready` / `deployed` — code implementation states
 
-Use `update_slice_status` with both `old_status` and `new_status`.
+Use `update_slice` with `workspace_id`, `chapter_id`, `slice_id` and the new `status` (draft, planned, in-progress, blocked, ready, reviewed, deployed).
 
 Derive implementation tasks from the event model — **one task per slice**. Update progress on proophboard using slice status as implementation proceeds.
 

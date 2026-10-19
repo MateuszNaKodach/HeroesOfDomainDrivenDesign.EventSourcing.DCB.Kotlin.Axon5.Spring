@@ -85,7 +85,7 @@ Format:
 
 ## Step 4: Implement
 
-1. Update slice status to `"in-progress"`: call `mcp__proophboard__update_slice_status`.
+1. Update slice status to `"in-progress"`: call `mcp__proophboard__update_slice` with `workspace_id` (from `.proophboard/workspace.json`), `chapter_id`, `slice_id` and `status: "in-progress"`.
 2. Create git branch `feature/<slice-label-kebab-case>` from the **parent branch** (if it doesn't exist). Switch to it.
 3. Based on slice type, invoke the matching skill using the `Skill` tool:
    - Write  -> `em2code-write-slice-axon5kotlin`
@@ -106,7 +106,7 @@ Format:
 
 ## Step 7: Finalize
 
-9. Update slice status to `"ready"` for ALL implemented slices: call `mcp__proophboard__update_slice_status` for each.
+9. Update slice status to `"ready"` for ALL implemented slices: call `mcp__proophboard__update_slice` for each, with `workspace_id`, `chapter_id`, `slice_id` and `status: "ready"`.
 10. **Update CLAUDE.md with learnings** — before committing, check if any edited files revealed knowledge worth preserving:
     - Patterns or conventions specific to that bounded context or module
     - Gotchas or non-obvious requirements discovered during implementation
