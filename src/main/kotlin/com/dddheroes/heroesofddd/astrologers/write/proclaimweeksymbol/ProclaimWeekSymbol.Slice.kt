@@ -25,7 +25,6 @@ import org.axonframework.messaging.commandhandling.annotation.CommandHandler
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
 import org.axonframework.messaging.eventhandling.gateway.EventAppender
 import org.axonframework.modelling.annotation.InjectEntity
-import org.jspecify.annotations.Nullable
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
@@ -92,7 +91,7 @@ private class ProclaimWeekSymbolCommandHandler {
     fun handle(
         command: ProclaimWeekSymbol,
         metadata: AxonMetadata,
-        @InjectEntity(idProperty = EventTags.ASTROLOGERS_ID) eventSourced: @Nullable ProclaimWeekSymbolEventSourcedState?,
+        @InjectEntity(idProperty = EventTags.ASTROLOGERS_ID) eventSourced: ProclaimWeekSymbolEventSourcedState?,
         eventAppender: EventAppender
     ): CommandHandlerResult = resultOf {
         val events = decide(command, eventSourced?.state ?: initialState)

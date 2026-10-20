@@ -26,7 +26,6 @@ import org.axonframework.messaging.commandhandling.annotation.CommandHandler
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
 import org.axonframework.messaging.eventhandling.gateway.EventAppender
 import org.axonframework.modelling.annotation.InjectEntity
-import org.jspecify.annotations.Nullable
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
@@ -93,7 +92,7 @@ private class BuildDwellingCommandHandler {
     fun handle(
         command: BuildDwelling,
         metadata: AxonMetadata,
-        @InjectEntity(idProperty = EventTags.DWELLING_ID) eventSourced: @Nullable BuildDwellingEventSourcedState?,
+        @InjectEntity(idProperty = EventTags.DWELLING_ID) eventSourced: BuildDwellingEventSourcedState?,
         eventAppender: EventAppender
     ): CommandHandlerResult = resultOf {
         val events = decide(command, eventSourced?.state ?: initialState)

@@ -26,7 +26,6 @@ import org.axonframework.messaging.commandhandling.annotation.CommandHandler
 import org.axonframework.messaging.commandhandling.gateway.CommandGateway
 import org.axonframework.messaging.eventhandling.gateway.EventAppender
 import org.axonframework.modelling.annotation.InjectEntity
-import org.jspecify.annotations.Nullable
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
@@ -117,7 +116,7 @@ private class FinishDayCommandHandler {
     fun handle(
         command: FinishDay,
         metadata: AxonMetadata,
-        @InjectEntity(idProperty = EventTags.CALENDAR_ID) eventSourced: @Nullable FinishDayEventSourcedState?,
+        @InjectEntity(idProperty = EventTags.CALENDAR_ID) eventSourced: FinishDayEventSourcedState?,
         eventAppender: EventAppender
     ): CommandHandlerResult = resultOf {
         val events = decide(command, eventSourced?.state ?: initialState)

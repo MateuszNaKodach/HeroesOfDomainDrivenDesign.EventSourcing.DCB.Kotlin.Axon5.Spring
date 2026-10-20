@@ -18,7 +18,6 @@ import org.axonframework.messaging.commandhandling.annotation.Command
 import org.axonframework.messaging.commandhandling.annotation.CommandHandler
 import org.axonframework.messaging.eventhandling.gateway.EventAppender
 import org.axonframework.modelling.annotation.InjectEntity
-import org.jspecify.annotations.Nullable
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 
@@ -81,7 +80,7 @@ private class WithdrawResourcesCommandHandler {
     fun handle(
         command: WithdrawResources,
         metadata: AxonMetadata,
-        @InjectEntity(idProperty = EventTags.RESOURCES_POOL_ID) eventSourced: @Nullable WithdrawResourcesEventSourcedState?,
+        @InjectEntity(idProperty = EventTags.RESOURCES_POOL_ID) eventSourced: WithdrawResourcesEventSourcedState?,
         eventAppender: EventAppender
     ): CommandHandlerResult = resultOf {
         val events = decide(command, eventSourced?.state ?: initialState)

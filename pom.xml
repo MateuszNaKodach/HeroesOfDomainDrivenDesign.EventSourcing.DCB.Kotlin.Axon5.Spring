@@ -293,9 +293,6 @@
                     <args>
                         <arg>-Xjsr305=strict</arg>
                         <arg>-Werror</arg>
-                        <!-- Emit JVM type-use annotations (e.g. jspecify @Nullable) into bytecode so
-                             Axon's AnnotationBasedNullabilityResolver can honor nullable @InjectEntity params -->
-                        <arg>-Xemit-jvm-type-annotations</arg>
                     </args>
                     <compilerPlugins>
                         <plugin>spring</plugin>
