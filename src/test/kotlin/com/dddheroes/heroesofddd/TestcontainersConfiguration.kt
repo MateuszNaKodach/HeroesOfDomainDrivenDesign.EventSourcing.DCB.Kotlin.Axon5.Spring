@@ -12,7 +12,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer
 class TestcontainersConfiguration {
 
     companion object {
-        private val axonServer: AxonServerContainer = AxonServerContainer("axoniq/axonserver:2026.0.0")
+        private val axonServer: AxonServerContainer = AxonServerContainer("axoniq/axonserver:2026.1.7")
             .withDevMode(true)
             .withDcbContext(true)
             .withReuse(true)
